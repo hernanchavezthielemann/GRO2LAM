@@ -1,4 +1,4 @@
-images source:
+Images source:
 
 File:
   - ubuntu ([nautilus]) gui
