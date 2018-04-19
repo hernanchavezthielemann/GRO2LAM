@@ -419,7 +419,7 @@ def write_lammps_data_lib(_topodata_, data_name, _config_):
     
     _text_ +='\n%1s\n\n','Atoms'
     ####-------ATOMIC STYLE(FULL)--------####
-####---------------------------------####
+    ####---------------------------------####
     if atomstyle == 'Full':
         for i in arange( 1, n_atoms).reshape(-1):
             for j in arange( 1, n_atomtypes).reshape(-1):
@@ -473,71 +473,71 @@ def write_lammps_data_lib(_topodata_, data_name, _config_):
     
     print_dec_g('ATOMS COMPLETED !!!')
     ####-----------------------####
-####-----------------------####
+    ####-----------------------####
     
     if atomstyle == 'Full' or atomstyle == 'Angle':
         print_dec_g('WRITING BONDS...')
         ####------BONDS------####
         _text_ +='\n%1s\n\n','Bonds'
         count2=zeros(n_bonds,1)
-# Write_Geometry.m:158
+
         for i in arange(1,n_bonds).reshape(-1):
             for j in arange(1,n_typebonds).reshape(-1):
                 if ((strcmp(atom_inbond[atom1_bond[i]],atom_bondcoeffi[j]) == 1 and strcmp(atom_inbond[atom2_bond[i]],atom_bondcoeffj[j]) == 1) or (strcmp(atom_inbond[atom1_bond[i]],atom_bondcoeffj[j]) == 1 and strcmp(atom_inbond[atom2_bond[i]],atom_bondcoeffi[j]) == 1)):
                     _text_ +='\t\t%d\t %d\t %d\t %d\n',i,j,atom1_bond[i],atom2_bond[i]
                     count2[i]=i
-# Write_Geometry.m:166
+
                     if choice_param == 1:
                         param_bond1[j]=parametrization_bond1[i]
-# Write_Geometry.m:168
+
                         param_bond2[j]=parametrization_bond2[i]
-# Write_Geometry.m:169
+
                         param_bond3[j]=parametrization_bond3[i]
-# Write_Geometry.m:170
+
         if choice_solv == 1:
             countb=1
-# Write_Geometry.m:177
+
             for i in arange(n_atoms + 1,(dot((n_mol[end()] - 1),3) + n_atoms)).reshape(-1):
                 for j in arange(1,n_typebonds).reshape(-1):
                     if ((strncmp(type_[i],atom_bondcoeffi[j],2) == 1 or (strncmp(type_[i],atom_bondcoeffj[j],2)) == 1) and n_mol[i] != n_mol[i - 1]):
                         _text_ +='\t\t%d\t %d\t %d\t %d\n',n_bonds + countb,j,i,i + 1
                         _text_ +='\t\t%d\t %d\t %d\t %d\n',n_bonds + countb + 1,j,i,i + 2
                         countb=countb + 2
-# Write_Geometry.m:186
+
         print_dec_g('BONDS COMPLETED !!!')
     
     if atomstyle == 'Full' or atomstyle == 'Angle':
         print_dec_g('WRITING ANGLES...')
         ####------ANGLES------#########
         count=zeros(n_angles,1)
-# Write_Geometry.m:197
+
         _text_ +='\n%1s\n\n','Angles'
         for i in arange(1,n_angles).reshape(-1):
             for j in arange(1,n_typeangles).reshape(-1):
                 if ((strcmp(atom_inbond[atom1_angle[i]],atom_anglecoeffi[j]) == 1 and strcmp(atom_inbond[atom2_angle[i]],atom_anglecoeffj[j]) == 1 and strcmp(atom_inbond[atom3_angle[i]],atom_anglecoeffk[j]) == 1) or (strcmp(atom_inbond[atom1_angle[i]],atom_anglecoeffk[j]) == 1 and strcmp(atom_inbond[atom2_angle[i]],atom_anglecoeffj[j]) == 1 and strcmp(atom_inbond[atom3_angle[i]],atom_anglecoeffi[j]) == 1)):
                     _text_ +='\t\t%d\t %d\t %d\t %d\t %d\n',i,j,atom1_angle[i],atom2_angle[i],atom3_angle[i]
                     count[i]=i
-# Write_Geometry.m:212
+
                     FLAG=1
-# Write_Geometry.m:213
+
                     if choice_param == 1:
                         param_angle1[j]=parametrization_angle1[i]
-# Write_Geometry.m:215
+
                         param_angle2[j]=parametrization_angle2[i]
-# Write_Geometry.m:216
+
                         param_angle3[j]=parametrization_angle3[i]
-# Write_Geometry.m:217
+
                         param_angle4[j]=parametrization_angle4[i]
-# Write_Geometry.m:218
+
         if choice_solv == 1:
             counta=1
-# Write_Geometry.m:225
+
             for i in arange(n_atoms + 1,(dot((n_mol[end()] - 1),3) + n_atoms)).reshape(-1):
                 for j in arange(1,n_typeangles).reshape(-1):
                     if ((strncmp(type_[i],atom_anglecoeffi[j],2) == 1 or (strncmp(type_[i],atom_anglecoeffj[j],2)) == 1 or (strncmp(type_[i],atom_anglecoeffk[j],2)) == 1) and n_mol[i] != n_mol[i - 1]):
                         _text_ +='\t\t%d\t %d\t %d\t %d\t %d\n',n_angles + counta,j,i + 1,i,i + 2
                         counta=counta + 1
-# Write_Geometry.m:233
+
     
     print_dec_g('ANGLES COMPLETED !!!')
     ####------DIHEDRAL------####
