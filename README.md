@@ -19,11 +19,11 @@ gromacs and the Large-scale Atomic Molecular Massively Parallel Simulator ([Lamm
 
 ## Installation
 
-Download and execute the setup file like: 
-    - python setup
-Then execute the run script:
-    - ./run
-After that a graphical user interface should appear
+    Download and execute the setup file like: 
+    ~$ python setup
+    Then execute the run script:
+    ~$ ./run
+    After that a graphical user interface should appear
 
 
 ## Usage
