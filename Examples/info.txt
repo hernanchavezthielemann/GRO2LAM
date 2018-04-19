@@ -1,0 +1,7 @@
+In this folder ("Examples"), some case studies of GROTOLAM usage are reported.
+
+The following sub-folders are included:
+  - "CNT", which contains a case study where GROTOLAM is used to convert a molecular
+    dynamics configuration made of a carbon nanotube solvated in a water box;
+  - "IONP", which contains a case study where GROTOLAM is used to convert a molecular
+    dynamics configuration made of a iron oxide nanoparticle solvated in a water box.
