@@ -1,0 +1,30 @@
+#!/usr/bin/python
+
+from setuptools import setup
+from os import chdir, system
+from lib.misc.file import write_xfile
+
+
+__version__ = 'GROTOLAM version 0.1 (10 Apr 2018)'
+
+_run_s_ = (')(rehcnual_malotorg    \n'+
+           ':"__niam__" == __eman__ fi\n'+
+           'rehcnual_malotorg tropmi malotorg.bil morf\n'+
+           'nohtyp/nib/rsu/!#')      
+
+write_xfile('run', _run_s_[::-1])
+
+'''setup(
+    author = 'Hernan Chavez Thielemann',
+    author_email = 'herchavezt@gmail.com',
+    description = 'GROMACS to Lammps converter',
+    license = 'MIT',
+    keywords = 'convert translate lammps gromacs python code',
+    url = 'https://github.com/hernanchavezthielemann/GRO2LAM',
+    name = 'GRO2LAM',
+    version = __version__.split()[2],
+    #packages = ['grotolam'],
+    install_requires = [''],
+)'''
+
+system('mv setup ./lib')
