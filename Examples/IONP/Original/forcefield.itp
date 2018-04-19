@@ -1,0 +1,16 @@
+#define _FF_OPLS
+#define _FF_OPLSAA
+
+[ defaults ]
+; nbfunc = 1 Imposes Lennard-Jones, 2 Imposes Buckingham
+; comb-rule = 2 means sigma arithmetic mean & epsilon geometric mean, 3 means geometric mean for both
+; gen-pairs = default value is "no", which means that he takes parameters from the pairtypes list. If it is "yes" it generates 1-4 interaction non present in the pairtypes list and uses fudgeLJ
+; fudgeQQ = is the factor by which to multiply electrostatic 1-4  interactions. Default is 1. 0 because we don't want long distance electrostatic interactions
+; fudgeLJ = is the factor by which to multiply the LJ potential 1-4 interactions
+;
+;
+; nbfunc	comb-rule	gen-pairs	fudgeLJ    fudgeQQ
+    1		    2 	   	   no	  	   0         0
+
+#include "ffoplsaaSI_FE_WATnb.itp"
+#include "ffoplsaaSI_FE_WATbon.itp"
