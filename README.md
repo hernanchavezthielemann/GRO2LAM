@@ -15,7 +15,8 @@ Gromacs to Lammps simulation converter
 
 ## Description
 This program was designed for easy conversion of solvated structures between 
-gromacs and the Large-scale Atomic Molecular Massively Parallel Simulator ([Lammps]).
+the GROningen MAchine for Chemical Simulations([Gromacs]) and the 
+Large-scale Atomic Molecular Massively Parallel Simulator ([Lammps]).
 
 ## Installation
 
@@ -30,7 +31,7 @@ gromacs and the Large-scale Atomic Molecular Massively Parallel Simulator ([Lamm
 
 ## # GUI
     Follow the secuential menu bar
-    This will create [Lammps] simulation files with setup parameters inherited from Gromacs.
+    This will create [Lammps] simulation files with setup parameters inherited from [Gromacs].
     
 ## # Command line interface
     there is no implementation of comand line interface
@@ -48,3 +49,4 @@ gromacs and the Large-scale Atomic Molecular Massively Parallel Simulator ([Lamm
 
 
 [Lammps]: http://lammps.sandia.gov/
+[Gromacs]: http://www.gromacs.org/
