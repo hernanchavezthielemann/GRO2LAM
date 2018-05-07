@@ -20,10 +20,25 @@ Large-scale Atomic Molecular Massively Parallel Simulator ([Lammps]).
 
 ## Installation
 
+### Quick start:
+
+    ~$ wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/master.zip
+    ~$ unzip master.zip
+    ~$ cd GRO2LAM-*
+    ~$ python setup
+    ~$ ./run
+
+### Step by step:
+
 Download from:
 
-    https://github.com/hernanchavezthielemann/GRO2LAM/archive/master.zip
+https://github.com/hernanchavezthielemann/GRO2LAM/archive/master.zip
 
+Or you can open a terminal and then execute:
+    
+    ~$ wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/master.zip
+    ~$ unzip master.zip
+    
 Unpack, and execute the setup file through the terminal.
 Make sure that terminal is in the GROTOLAM folder, then:
     
