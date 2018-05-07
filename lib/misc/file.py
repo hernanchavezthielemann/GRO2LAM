@@ -8,11 +8,18 @@ from os import getcwd, walk, system
 from os.path import join
 from subprocess import Popen, PIPE
 
-def check_file(_in_file_):
+def check_file(_in_file_, content = True):
     '''Check the correctness of the given input file address'''
     try:
         _auxf = open(_in_file_,"r")
+        su = 0
+        if content:
+            for line in _auxf:
+                su += len(line.rstrip('\n'))
         _auxf.close()
+        if content and su == 0:
+            print wrg_3(' File {} is empty -- '.format(_in_file_))
+            return False
         return True
     except IOError:
         print wrg_3(' File {} not found -- '.format(_in_file_))
@@ -38,6 +45,20 @@ def check_file_list(files_list, extensions=['*']):
         else: 
             print wrg_3(' No such file or directory: '+ finam)
         return False
+
+def check_in_file( _file_, *args, **kwargs):
+    ''' Checks if some args are in a file or not '''
+    
+    _flags_ = [0 for x in args]
+    with open( _file_, 'r')  as indata:
+        for k_line in indata:
+            for a in range(len(args)):
+                #print args[a]
+                line_c = k_line.split(args[a])
+                if len(line_c)>1:
+                    _flags_[a] = 1
+    return _flags_
+
 
 def write_xfile(filename='test.txt',  content=''):
     
@@ -83,9 +104,10 @@ def debugger_file( char_str,  container ):
 
 def run_command(__command__):
     ''' Runs the command'''    
-    return Popen(__command__,stdout=PIPE, shell=True )
+    system(__command__)
+    #return Popen(__command__,stdout=PIPE,stdin=PIPE, shell=True )
 
-def fileseeker(path=getcwd(),word='data'):
+def fileseeker(path=getcwd(),word='data',notw = None):
     '''seek data & destroy, returns a list of posible files,
     filtered by "word" criterion'''
     list_of_files=[]
@@ -102,8 +124,12 @@ def fileseeker(path=getcwd(),word='data'):
         # with remove(list_of_files[fs])
         _file_=list_of_files[fs]
         if '/' in _file_ and word in _file_.split('/')[-1]:
-            files.append(_file_)
+            if notw<>None and notw in _file_.split('/')[-1]:
+                pass
+            else:
+                files.append(_file_)
     if files==[]:
         print wrg_3(" No file(s) found with "+word+" criterion---")
     return files;
+ 
 
