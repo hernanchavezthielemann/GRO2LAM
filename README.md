@@ -22,11 +22,12 @@ Large-scale Atomic Molecular Massively Parallel Simulator ([Lammps]).
 
 ### Quick start:
 
-    ~$ wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/master.zip
-    ~$ unzip master.zip
-    ~$ cd GRO2LAM-*
-    ~$ python setup
-    ~$ ./run
+    #!/bin/bash
+    wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/master.zip
+    unzip master.zip
+    cd GRO2LAM-*
+    python setup
+    ./run
 
 ### Step by step:
 
