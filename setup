@@ -63,7 +63,7 @@ files = {'./grotolam.py', './__init__.py',
          './handling/__init__.py', './handling/gromacs.py'}
 
 if _okflag_:
-    act_files = fileseeker(getcwd()+'/lib', '.', '.pyc')
+    act_files = fileseeker(getcwd()+'/lib', '', '.pyc')
 
     if len(files) == len(act_files):
         print 'File check sum ok!'
