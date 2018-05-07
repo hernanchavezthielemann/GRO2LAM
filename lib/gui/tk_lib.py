@@ -2,41 +2,69 @@
 #    By Hernan Chavez Thielemann
 __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
-from Tkinter import Tk, Entry, Button, Frame, Toplevel, Label, Scrollbar
-from Tkinter import Listbox, Menu
+from Tkinter import Entry, Button, Frame, Label, Scrollbar, StringVar
+from Tkinter import Listbox, Menu, IntVar, Checkbutton, Widget
 
-from Tkinter import X, Y, SUNKEN, VERTICAL, END, LEFT, RIGHT
+from Tkinter import X, Y, SUNKEN, VERTICAL, END
 
 
-def bottom_hline_deco(row, func=None):
-    ''' adds a sunken line in the bottom of a tkinter function'''
-    if func <> None:
-        func()
-    line = Frame( row ,height=2, bd=1, relief= SUNKEN)
-    line.pack(fill=X, padx=1, pady=5)
 
-def create_entry( _main_row_, _desc_txt, _def_txt_, t_len):
-        ''' creates a tkinter entry '''
-        _row_ = Frame(_main_row_)
+def create_entry( _main_row_, _desc_txt, _def_txt_, t_len, ckbc=None, fn=None):
+    ''' creates a tkinter entry '''
+    _row_ = Frame(_main_row_)
+    
+    if ckbc<>None and fn<>None:
+        label0 = Label(_row_, width=3, text="  ", anchor='w')
+        cvar = IntVar()
+        label1 = Checkbutton(_row_, width=0
+                               ,variable = cvar
+                               ,command = fn
+                               , anchor = 'w')
+        label2= Label(_row_, width=t_len, text=_desc_txt+"  ", anchor='w')
+        
+        ckbc.append([cvar, label1])
+        
+    else:
         label0 = Label(_row_, width=3, text=" >", anchor='w')
         label1 = Label(_row_, width=t_len, text = _desc_txt, anchor='w')
         label2 = Label(_row_, width=2, text=" :", anchor='w')
-        
-        Ent_It = Entry(_row_, width=13)
+    
+    if type(_def_txt_)==str: 
+        Ent_It = Entry(_row_)#, width=13)
         Ent_It.insert('end', _def_txt_)
-
-        finalspace = Label(_row_, width=5, text=" ", anchor='w')
         
-        # Just packing
-        label0.pack(side='left', padx=1)
-        label1.pack(side='left', padx=6)
-        label2.pack(side='left', padx=0)
+        
+    elif type(_def_txt_) in [list, tuple]:
+        
+        Ent_It = StringVar()
+        aux_ddl = Drop_Down_List(_row_,
+                                 textvariable = Ent_It,
+                                 values = tuple(_def_txt_[1]),
+                                 #state = "readonly"
+                                )
+        aux_ddl.bind("<Key>", lambda e: "break") # Magic
+        Ent_It.set(_def_txt_[0])
+        
+        
+    
+    finalspace = Label(_row_, width=5, text=" ", anchor='w')
+    
+    # Just packing
+    label0.pack(side='left', padx=1)
+    label1.pack(side='left', padx=6)
+    label2.pack(side='left', padx=0)
+    
+    
+    if type(_def_txt_)==str: 
         Ent_It.pack(side='left', expand=True, fill=X)
-        finalspace.pack(side='right', padx=0)
-        _row_.pack(side='top', fill=X, pady=3)
+    elif type(_def_txt_) in [list, tuple]:
+        aux_ddl.pack(side='left', expand=True, fill=X)
         
-        # For tracing purposes list appending
-        return Ent_It
+    finalspace.pack(side='right', padx=0)
+    _row_.pack(side='top', fill=X, pady=3)
+    
+    # For tracing purposes list appending
+    return Ent_It
 
 def get_entriesvalue(entries_container):
         ''' ---   entry getter app ----
@@ -46,15 +74,88 @@ def get_entriesvalue(entries_container):
             e_values.append(entries_container[ent].get())
         return e_values
 
+class Drop_Down_List(Widget):
+    """The lean version of the Ttk Combobox from ttk library"""
+
+    def __init__(self, master=None, **kw):
+        Widget.__init__(self, master, "ttk::combobox", kw)
+        self.bind("<Key>", lambda e: "break") # Magic
+    
+    def current(self, newindex=None):
+        """If newindex is supplied, sets the combobox value to the
+        element at position newindex in the list of values. Otherwise,
+        returns the index of the current value in the list of values
+        or -1 if the current value does not appear in the list."""
+        if newindex is None:
+            return self.tk.getint(self.tk.call(self._w, "current"))
+        return self.tk.call(self._w, "current", newindex)
+
+    def set(self, value):
+        """Sets the value of the combobox to value."""
+        self.tk.call(self._w, "set", value)
+
+def bottom_hline_deco(row, func=None):
+    ''' adds a sunken line in the bottom of a tkinter function'''
+    if func <> None:
+        func()
+    line = Frame( row ,height=2, bd=1, relief= SUNKEN)
+    line.pack(fill=X, padx=1, pady=5)
+
+def create_check_row( _s_row_, _text_, func, _desc_=['']):
+        
+        _f_labels = format_dec([_s_row_, _text_], _pack_=False)
+        _ckvar =[]
+        for d in range(len(_desc_)):
+            cvar = IntVar()
+            _ckvar.append(cvar)
+            label_ck = Checkbutton(_s_row_, width=0, text= _desc_[d]
+                                   ,variable=cvar
+                                   ,command=func
+                                   , anchor='w')
+            _ckbut_container.append(label_ck)
+        
+        format_dec(_f_labels, _create_=False)
+        
+        for d in range(len(_desc_)):
+            _ckbut_container[-len(_desc_)+d].pack(side='left', padx=6)
+            
+        return _ckvar, _ckbut_container
+
+def create_file_entry( _master_, ups_frame, fi_text, _default_file):
+    ''' Quite self explanatoy...
+        creates a row in which is possible to search for a file'''
+    file_row = Frame(ups_frame)
+    f_ex = ((fi_text ,'.'+ _default_file.split('.')[-1]),)
+    
+    _f_labels = format_dec([file_row, fi_text], _pack_=False)
+    
+    Efile = Entry(file_row, width=13)
+    Efile.insert(END, _default_file)
+    Efile.xview_moveto(1)
+    Bsearch = Button(file_row,
+                     image= _master_.im_file,
+                     command=(lambda El=Efile: _master_.browsefile(El, f_ex)))
+    
+    # Just packing
+    format_dec(_f_labels, _create_=False)
+    
+    Efile.pack(side='left', expand='yes', fill=X)
+    
+    Bsearch.pack(side='right', padx=0, pady=0)
+    file_row.pack(side='top', fill=X, pady=3)
+    
+    # For tracing purposes list appending
+    return Efile
+
 def generate_listbox(row, fill_list):
     
     scrollbar = Scrollbar(row , orient=VERTICAL)
     Flistbox = Listbox(row , yscrollcommand= scrollbar.set, height=1)#,
     scrollbar.config(command= Flistbox.yview)
-    scrollbar.pack(side=RIGHT, fill=Y)
+    scrollbar.pack(side='right', fill=Y)
     for item in fill_list:
         Flistbox.insert(END, item);
-    Flistbox.pack(side=LEFT, fill=X , expand=1)
+    Flistbox.pack(side='left', fill=X , expand=1)
     
     return Flistbox
 
@@ -82,11 +183,11 @@ def format_dec(_rnt_or_lc_, _create_=True, _pack_=True, _lastline_=True):
         
     if _pack_:
         
-        label0.pack(side=LEFT, padx=1)
-        label1.pack(side=LEFT, padx=6)
-        label2.pack(side=LEFT, padx=0)
+        label0.pack(side='left', padx=1)
+        label1.pack(side='left', padx=6)
+        label2.pack(side='left', padx=0)
         if _lastline_:
-            label3.pack(side=RIGHT, padx=0)
+            label3.pack(side='right', padx=0)
 
 def createmenubar( _root_window_, _listofentriesdicts_):
     ''' under development 
@@ -145,47 +246,4 @@ def createmenubar( _root_window_, _listofentriesdicts_):
 def testprint():
     print '>command33<'
 
-def garbage_container1():
-    
-    class MainWindow(Frame):
-        counter = 0
-        def __init__(self, *args, **kwargs):
-            Frame.__init__(self, *args, **kwargs)
-            self.button = Button(self, text="Create new window", 
-                                    command=self.create_window)
-            self.button.pack(side="top")
-    
-        def create_window(self):
-            self.counter += 1
-            t = Toplevel(self)
-            t.wm_title("Window #%s" % self.counter)
-            l = Label(t, text="This is window #%s" % self.counter)
-            l.pack(side="top", fill="both", expand=True, padx=100, pady=100)
-
-    #if __name__ == "__main__":
-    root = Tk()
-    main = MainWindow(root)
-    main.pack(side="top", fill="both", expand=True)
-    root.mainloop()
-
-def garbage_container2():
-    '''https://stackoverflow.com/questions/26568890/
-    how-do-i-flash-a-button-with-a-keypress-in-tkinter'''
-    r = Tk()
-
-    l = Label(text = 'press f to make button flash')
-    l.pack()
-
-    b = Button(text = 'useless button')
-    b.config(bg = 'lightgrey')
-    b.pack()
-
-    def flash(event):
-        b.config(bg = 'yellow')
-        r.after(100, lambda: b.config(bg = 'lightgrey'))
-
-    r.bind("<KeyPress-f>", flash)
-
-    r.mainloop()
-    
 # vim:tw=80
