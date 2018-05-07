@@ -1,48 +1,97 @@
 #!/usr/bin/python
 
-#from setuptools import setup
-from os import chdir, system, getcwd
+
+from os import system, getcwd
 from sys import exit
-from lib.misc.file import write_xfile, fileseeker
-from lib.grotolam import __version__
 
-print 'Checking instalation files for {}'.format(__version__)
 
-_run_s_ = (')(rehcnual_malotorg    \n'+
-           ':"__niam__" == __eman__ fi\n'+
-           'rehcnual_malotorg tropmi malotorg.bil morf\n'+
-           'nohtyp/nib/rsu/!#')
+_okflag_ = True
+_exit_txt_ = ''
+
+try:
+    import Tkinter
+except ImportError:
+    print 'Package python-tk not found!'
+    sel = ''
+    print ('You need to install the python-tk package,'
+           +' would you like to do it now?')
+    while sel not in ['yes','no','y','n']:
+        sel = raw_input('Please write "yes" or "no": ')
+    if sel in ['y','yes']:
+        su =''
+        while su not in ['yes','no','y','n']:
+            su = raw_input('Do you possess sudo rights?,'
+                           +' Please answer "yes" or "no": ')
+        if su in ['y','yes']:
+            system('sudo apt-get install python-tk')
+            exit('\nPlease run again the setup')
+        else:
+            _exit_txt_ += ('Without sudo rights you cannot install tkinter.'
+                           +'\n - Please contact your system administrator\n')
+            _okflag_ = False
+    else:
+        _exit_txt_ += ( 'In order to use GRO2LAM GUI you need to install'
+                       +' the python-tk package first\n')
+        _okflag_ = False
+
+if _okflag_:
+    from lib.misc.file import write_xfile, fileseeker, check_file
+    from lib.misc.warn import green
+    from lib.grotolam import __version__
+    print 'Checking instalation files for {}'.format(__version__)
+
+_run_s_ = (')(rehcnual_malotorg    \n:"__niam__" == __eman__ fi\n'
+           +'rehcnual_malotorg tropmi malotorg.bil morf\n'+
+           'nohtyp/nib/rsu/!#', 'just to play with the reader ;)')
            
-files = ['./grotolam.py', './__init__.py', './gui/popup.py', './gui/__init__.py',
-'./gui/main_gui.py', './gui/tk_lib.py', './gui/img/logo.ppm',
-'./gui/img/gear.ppm', './gui/img/logo2.ppm', './gui/img/small_logo2.ppm',
-'./gui/img/file.ppm', './gui/img/help.ppm', './docs/COPYING.LESSER',
-'./docs/README.txt', './misc/file.py', './misc/warn.py', './misc/__init__.py',
-'./handling/lammps.py', './handling/__init__.py', './handling/gromacs.py']
+files = ['./grotolam.py', './__init__.py',
+         './gui/popup.py', './gui/__init__.py', './gui/main_gui.py',
+         './gui/script_gui.py', './gui/run_gui.py', './gui/script_gui.py',
+         './gui/tk_lib.py', './gui/img/logo.ppm', './gui/img/gear.ppm',
+         './gui/img/logo2.ppm', './gui/img/small_logo2.ppm', 
+         './gui/img/file.ppm', './gui/img/help.ppm', './docs/COPYING.LESSER',
+         './docs/README.txt', './misc/file.py', './misc/warn.py',
+         './misc/data.py', './misc/__init__.py', './handling/lammps.py',
+         './handling/__init__.py', './handling/gromacs.py']
 
+if _okflag_:
+    act_files = fileseeker(getcwd()+'/lib', '.', '.pyc')
 
-
-act_files = fileseeker(getcwd()+'/lib', '.', '.pyc')
-
-if len(files)==len(act_files):
-     print 'File check done!'    
-else:
-    exit('Warning!! there are some mising files')
-
-write_xfile('run', _run_s_[::-1])
+    if len(files) == len(act_files):
+        print 'File check sum ok!'
+        fi_o_flag = 1
+        _eq_files_ = []
+        for _fi_ in act_files:
+                _eq_files_.append(_fi_.split('/lib/')[-1])
+                #print _eq_files_[-1]
+        for _fi_ in files:
+            if _fi_.lstrip('./') in _eq_files_:
+                if check_file('./lib/'+_fi_):
+                    print ('File {} '+green('ok')).format(_fi_)
+                else:
+                    fi_o_flag *= 0
+            else:
+                print 'File {} not found'.format(_fi_)
+                fi_o_flag *= 0
+                
+        if fi_o_flag:
+            print 'File check done!'
+        else:
+            _okflag_ = False
+    else:
+        _okflag_ = False
+        print len(files), len(act_files)
+        for fi in act_files:
+            print fi
+        _exit_txt_ += 'Warning!! there is something rare in these files\n'
+        
+        
+        
+if not _okflag_:
+    exit(_exit_txt_)
+    
+write_xfile('run', _run_s_[0][::-1])
  
-'''setup(
-    author = 'Hernan Chavez Thielemann',
-    author_email = 'herchavezt@gmail.com',
-    description = 'GROMACS to Lammps converter',
-    license = 'MIT',
-    keywords = 'convert translate lammps gromacs python code',
-    url = 'https://github.com/hernanchavezthielemann/GRO2LAM',
-    name = 'GRO2LAM',
-    version = __version__.split()[2],
-    #packages = ['grotolam'],
-    install_requires = [''],
-)'''
 system('mv README.md ./lib')
 system('mv setup ./lib')
 
