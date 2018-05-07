@@ -8,27 +8,35 @@ __merged_files__ = ['main.m', 'Writing_input.m', ]
                     
                     
 def extract_lammps_data(_data_file_,_ck_buttons_, _forcefield_):
-    ''' already implemented in  topology analizer'''
+    ''' already implemented in  topology analizer
+            MIXER
+    '''
 
 def write_lammps_data(_topodata_, data_name, _config_):
     ''' Write a lammps data file'''
     print_dec_g ('Writing Lammps data file...')
     ####---------------  Unpacking data  ----------------####
     atomstyle, _, _ = _config_
-    if atomstyle == 'Full':
-        print_dec_g('####-------  ATOMIC STYLE(FULL)  --------####')
-        _content_ = write_lammps_data_full(_topodata_, data_name, _config_)
-        
+    atsty = ['atomic', 'angle', 'full', 'charge', 'bond', 'molecular']
+    style_str='####-------  ATOM STYLE < {} >  --------####'
+    _flag_ = False
+    if atomstyle in atsty:
+        nam = ''.join([ chr(ord(l)-32) for l in atomstyle])
+        print_dec_g(style_str.format(nam))
+        _content_ = write_lammps_data_all(_topodata_, data_name, _config_)
+        _flag_ = True
     else: #if atomstyle == 'Angle':
         _content_=''
-        exit('Error 011!!  -  Not implemented yet')
-        
-        
+        exit(('Error 037!!  -  Atom style {} '
+              +'not implemented yet').format(atomstyle))
+    
     write_file( data_name, _content_)
     
     print_dec_g ('Successful writing!!')
+    
+    return _flag_
 
-def write_lammps_data_full(_topodata_, data_name, _config_):
+def write_lammps_data_all( _topodata_, data_name, _config_):
     
     ''' Write a lammps data file'''
     ####---------------  Unpacking data  ----------------####
@@ -36,23 +44,26 @@ def write_lammps_data_full(_topodata_, data_name, _config_):
     n_atoms, n_bonds, n_angles, n_dihedrals = _numbers_['total']
     n_atomtypes, n_bondtypes, n_angletypes, n_dihedraltypes= _numbers_['type']
     _box_= _topodata_['box']
-    _mol_, _atype_, _xyz_ = _topodata_['atomsdata'] 
+    _mol_, _mtype_, _atype_, _xyz_ = _topodata_['atomsdata'] 
     
     atomstyle, _solvated_f_, _ = _config_ 
     
-    
+    _asty_d_ ={ 'atomic':1, 'charge':1, 'bond':2, 'angle':3,
+                'full':4, 'molecular':4}
     ####--------------- TITLE ----------------####
     _text_ = '#Lammps data file. Geometry for PEG\n\n'
     ####---------------     NUMBERS      ----------------####
-    _text_ +=' {} atoms\n'.format(n_atoms)
-    _text_ +=' {} bonds\n'.format( n_bonds)
-    _text_ +=' {} angles\n'.format( n_angles)
-    _text_ +=' {} dihedrals\n'.format( n_dihedrals)
+    _aux_txt =[' {} atoms\n'.format(n_atoms)]
+    _aux_txt.append(' {} bonds\n'.format( n_bonds))
+    _aux_txt.append(' {} angles\n'.format( n_angles))
+    _aux_txt.append(' {} dihedrals\n'.format( n_dihedrals))
+    _text_+= ''.join(_aux_txt[:_asty_d_[atomstyle]])+'\n'
     ####----------------    TYPES       -----------------####
-    _text_ +=' {} atom types\n'.format(n_atomtypes)
-    _text_ +=' {} bond types\n'.format(n_bondtypes)
-    _text_ +=' {} angle types\n'.format(n_angletypes)
-    _text_ +=' {} dihedral types\n\n'.format(n_dihedraltypes)
+    _aux_txt =[' {} atom types\n'.format(n_atomtypes)]
+    _aux_txt.append(' {} bond types\n'.format(n_bondtypes))
+    _aux_txt.append(' {} angle types\n'.format(n_angletypes))
+    _aux_txt.append(' {} dihedral types\n\n'.format(n_dihedraltypes))
+    _text_+= ''.join(_aux_txt[:_asty_d_[atomstyle]])+'\n'
     ####----------------    BOX     -----------------####
     _text_ +=(' {:.4f} {:.4f} xlo xhi\n {:.4f} {:.4f} ylo yhi\n'
               +' {:.4f} {:.4f} zlo zhi\n').format(*_box_)
@@ -71,7 +82,7 @@ def write_lammps_data_full(_topodata_, data_name, _config_):
         #conv_dict[known_atoms[na][4].lstrip(' ')] = known_atoms[na][1]
     #_topodata_['S_translation'] = conv_dict
         
-    aux_pot_txt, dicts = write_lammps_potentials( _topodata_)
+    aux_pot_txt, dicts = write_lammps_potentials( _topodata_, atomstyle)
     _text_ += aux_pot_txt
     #a_dict={}
     #print dicts[0]
@@ -80,16 +91,23 @@ def write_lammps_data_full(_topodata_, data_name, _config_):
     #    a_dict[key]= dicts[0][conv_dict[key]]
     #print a_dict
     
+    
     ####------ATOMS------####
     known_atoms = _topodata_['atoms']
+    if _solvated_f_ == 1:
+        charge = _topodata_['S_charge']
+        conv_dict = _topodata_['S_translation'] # key s_tag : val l_tag
     
-    charge =_topodata_['S_charge']
-    conv_dict = _topodata_['S_translation'] # key s_tag : val l_tag
     
-    # totally dislike this, but still better ---------  <WFS>
     _text_ +='\n Atoms\n\n'
     
-    atom_shape = ' {}'*3+' {:7.4f}'*4+'\n'# index mol atype charge x y z
+    if atomstyle in ['charge','full']:
+        atom_shape = ' {}'*3+' {:7.4f}'*4+' # {}\n'# idx mol atype charge x y z
+    elif atomstyle in ['bond','angle','molecular']:
+        atom_shape = ' {0} {1} {2} {4:7.4f} {5:7.4f} {6:7.4f} # {7}\n'
+    elif atomstyle =='atomic':
+        atom_shape = ' {0} {2} {4:7.4f} {5:7.4f} {6:7.4f} # {7}\n'
+        
     base_atoms_n = len( known_atoms)
     for i in range( base_atoms_n):
         aty = known_atoms[i][1]
@@ -98,7 +116,8 @@ def write_lammps_data_full(_topodata_, data_name, _config_):
                                     float(known_atoms[i][6]),
                                     float(_xyz_[i][0])*10,
                                     float(_xyz_[i][1])*10,
-                                    float(_xyz_[i][2])*10
+                                    float(_xyz_[i][2])*10,
+                                    aty
                                    )
     solv_bonds = []
     solv_angles = []
@@ -110,87 +129,156 @@ def write_lammps_data_full(_topodata_, data_name, _config_):
                                         charge[aty],
                                         float(_xyz_[i][0])*10,
                                         float(_xyz_[i][1])*10,
-                                        float(_xyz_[i][2])*10
+                                        float(_xyz_[i][2])*10,
+                                        aty
                                        )
             if charge[aty] <0:
-                # better way to do this is trough corrds ---------  <WFS>
+                # better way to do this is trough coords ---------  <WFS>
+                # but anyway works perfectly
                 aty2 = conv_dict[_atype_[i+1]]
                 aty3 = conv_dict[_atype_[i+2]]
                 solv_bonds.append([aty+'-'+aty2, i+1, i+2])
                 solv_bonds.append([aty+'-'+aty3, i+1, i+3])
-                solv_angles.append([aty2+'-'+aty+'-'+aty2, i+2, i+1, i+3])
+                solv_angles.append([aty2+'-'+aty+'-'+aty3, i+2, i+1, i+3])
+    
     
     ####------BONDS------####
-    known_bonds = _topodata_['bonds']
-    base_bonds_n = len (known_bonds)
-    _text_ +='\n Bonds\n\n'
-    bond_shape = ' {}'*4+'\n'
-    for i in range(base_bonds_n):
-        
-        at1 = int(known_bonds[i][0])
-        at2 = int(known_bonds[i][1])
-        
-        _bond_ty_ = dicts[1][known_atoms[at1-1][1]+'-'+known_atoms[at2-1][1]]
-        _text_ += bond_shape.format( i+1, _bond_ty_, at1, at2)
-                    
-    if _solvated_f_ == 1:
-        # better way to do this is trough corrds ---------  <WFS>
-        for i in range(n_bonds-base_bonds_n):
-            _bond_ty_ = dicts[1][solv_bonds[i][0]]
-            _text_ += bond_shape.format(i+1+base_bonds_n,_bond_ty_,
-                                        solv_bonds[i][1],solv_bonds[i][2])
+    if _asty_d_[atomstyle]>=2:
+        known_bonds = _topodata_['bonds']
+        base_bonds_n = len (known_bonds)
+        _text_ +='\n Bonds\n\n'
+        bond_shape = ' {}'*4+'\n'
+        for i in range(base_bonds_n):
             
-
+            at1 = int(known_bonds[i][0])
+            at2 = int(known_bonds[i][1])
+            
+            _bond_ty_ = dicts[1][known_atoms[at1-1][1]+'-'
+                                 +known_atoms[at2-1][1]]
+            _text_ += bond_shape.format( i+1, _bond_ty_, at1, at2)
+                        
+        if _solvated_f_ == 1:
+            # better way to do this is trough corrds ---------  <WFS>
+            for i in range(n_bonds-base_bonds_n):
+                _bond_ty_ = dicts[1][solv_bonds[i][0]]
+                _text_ += bond_shape.format(i+1+base_bonds_n,_bond_ty_,
+                                            solv_bonds[i][1],solv_bonds[i][2])
+    
+    
     ####------ANGLES------#########
-    known_angles = _topodata_['angles']
-    base_angles_n = len(known_angles)
-    _text_ +='\n Angles\n\n'
-    angle_shape = ' {}'*5+'\n'
-    for i in range(base_angles_n):
-        
-        at1 = int(known_angles[i][0])
-        at2 = int(known_angles[i][1])
-        at3 = int(known_angles[i][2])
-        
-        _angle_ty_ = dicts[2][known_atoms[at1-1][1]+'-'+
-                              known_atoms[at2-1][1]+'-'+known_atoms[at3-1][1]]
-        _text_ += angle_shape.format( i+1, _angle_ty_, at1, at2, at3)
-        
-    if _solvated_f_ == 1:
-        
-        for i in range(n_angles-base_angles_n):
-            _angle_ty_ = dicts[2][solv_angles[i][0]]
+    if _asty_d_[atomstyle]>=3:
+        known_angles = _topodata_['angles']
+        base_angles_n = len(known_angles)
+        _text_ +='\n Angles\n\n'
+        angle_shape = ' {}'*5+'\n'
+        for i in range(base_angles_n):
             
-            _text_ += angle_shape.format(i+1+base_angles_n, _angle_ty_,
-                                         solv_angles[i][1],
-                                         solv_angles[i][2],
-                                         solv_angles[i][2]
-                                        )
+            at1 = int(known_angles[i][0])
+            at2 = int(known_angles[i][1])
+            at3 = int(known_angles[i][2])
+            
+            angle_t = (known_atoms[at1-1][1]+'-'+ known_atoms[at2-1][1]
+                       +'-'+known_atoms[at3-1][1])
+            _angle_ty_ = dicts[2][angle_t]
+            
+            #print angle_t, _angle_ty_
+            _text_ += angle_shape.format( i+1, _angle_ty_, at1, at2, at3)
+            
+        if _solvated_f_ == 1:
+            
+            for i in range(n_angles-base_angles_n):
+                _angle_ty_ = dicts[2][solv_angles[i][0]]
+                
+                _text_ += angle_shape.format(i+1+base_angles_n, _angle_ty_,
+                                             solv_angles[i][1],
+                                             solv_angles[i][2],
+                                             solv_angles[i][3]
+                                            )
+    
     
     ####------DIHEDRAL------####
-    known_dihedrals = _topodata_['dihedrals']
-    base_dihedrals_n = len(known_dihedrals)
-    _text_ +='\n Dihedrals\n\n'
-    dihedral_shape = ' {}'*6+'\n'
-    for i in range(base_dihedrals_n):
-        
-        at1 = int(known_dihedrals[i][0])
-        at2 = int(known_dihedrals[i][1])
-        at3 = int(known_dihedrals[i][2])
-        at4 = int(known_dihedrals[i][3])
-        
-        _dihe_ty_ = dicts[3][known_atoms[at1-1][1]+'-'
-                             +known_atoms[at2-1][1]+'-'
-                             +known_atoms[at3-1][1]+'-'
-                             +known_atoms[at4-1][1]
-                            ]
-        _text_ += dihedral_shape.format( i+1, _dihe_ty_, at1, at2, at3, at4)
-
+    if _asty_d_[atomstyle]==4:
+        known_dihedrals = _topodata_['dihedrals']
+        base_dihedrals_n = len(known_dihedrals)
+        _text_ +='\n Dihedrals\n\n'
+        dihedral_shape = ' {}'*6+'\n'
+        for i in range(base_dihedrals_n):
+            
+            at1 = int(known_dihedrals[i][0])
+            at2 = int(known_dihedrals[i][1])
+            at3 = int(known_dihedrals[i][2])
+            at4 = int(known_dihedrals[i][3])
+            
+            _dihe_ty_ = dicts[3][known_atoms[at1-1][1]+'-'
+                                 +known_atoms[at2-1][1]+'-'
+                                 +known_atoms[at3-1][1]+'-'
+                                 +known_atoms[at4-1][1]
+                                ]
+            _text_+= dihedral_shape.format( i+1, _dihe_ty_, at1, at2, at3, at4)
+    
+    
     return _text_
 
-def write_lammps_potentials(_topodata_):
+
+def write_lammps_data_atomic(_topodata_, data_name, _config_):
+    ''' Write a lammps data file
     
-    txt_p_=''
+        Deprecated
+    '''
+    ####---------------  Unpacking data  ----------------####
+    _numbers_ = _topodata_['numbers']
+    n_atoms, _, _, _ = _numbers_['total']
+    n_atomtypes, _, _, _= _numbers_['type']
+    _box_= _topodata_['box']
+    _, _, _atype_, _xyz_ = _topodata_['atomsdata']
+    known_atoms = _topodata_['atoms']
+    atom_info = _topodata_['atomtypes']
+    atomstyle, _solvated_f_, _ = _config_ 
+    ####--------------- TITLE ----------------####
+    _text_ = '#Lammps data file. Geometry for PEG\n\n'
+    ####---------------     NUMBERS      ----------------####
+    _text_ +=' {} atoms\n'.format(n_atoms)
+    ####----------------    TYPES       -----------------####
+    _text_ +=' {} atom types\n'.format(n_atomtypes)
+    ####----------------    BOX     -----------------####
+    _text_ +=(' {:.4f} {:.4f} xlo xhi\n {:.4f} {:.4f} ylo yhi\n'
+              +' {:.4f} {:.4f} zlo zhi\n').format(*_box_)
+    #####------             MASSES              ------####
+    _text_ +='\n Masses\n\n'
+    for i in range( n_atomtypes):
+        _text_ +=' {} {}\n'.format( i+1, atom_info[i][1])
+    #####------             Force field potentials               ------####
+    aux_pot_txt, adict = write_lammps_potentials( _topodata_, atomstyle)
+    _text_ += aux_pot_txt
+    ####------ATOMS------####
+    if _solvated_f_ == 1:
+        conv_dict = _topodata_['S_translation'] # key s_tag : val l_tag
+        
+    _text_ +='\n Atoms\n\n'
+    
+    atom_shape = ' {}'*2+' {:7.4f}'*3+'\n'# index mol atype charge x y z
+    base_atoms_n = len( known_atoms)
+    for i in range( base_atoms_n):
+        aty = known_atoms[i][1]
+        _text_ += atom_shape.format( i+1,
+                                    adict[aty],
+                                    float(_xyz_[i][0])*10,
+                                    float(_xyz_[i][1])*10,
+                                    float(_xyz_[i][2])*10
+                                   )
+    if _solvated_f_ == 1:
+        solv_at_v = range(n_atoms )[ base_atoms_n:]
+        for i in solv_at_v:
+            aty = conv_dict[_atype_[i]]
+            _text_ += atom_shape.format(i+1, adict[aty],
+                                        float(_xyz_[i][0])*10,
+                                        float(_xyz_[i][1])*10,
+                                        float(_xyz_[i][2])*10
+                                       )
+    return _text_
+
+def write_lammps_potentials( _topodata_, atomstyle = 'full'):
+    
     atom_info = _topodata_['atomtypes'] # index 1: mass ; index 4 -5 : eps-sig
     _numbers_ = _topodata_['numbers']
     n_atomtypes, n_bondtypes, n_angletypes, n_dihedraltypes= _numbers_['type']
@@ -207,80 +295,109 @@ def write_lammps_potentials(_topodata_):
     for x in range( n_atomtypes):
         atom_type_d[atom_info[x][0]] = x+1
         
-        _B_ = float(atom_info[x][4])
         _A_ = float(atom_info[x][5])
+        _B_ = float(atom_info[x][4])
+        
         
         if comb_rule==1:
-            _sig_ = (_A_/_B_)**(1/6.0)
             _eps_ = (_B_**2)/(4*_A_)
-        else:
-            _sig_ = _B_
-            _eps_ = _A_
+            _sig_ = (_A_/_B_)**(1/6.0)
             
-        sigma.append(_sig_* 10)
+        else:
+            _eps_ = _A_
+            _sig_ = _B_
+            
+            
         epsilon.append(_eps_ / 4.186)
         
         if buckorlj == 2:#------------------------------------------  <WFS>
-            buck3.append(float(atom_info[x][6]) / 4.186 / (10 ** 6))
-    
-    
+            _C_ = loat(atom_info[x][6])
+            buck3.append(' '+ str(f_C_/ 4.186 / (10** 6)))
+            sigma.append( 10 / _sig_)
+            
+        else:
+            buck3.append('')
+            sigma.append(_sig_* 10)
+            
     ####----------- DEFINING LJ INTERACTIONS     ----------####
-    #-------------------------------------------------------  <WFS> make function- buck
+    #-------------------------------------------------------  <WFS> 
+    #                        make function- buck
     '''potential'''
-    txt_p_ +='\n Pair Coeffs\n\n'
+    txt_p_p ='\n Pair Coeffs\n\n'
     for i in range( n_atomtypes):
-        txt_p_ +=' {} {} {}\n'.format( i+1, epsilon[i], sigma[i])
+        txt_p_p +=' {} {} {}{}\n'.format( i+1, epsilon[i], sigma[i], buck3[i])
+    
+    
     ####----------- DEFINING BONDED INTERACTIONS     ----------####
-    txt_p_ +='\n Bond Coeffs\n\n' # bond_style hybrid
+    txt_p_b ='\n Bond Coeffs\n\n' # bond_style hybrid
     bty = _topodata_['bondtypes']
     bondtypes_d = {}
     for i in range(n_bondtypes):
         bondtypes_d[bty[i][0]+'-'+bty[i][1]]= i+1
         bondtypes_d[bty[i][1]+'-'+bty[i][0]]= i+1
-        txt_p_+= ' {} {:.4f} {:.4f}\n'.format( i+1,
+        txt_p_b += ' {} {:.4f} {:.4f}\n'.format( i+1,
                                               float(bty[i][-1])/ 100/ 4.186/2,
                                               float(bty[i][-2])*10)
     
-    
-    txt_p_ +='\n Angle Coeffs\n\n'
+    txt_p_a ='\n Angle Coeffs\n\n'
     aty = _topodata_['angletypes']
     angletypes_d = {}
+    i=0
     for i in range(n_angletypes):
         angletypes_d[aty[i][0]+'-'+aty[i][1]+'-'+aty[i][2]]= i+1
         angletypes_d[aty[i][2]+'-'+aty[i][1]+'-'+aty[i][0]]= i+1
-        txt_p_+= ' {} {:.4f} {:.4f}\n'.format( i+1,
+        txt_p_a += ' {} {:.4f} {:.4f}\n'.format( i+1,
                                               float(aty[i][-1])/ 4.186/2,
                                               float(aty[i][-2]))
     
-    txt_p_ +='\n Dihedral Coeffs\n\n'
+    txt_p_d ='\n Dihedral Coeffs\n\n'
     dty = _topodata_['dihedraltypes']
     dihedraltypes_d = {}
+    i=0
     for i in range(n_dihedraltypes):
-        dihedraltypes_d[dty[i][0]+'-'+dty[i][1]+'-'+dty[i][2]+'-'+dty[i][3]]= i+1
-        dihedraltypes_d[dty[i][3]+'-'+dty[i][2]+'-'+dty[i][1]+'-'+dty[i][0]]= i+1
-        txt_p_+= ' {} {:.4f} {} {} {}\n'.format( i+1,
-                                                     float(dty[i][-2])/4.186/2,
-                                                     int(float(dty[i][-1])),
-                                                     int(float(dty[i][-3])),
-                                                     '0.0'
-                                                    )
-        
-    dicts = [ atom_type_d, bondtypes_d, angletypes_d, dihedraltypes_d]
-                                    
+        _type_forward_ = dty[i][0]+'-'+dty[i][1]+'-'+dty[i][2]+'-'+dty[i][3]
+        _type_backward_ = dty[i][3]+'-'+dty[i][2]+'-'+dty[i][1]+'-'+dty[i][0]
+        dihedraltypes_d[ _type_forward_ ] = i+1
+        dihedraltypes_d[ _type_backward_] = i+1
+        txt_p_d += ' {} {:.4f} {} {} {}\n'.format( i+1,
+                                                  float(dty[i][-2])/4.186/2,
+                                                  int(float(dty[i][-1])),
+                                                  int(float(dty[i][-3])),
+                                                  '0.0'
+                                                 )
+    
+    if atomstyle in ['full', 'molecular']:
+        dicts = [ atom_type_d, bondtypes_d, angletypes_d, dihedraltypes_d]
+        txt_p_ = txt_p_p+txt_p_b+txt_p_a+txt_p_d
+    elif atomstyle == 'angle':
+        dicts = [ atom_type_d, bondtypes_d, angletypes_d]
+        txt_p_ = txt_p_p+txt_p_b+txt_p_a
+    elif atomstyle == 'bond':
+        dicts = [ atom_type_d, bondtypes_d]
+        txt_p_ = txt_p_p+txt_p_b
+    elif atomstyle == 'atomic' or atomstyle == 'charge':
+        dicts = [atom_type_d]
+        txt_p_ = txt_p_p
+    else:
+        print ('\nWeird thing, it is supposed impossible to reach this place\n')
+    
     return txt_p_, dicts
-        
+
+
+
 def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
+    ''' _simconfig_ contains the data gathered from the gui
+        _topodata_ comes from the converted gromacs file
+        in_name is intended as name for the input'''
     
-    _dtxt_=('#dimension,rcutoff,F,bondtypenumber,angletypenumber,'
-            + '#dihedraltypenumber,neighbordistance,neighbordelay,'
-            + '#neighborupdate,timestep, atom_inbondtype,n_typeatoms,'
-            + '#param_bond1,param_bond2,param_bond3, param_angle1,'
-            + '#param_angle2, param_angle3,param_angle4,param_dihedral1,'
-            + '#param_dihedral2,param_dihedral3,param_dihedral4,n_typebonds,'
-            + '#n_typeangles,n_typedihedrals,pot1,pot2,pot3,buckorlj,choice,'
-            + '#bonddatabase,angledatabase,dihedraldatabase')
-    _dtxt_ =''
+    #===================================================
+    '''====   Gathering and ordering the data   ====='''
+    #===================================================
     
+    #===================================================
+    ####-----------    SIM RAW CONFIG       --------####
+    
+    _simconfig_ = _simconfig_[:]
     ( data_file, timestep, nve_steps, nvt_steps, nvt_tss,
     nvt_tdamp, npt_steps, npt_pss, npt_pdamp, npt_tss,
      npt_tdamp) = _simconfig_[0]
@@ -295,269 +412,214 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     
     i = 5
     thermo, atommap, pairwiseint, lj_rcutoff, c_rcutoff = _simconfig_[1][:i]
-    neighbordistance, lrsover, lrerror = _simconfig_[1][i:i+3]
-    in12_13_14, neighbordelay, neighborupdate, npt_kind = _simconfig_[1][i+3:]
+    neighbordistance, lrsolver, lrerror, in12_13_14 = _simconfig_[1][i:i+4]
+    neighbordelay, neighborupdate, npt_kind = _simconfig_[1][i+4:i+7]
+    f_comb_rule, _order_, T_init_vel = _simconfig_[1][i+7:]
     
-    #==================          _topodata_            ============
+    #===================================================
+    ####------------    RESTRAIN DATA       --------####
+    
+    rest_line = ''
+    group_lines = ''
+    torestrain = []
+    ens_af = []
+    if _simconfig_[2] <> []:
+        g_names, g_aids, k_xyz_c, runs_c, ch_init = _simconfig_[2][0][:]
+        if _simconfig_[2][1] <> None:
+            ####### ------------------------------------ Super interesante!!
+            ##              este es uno de esos casos donde no es posible 
+            ##              utilizar += a pesar de desligar con [:] ... 
+            
+            aux1,aux2,aux3,aux4,aux5 = _simconfig_[2][1][:] 
+            g_names = g_names + aux1
+            g_aids =  g_aids  + aux2
+            k_xyz_c = k_xyz_c + aux3
+            runs_c =  runs_c  + aux4
+            ch_init = ch_init + aux5
+        print'\n'
+        for re in range(len(g_names)):
+            if ch_init[re]==1:
+                print 'Restraining group '+g_names[re]+' in '+runs_c[re]
+                groupinfo = [g_names[re], g_aids[re]]
+                group_lines += 'group {} id {}\n'.format( *groupinfo)
+                
+                if runs_c[re] not in ['', 'No', 'no', '0']:
+                    ens = [int(x)-1 for x in runs_c[re].split('-')]
+                    torestrain.append( [g_names[re], k_xyz_c[re], ens ])
+                
+                    for e in ens:
+                        if e not in ens_af:
+                            ens_af.append(e)
+        if group_lines <> '':
+            group_lines +='\n'
+    
+    mix_value = {'1':'geometric', '2':'arithmetic',
+                 '3':'geometric', '4':'sixthpower'}
+    
+    
+    #for mt in range(len( _mtype_)):
+        #group_lines += 'group {} id {}:{}\n'.format(*_mtype_[mt])
+    _asty_d_ ={ 'atomic':1, 'charge':2, 'bond':3, 'angle':4,
+                'full':5, 'molecular':5}
+    
+    #===================================================
+    ####------------      TOPO DATA         --------####
+    
+    print '\n'+data_file + '\n'
     if _topodata_<>None:
         atomstyle, _solvated_, _parametric_ = _topodata_['config'] 
         
+        buckorlj, comb_rule, _, f_LJ, _ = _topodata_['defaults']
+        
     else:
-        atomstyle = 'Full'
+        print 'non _topodata_'
+        atomstyle = 'full'
+        comb_rule = ''
         buckorlj = 0
         
-    #========================================================
-    _dtxt_+= '\n'+'#INIT\n'+'units real\n'+'boundary p p p\n'+'atom_style '
+        
+    if f_comb_rule in mix_value.values():
+        mix_value_s=' mix '+f_comb_rule
+    elif f_comb_rule=='from_gromacs' and _topodata_<>None:
+        mix_value_s=' mix '+mix_value[comb_rule]
+    else:
+        print 'Using default mixing rule'
+        mix_value_s = ''
+        
+
+    #===================================================
+    '''=======    Writing Lammps data file    ======='''
+    #===================================================
+    _dtxt_= '\n'+'#INIT\n'+'units real\n'+'boundary p p p\n'+'atom_style '
     # as I understand lammps default is 3
-    #_dtxt_+= '%s %d\n'.format('dimension',dimension) 
-    if atomstyle == 'Atomic':
-        _dtxt_+= 'atomic\n'
-    elif atomstyle == 'Angle':
-        _dtxt_+= 'angle\n'
-    elif atomstyle == 'Full':
-        _dtxt_+= 'full\n'
+    #_dtxt_+= '%s %d\n'.format('dimension',dimension)
+    _dtxt_+= atomstyle+'\n'
+    if atomstyle not in ['full', 'charge]']: # no charges
+        if 'coul' in pairwiseint:
+            pairwiseint = pairwiseint.split('/coul')[0]
+        if 'none'in pairwiseint:
+            lj_rcutoff = ''
+        c_rcutoff = ''
+    elif 'coul' not in pairwiseint:
+        c_rcutoff = ''
+        
+    _dtxt_+= '\natom_modify map {}\n'.format(atommap)
+    #===================================================
+    ####------------  SYSTEM CONFIGURATION  --------####
     
-    _dtxt_+= 'atom_modify map {}\n'.format(atommap)
-    ####---------------SYSTEM CONFIGURATION----------####
-    
-    _dtxt_+= 'bond_style harmonic\n'
-    _dtxt_+= 'angle_style harmonic\n'
-    _dtxt_+= 'dihedral_style charmm\n'
-    _dtxt_+= 'pair_style {} {} {}\n'.format( pairwiseint, lj_rcutoff, c_rcutoff)
+    _dsc_txt=['pair_style {} {}'.format( pairwiseint, lj_rcutoff)]
+    _dsc_txt.append(' {}\n'.format( c_rcutoff))
+    _dsc_txt.append( 'bond_style harmonic\n')
+    _dsc_txt.append( 'angle_style harmonic\n')
+    _dsc_txt.append( 'dihedral_style charmm\n')
+    _dtxt_+= ''.join(_dsc_txt[:_asty_d_[atomstyle]])+'\n'
     
     
     if 'data' in data_file:
-        print data_file
         _dtxt_+= 'read_data {}\n'.format(data_file)
     else:
         _dtxt_+= 'read_restart {}\n'.format(data_file)
-        
-    ####----------------NEIGHBOR LIST-----------####
-    _dtxt_+= 'neighbor {} bin\n'.format( neighbordistance)
-    if lrsover <> '':
-        _dtxt_+= 'kspace_style {} {}\n'.format( lrsover, lrerror)
-    _dtxt_+= 'pair_modify shift no tail yes\n'
-    _dtxt_+= 'special_bonds lj/coul {} {} {}\n'.format(*in12_13_14.split(':'))
-    _dtxt_+= 'neigh_modify every {} delay {} check yes\n\n'.format(
-                                                  neighborupdate, neighbordelay)
     
-    ####----------------TIMESTEP----------------####
+    #===================================================
+    ####--------------   NEIGHBOR LIST   -----------####
+    _dtxt_+= '\nneighbor {} bin\n'.format( neighbordistance)
+    
+    if lrsolver <> '' and atomstyle in ['full','charge']:
+        if '/coul/long' in pairwiseint:
+            _dtxt_+= 'kspace_style {} {}\n'.format( lrsolver, lrerror)
+    _dtxt_+= 'pair_modify shift no tail yes'+mix_value_s+'\n'
+    
+    _dtxt_+= 'special_bonds lj/coul {} {} {}\n'.format( *in12_13_14.split(':'))
+    
+    _aux_s_ = 'neigh_modify every {} delay {} check yes\n\n'
+    _dtxt_+= _aux_s_.format( neighborupdate, neighbordelay)
+    
+    #===================================================
+    ####---------------  TIMESTEP   ----------------####
     _dtxt_+= 'timestep {}\n\n\n'.format(timestep)
-    ####---------------EQUILIBRATION------------####
+    _dtxt_+= 'thermo {}\n'.format(thermo)
+    _dtxt_+= ('thermo_style custom step temp press vol '
+              +'epair emol etotal enthalpy'
+              +'\n\n')
     
+    #===================================================
+    ####--------------  Init VELOCITIES   ----------####
+    aux_vel_str = 'velocity all create {} 1234567 rot yes dist gaussian\n\n'
+    _dtxt_+= aux_vel_str.format(T_init_vel)
     
+    #===================================================
+    ####----------------   GROUPS   ----------------####
+    _dtxt_+= group_lines
     
-    if nve_steps <> '' and nve_steps.isdigit():
-        _dtxt_+= 'fix nve_name1 all nve\nrun {}\nunfix nve_name1\n\n'.format(nve_steps)
+    #===================================================
+    ####---------------   SIMULATION    ------------####
+    ensembles = _order_.split('-')
+    curr_time = 0
+    timestep = float(timestep)
+    
+    tounfix = [[],[]]
+    _dtxt_ += '\n'
+    for en in range(len(ensembles)):
         
-    if npt_steps <> '' and npt_steps.isdigit():
-        npt_frm = 'fix npt_name1 all npt temp {} {} {} {} {} {} {}\n'
-        _dtxt_ += npt_frm.format( npt_tstart, npt_tend, npt_tdamp,
-                                  npt_kind, npt_pstart, npt_pend, npt_pdamp )
-        _dtxt_+= 'run {}\nunfix npt_name1\n\n'.format( npt_steps)
-
-    if npt_steps <> '' and npt_steps.isdigit():
-        nvt_frm = 'fix nvt_name1 all nvt {} {} {}\n'
-        _dtxt_ += nvt_frm.format( nvt_tstart, nvt_tend, nvt_tdamp )
-        _dtxt_+= 'run {}\nunfix nvt_name1\n\n'.format( nvt_steps)
+        
+        if ens_af<>[] and en in ens_af: #       RESTRAIN 
             
-    print_dec_g ('Writing Lammps input script...')
+            for re in range(len(torestrain)):
+                if en in torestrain[re][2]:
+                    
+                    if en-1 not in torestrain[re][2]:
+                        spring_f = 'fix rest_{0}_{1} {0} spring/self {2} {3}\n'
+                        k, xyz = torestrain[re][1].split(':')
+                        _dtxt_ += spring_f.format( torestrain[re][0], en+1 ,
+                                                  k, xyz)
+                        unr= 0+en
+                        while unr+1 in torestrain[re][2]:
+                            unr+=1
+                        
+                        name_2uf = 'rest_{0}_{1}'.format( torestrain[re][0],
+                                                         en+1)
+                        tounfix= [ tounfix[0]+ [unr], tounfix[1]+ [name_2uf]]
+            _dtxt_ += '\n'
+            
+        if ensembles[en]=='NVE' and nve_steps <> '' and nve_steps.isdigit():
+            steps = int(nve_steps)
+            nve_frm = 'fix nve_name1 all nve\nrun {}\nunfix nve_name1\n\n'
+            _dtxt_ += nve_frm.format(steps)
+            curr_time += steps*timestep
+        
+        elif ensembles[en]=='NPT' and npt_steps <> '' and npt_steps.isdigit():
+            steps = int(npt_steps)
+            npt_frm = 'fix npt_name1 all npt temp {} {} {} {} {} {} {}\n'
+            _dtxt_ += npt_frm.format( npt_tstart, npt_tend, npt_tdamp,
+                                     npt_kind, npt_pstart, npt_pend, npt_pdamp)
+            _dtxt_+= 'run {}\nunfix npt_name1\n\n'.format( steps)
+            curr_time += steps*timestep
+        
+        elif ensembles[en]=='NVT' and nvt_steps <> '' and nvt_steps.isdigit():
+            steps = int(nvt_steps)
+            nvt_frm = 'fix nvt_name1 all nvt temp {} {} {}\n'
+            _dtxt_ += nvt_frm.format( nvt_tstart, nvt_tend, nvt_tdamp )
+            _dtxt_+= 'run {}\nunfix nvt_name1\n\n'.format( steps)
+            curr_time += steps*timestep
+        
+        elif ensembles[en]=='R':
+            restart_txt = '\nwrite_restart restart.g2l_{}fs\n'
+            _dtxt_ += restart_txt.format(int(curr_time))
+            
+        if tounfix <> [ [], []] and en in tounfix[0]: #       UNFIX RESTRAIN
+            for unf in range( len( tounfix[0])):
+                if tounfix[0][unf] == en:
+                    _dtxt_ += 'unfix ' + tounfix[1][unf] + '\n'
+    
+    print ('Writing Lammps input script...')
     
     write_file( in_name , _dtxt_)
     print_dec_g ('Successful writing!!')
+    
+    
+     #-------------------- here would be optimum some further check
+    return True
 
-def write_lammps_data_lib(_topodata_, data_name, _config_):
-    
-    ''' Write a lammps data file'''
-    ####---------------  Unpacking data  ----------------####
-    _numbers_ = _topodata_['numbers']
-    n_atoms, n_bonds, n_angles, n_dihedrals = _numbers_['total']
-    n_atomtypes, n_bondtypes, n_angletypes, n_dihedraltypes= _numbers_['type']
-    _box_= _topodata_['box']
-    
-    atom_info = _topodata_['atomtypes']
-    mass_type = []
-    for x in range( len( atom_info)):
-        mass_type.append(atom_info[x][1])
-    
-    atomstyle, ckbuttons = _config_ 
-    
-    ####--------------- TITLE ----------------####
-    _text_ += '#Lammps data file. Geometry for PEG\n\n'
-    ####---------------NUMBERS----------------####
-    _text_ +=' {} atoms\n'.format(n_atoms)
-    
-    if atomstyle in ['Angle','Full']:
-        _text_ +=' {} bonds\n {} angles\n'.format( n_bonds, n_angles)
-        if atomstyle == 'Full':
-            _text_ +=' {} dihedrals\n'.format( n_dihedrals)
-    else:
-        _text_ +='\n'
-    ####----------------TYPES-----------------####
-    _text_ +=' {} atom types\n',n_atomtypes,'atom types'
-    
-    if atomstyle == 'Angle' or atomstyle == 'Full':
-        _text_ +=' {} bond types\n'.format(n_bondtypes)
-        _text_ +=' {} angle types\n'.format(n_angletypes)
-        if atomstyle == 'Full':
-            _text_ +=' {} dihedral types\n\n'.format(n_dihedraltypes)
-    else:
-        _text_ +='\n'
-    
-    ####----------------BOX-----------------####
-    _text_ +=(' {:.4f} {:.4f} xlo xhi\n {:.4f} {:.4f} ylo yhi\n'
-              +'{:.4f} {:.4f} zlo zhi\n').format(*_box_)
-    
-    # ####------MASSES------####
-    _text_ +='\nMasses\n'
-    for i in range( n_atomtypes):
-        _text_ +=' {} {}\n'.format( i+1, mass_type[i])
-    
-    print_dec_g('WRITING ATOMS....')
-    ####------ATOMS------####
-    charge_water = matlabarray( cat( -0.8476,+ 0.4238))
-    
-    _text_ +='\n%1s\n\n','Atoms'
-    ####-------ATOMIC STYLE(FULL)--------####
-    ####---------------------------------####
-    if atomstyle == 'Full':
-        for i in arange( 1, n_atoms).reshape(-1):
-            for j in arange( 1, n_atomtypes).reshape(-1):
-                if strcmp( atom_inbond[i], atom_inbondtype[j]) == 1:
-                    _text_ +='\t\t%d\t %d\t %d\t %7.4f\t %7.4f\t %7.4f\t %7.4f\n',i,n_mol[i],j,charge[i],dot(coor_x[i],10),dot(coor_y[i],10),dot(coor_z[i],10)
-        if choice_solv == 1:
-            for i in arange(n_atoms + 1,(dot((n_mol[end()] - 1),3) + n_atoms),1).reshape(-1):
-                if strcmp(type_[i],'opls_116') == 1:
-                    _text_ +='\t\t%d\t %d\t %d\t %7.4f\t %7.4f\t %7.4f\t %7.4f\n',i,n_mol[i],indexoxy,charge_water[1],dot(coor_x[i],10),dot(coor_y[i],10),dot(coor_z[i],10)
-                elif strcmp(type_[i],'opls_117') == 1:
-                    _text_ +='\t\t%d\t %d\t %d\t %7.4f\t %7.4f\t %7.4f\t %7.4f\n',i,n_mol[i],indexhyd,charge_water[2],dot(coor_x[i],10),dot(coor_y[i],10),dot(coor_z[i],10)
-                else:
-                    print_dec_g('error')
-    
-    ####------ATOMIC STYLE(ATOMIC)------####
-    ####---------------------------------####
-    if atomstyle == 'Atoms':
-        for i in arange(1,n_atoms).reshape(-1):
-            for j in arange(1,n_atomtypes).reshape(-1):
-                if strcmp(atom_inbond[i],atom_inbondtype[j]) == 1:
-                    _text_ +='\t\t%d\t %d\t %7.4f\t %7.4f\t %7.4f\n',i,j,dot(coor_x[i],10),dot(coor_y[i],10),dot(coor_z[i],10)
-        if choice_solv == 1:
-            for i in arange(n_atoms + 1,(dot((n_mol[end()] - 1),3) + n_atoms),1).reshape(-1):
-                if strcmp(type_[i],'opls_116') == 1:
-                    _text_ +='\t\t%d\t %d\t %7.4f\t %7.4f\t %7.4f\n',i,indexoxy,dot(coor_x[i],10),dot(coor_y[i],10),dot(coor_z[i],10)
-                else:
-                    if strcmp(type_[i],'opls_117') == 1:
-                        _text_ +='\t\t%d\t %d\t %7.4f\t %7.4f\t %7.4f\n',i,indexhyd,dot(coor_x[i],10),dot(coor_y[i],10),dot(coor_z[i],10)
-                    else:
-                        if strcmp(type_[i],'NA') == 1:
-                            _text_ +='\t\t%d\t %d\t %7.4f\t %7.4f\t %7.4f\n',i,indexhyd,dot(coor_x[i],10),dot(coor_y[i],10),dot(coor_z[i],10)
-                        else:
-                            print_dec_g('error')
-    
-    ####------ATOMIC STYLE(ANGLE)------####
-    ####-------------------------------####
-    if atomstyle == 'Angle':
-        for i in arange(1,n_atoms).reshape(-1):
-            for j in arange(1,n_atomtypes).reshape(-1):
-                if strcmp(atom_inbond[i],atom_inbondtype[j]) == 1:
-                    _text_ +='\t\t%d\t %d\t %d\t %7.4f\t %7.4f\t %7.4f\n',i,n_mol[i],j,dot(coor_x[i],10),dot(coor_y[i],10),dot(coor_z[i],10)
-        if choice_solv == 1:
-            for i in arange(n_atoms + 1,(dot((n_mol[end()] - 1),3) + n_atoms),1).reshape(-1):
-                if strcmp(type_[i],'opls_116') == 1:
-                    _text_ +='\t\t%d\t %d\t %d\t %7.4f\t %7.4f\t %7.4f\n',i,n_mol[i],indexoxy,dot(coor_x[i],10),dot(coor_y[i],10),dot(coor_z[i],10)
-                else:
-                    if strcmp(type_[i],'opls_117') == 1:
-                        _text_ +='\t\t%d\t %d\t %d\t %7.4f\t %7.4f\t %7.4f\n',i,n_mol[i],indexhyd,dot(coor_x[i],10),dot(coor_y[i],10),dot(coor_z[i],10)
-                    else:
-                        print_dec_g('error')
-    
-    print_dec_g('ATOMS COMPLETED !!!')
-    ####-----------------------####
-    ####-----------------------####
-    
-    if atomstyle == 'Full' or atomstyle == 'Angle':
-        print_dec_g('WRITING BONDS...')
-        ####------BONDS------####
-        _text_ +='\n%1s\n\n','Bonds'
-        count2=zeros(n_bonds,1)
-
-        for i in arange(1,n_bonds).reshape(-1):
-            for j in arange(1,n_typebonds).reshape(-1):
-                if ((strcmp(atom_inbond[atom1_bond[i]],atom_bondcoeffi[j]) == 1 and strcmp(atom_inbond[atom2_bond[i]],atom_bondcoeffj[j]) == 1) or (strcmp(atom_inbond[atom1_bond[i]],atom_bondcoeffj[j]) == 1 and strcmp(atom_inbond[atom2_bond[i]],atom_bondcoeffi[j]) == 1)):
-                    _text_ +='\t\t%d\t %d\t %d\t %d\n',i,j,atom1_bond[i],atom2_bond[i]
-                    count2[i]=i
-
-                    if choice_param == 1:
-                        param_bond1[j]=parametrization_bond1[i]
-
-                        param_bond2[j]=parametrization_bond2[i]
-
-                        param_bond3[j]=parametrization_bond3[i]
-
-        if choice_solv == 1:
-            countb=1
-
-            for i in arange(n_atoms + 1,(dot((n_mol[end()] - 1),3) + n_atoms)).reshape(-1):
-                for j in arange(1,n_typebonds).reshape(-1):
-                    if ((strncmp(type_[i],atom_bondcoeffi[j],2) == 1 or (strncmp(type_[i],atom_bondcoeffj[j],2)) == 1) and n_mol[i] != n_mol[i - 1]):
-                        _text_ +='\t\t%d\t %d\t %d\t %d\n',n_bonds + countb,j,i,i + 1
-                        _text_ +='\t\t%d\t %d\t %d\t %d\n',n_bonds + countb + 1,j,i,i + 2
-                        countb=countb + 2
-
-        print_dec_g('BONDS COMPLETED !!!')
-    
-    if atomstyle == 'Full' or atomstyle == 'Angle':
-        print_dec_g('WRITING ANGLES...')
-        ####------ANGLES------#########
-        count=zeros(n_angles,1)
-
-        _text_ +='\n%1s\n\n','Angles'
-        for i in arange(1,n_angles).reshape(-1):
-            for j in arange(1,n_typeangles).reshape(-1):
-                if ((strcmp(atom_inbond[atom1_angle[i]],atom_anglecoeffi[j]) == 1 and strcmp(atom_inbond[atom2_angle[i]],atom_anglecoeffj[j]) == 1 and strcmp(atom_inbond[atom3_angle[i]],atom_anglecoeffk[j]) == 1) or (strcmp(atom_inbond[atom1_angle[i]],atom_anglecoeffk[j]) == 1 and strcmp(atom_inbond[atom2_angle[i]],atom_anglecoeffj[j]) == 1 and strcmp(atom_inbond[atom3_angle[i]],atom_anglecoeffi[j]) == 1)):
-                    _text_ +='\t\t%d\t %d\t %d\t %d\t %d\n',i,j,atom1_angle[i],atom2_angle[i],atom3_angle[i]
-                    count[i]=i
-
-                    FLAG=1
-
-                    if choice_param == 1:
-                        param_angle1[j]=parametrization_angle1[i]
-
-                        param_angle2[j]=parametrization_angle2[i]
-
-                        param_angle3[j]=parametrization_angle3[i]
-
-                        param_angle4[j]=parametrization_angle4[i]
-
-        if choice_solv == 1:
-            counta=1
-
-            for i in arange(n_atoms + 1,(dot((n_mol[end()] - 1),3) + n_atoms)).reshape(-1):
-                for j in arange(1,n_typeangles).reshape(-1):
-                    if ((strncmp(type_[i],atom_anglecoeffi[j],2) == 1 or (strncmp(type_[i],atom_anglecoeffj[j],2)) == 1 or (strncmp(type_[i],atom_anglecoeffk[j],2)) == 1) and n_mol[i] != n_mol[i - 1]):
-                        _text_ +='\t\t%d\t %d\t %d\t %d\t %d\n',n_angles + counta,j,i + 1,i,i + 2
-                        counta=counta + 1
-
-    
-    print_dec_g('ANGLES COMPLETED !!!')
-    ####------DIHEDRAL------####
-    if atomstyle == 'Full':
-        print_dec_g('WRITING DIHEDRALS...')
-        _text_ +='\n%1s\n\n','Dihedrals'
-        for i in arange(1,n_dihedrals).reshape(-1):
-            for j in arange(1,n_typedihedrals).reshape(-1):
-                if ((strcmp(atom_inbond[atom1_dihedral[i]],atom_dihedralcoeffi[j]) == 1 and strcmp(atom_inbond[atom2_dihedral[i]],atom_dihedralcoeffj[j]) == 1 and strcmp(atom_inbond[atom3_dihedral[i]],atom_dihedralcoeffk[j]) == 1 and strcmp(atom_inbond[atom4_dihedral[i]],atom_dihedralcoeffl[j]) == 1)):
-                    _text_ +='\t\t%d\t %d\t %d\t %d\t %d\t %d\n',i,j,atom1_dihedral[i],atom2_dihedral[i],atom3_dihedral[i],atom4_dihedral[i]
-                    if choice_param == 1:
-                        param_dihedral1[j]=parametrization_dihedral1[i]
-                        param_dihedral2[j]=parametrization_dihedral2[i]
-                        param_dihedral3[j]=parametrization_dihedral3[i]
-                        param_dihedral4[j]=parametrization_dihedral4[i]
-    
-    print_dec_g('DIHEDRALS COMPLETED !!!')
-    
-    return (param_bond1,param_bond2,param_angle1,param_angle2,param_dihedral1,
-            param_dihedral2,param_dihedral3,param_dihedral4)
 
 if __name__ == '__main__':
     pass
