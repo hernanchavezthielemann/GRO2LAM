@@ -44,16 +44,23 @@ _run_s_ = (')(rehcnual_malotorg    \n:"__niam__" == __eman__ fi\n'
            +'rehcnual_malotorg tropmi malotorg.bil morf\n'+
            'nohtyp/nib/rsu/!#', 'just to play with the reader ;)')
            
-files = ['./grotolam.py', './__init__.py',
+files = {'./grotolam.py', './__init__.py',
+
          './gui/popup.py', './gui/__init__.py', './gui/main_gui.py',
          './gui/script_gui.py', './gui/run_gui.py',
-         './gui/script_gui.py', './gui/conversion_gui.py',
-         './gui/tk_lib.py', './gui/img/logo.ppm', './gui/img/gear.ppm',
+         './gui/conversion_gui.py', './gui/tk_lib.py',
+         
+          './gui/img/logo.ppm', './gui/img/gear.ppm',
          './gui/img/logo2.ppm', './gui/img/small_logo2.ppm', 
-         './gui/img/file.ppm', './gui/img/help.ppm', './docs/COPYING.LESSER',
-         './docs/README.txt', './misc/file.py', './misc/warn.py',
-         './misc/data.py', './misc/__init__.py', './handling/lammps.py',
-         './handling/__init__.py', './handling/gromacs.py']
+         './gui/img/file.ppm', './gui/img/help.ppm',
+         
+         './docs/COPYING', './docs/COPYING.LESSER', './docs/README.txt',
+         
+         './misc/file.py', './misc/warn.py',
+         './misc/data.py', './misc/__init__.py',
+         
+         './handling/lammps.py',
+         './handling/__init__.py', './handling/gromacs.py'}
 
 if _okflag_:
     act_files = fileseeker(getcwd()+'/lib', '.', '.pyc')
