@@ -3,8 +3,18 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   GROTOLAM v:1.0   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Matlab modular routine used to convert GROMACS input files to LAMMPS format.
+Python modular routine used to convert GROMACS input files to LAMMPS format.
 
+    Download and execute the setup file through the terminal.
+    Make sure that terminal is in the GROTOLAM folder, then: 
+    ~$ python setup
+    Then, without changing the folder, execute the run script:
+    ~$ ./run
+    After that an intuitive graphical user interface should appear
+
+
+%%%%%%%%%%%%
+Matlab code:
 
 The process can be started lauching "General.m". The same folder must contain also "main.m",
 "Counting_lines" "Reading_bon.m", "Reading_nb", "Reading_top.m", "Reading_xyz.m", "Write_Geometry.m"
@@ -20,9 +30,8 @@ default parameters has to be changed by the user directly in the code instead of
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   License   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Copyright 2017 Annalisa Cardellini, Hernan Chavez Thielemann,
-Matteo Fasano, Gianmarco Ciorra, Luca Bergamasco,
-Matteo Alberghini, Eliodoro Chiavazzo, Pietro Asinari
+Copyright 2018 Hernan Chavez Thielemann, Annalisa Cardellini, Matteo Fasano, Gianmarco Ciorra, Luca
+Bergamasco, Matteo Alberghini, Eliodoro Chiavazzo, Pietro Asinari
 
 This file is part of GROTOLAM.
 This work is licensed under the Creative Commons Attribution 4.0 International License. 
