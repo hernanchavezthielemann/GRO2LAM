@@ -2,16 +2,65 @@
 #    By Hernan Chavez Thielemann
 __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
-from Tkinter import Frame, Toplevel, Label, Button, SUNKEN, X, Y, PhotoImage
+from Tkinter import Frame, Toplevel, Label, Button, Checkbutton, Entry
+from Tkinter import SUNKEN, X, Y, PhotoImage, IntVar
 from tk_lib import create_entry, bottom_hline_deco, get_entriesvalue
 from tkFont import Font
 from webbrowser import open_new
 
-class FilePopUp():# checked ok 16/09 -----------WF
+
+class Message_box(Frame):
+    ''' It is a frame because at the end it is a message box launchpad'''
+    def __init__(self, master=None, **options):
+        
+        if not master and options.get('parent'):
+            master = options['parent']
+        self.master  = master
+        
+        Frame.__init__(self, master)
+        
+        # Defaults
+        if "title" not in options:
+            options["title"] = 'Message box'
+        if "message" not in options:
+            options["message"] = 'Dumb message'
+        if "icon" not in options:
+            options["icon"] = 'info'
+        if "type" not in options:
+            options["type"] = 'ok'
+        
+        self.options = options
+
+    def pop_up(self):
+        '''Arise the message box, and after the ok try to destroy it'''
+        bt = self.tk.call( "tk_messageBox", *self._options( self.options))
+        try:
+            self.destroy()
+        except:
+            pass
+        return bt
+
+def message_box( message='', title='Message box', **options):
+    
+    options["title"] = title
+    options["message"] = message
+
+    mb_selection = Message_box(**options).pop_up()
+    
+    return mb_selection
+
+
+class FilePopUp(Frame):
     '''Neat & tidy pop up to search files'''
     
-    def __init__(self, master=None):
+    def __init__(self, master=None, **options):
+        
+        if not master and options.get('parent'):
+            master = options['parent']
         self.master  = master
+        
+        Frame.__init__(self, master)
+        
         self._options_ = {}
         self._options_['filetypes']=(("Geometry", ".pdb"),("Force Field", ".frc"))
     
@@ -27,18 +76,18 @@ class FilePopUp():# checked ok 16/09 -----------WF
     def getfilepath(self):
         ''' Routine to return the file path of the one selected by user thru
             the "tk_getOpenFile" build in option of tkinter'''
+        
+        userchoice = self.tk.call("tk_getOpenFile",
+                                  *self._options(self._options_))
         try:
-            aux = Frame(self.master)
-            userchoice = aux.tk.call("tk_getOpenFile", *aux._options(self._options_))
-            try:
-                userchoice = userchoice.string
-            except AttributeError:
-                pass
-        finally:
-            try:
-                aux.destroy()
-            except:
-                pass
+            userchoice = userchoice.string
+        except AttributeError:
+            pass
+        
+        try:
+            aux.destroy()
+        except:
+            pass
         return userchoice
     
 class SaveAsPopUp():
@@ -46,7 +95,7 @@ class SaveAsPopUp():
     def __init__(self, master=None):
         self.master  = master
         self._options = {}
-        print 'Soon ...'
+        print 'Soon ...  but save what?'
         
     @property
     def options(self):
@@ -55,7 +104,7 @@ class SaveAsPopUp():
     def options(self, **value):
         self._options = value
 
-class PromptPopUp():
+class PromptPopUp_old():
     '''the future description:
             "Neat & tidy prompt pop up to request input"
         
@@ -164,10 +213,14 @@ class PromptPopUp():
         self.master.solv_b.config(bg = 'lightgrey', width = 29)
         self.pop.destroy()
 
-class PromptPopUp2(Toplevel):
+class PromptPopUp(Toplevel):
 
     def __init__(self, master = None, **kwargs):
-        ''' (under development)'''
+        ''' (under development)
+        Class - done
+        dimensions - done
+        
+        '''
         Toplevel.__init__(self, master)
         
         
@@ -206,9 +259,13 @@ class PromptPopUp2(Toplevel):
         
         self.ent_c = []
         
-        self.create_content()
+        if 'content' in kwargs.keys() and not kwargs['content']:
+            pass
+        else:
+            self.create_content()
         self.grab_set()# when you show the popup
-    
+        self.bind('<Return>', self.save_it )
+        
     def set_self_vertex(self ):
         
         ws, hs, w_main, h_main, x_main, y_main = self.master.MAINVERTEX
@@ -244,19 +301,324 @@ class PromptPopUp2(Toplevel):
                              )
         row2fill.pack(side="top", padx=1, pady=5)
         
-        self.bottom_button_row()        
-
+        self.bottom_button_row()
+        
+        
+            
     def bottom_button_row(self):
         ''' just to rder a little bit'''
         _br_ = Frame(self)
-        b1 = Button(_br_, text='Save', command=(lambda: self.save_it()))
+        b1 = Button(_br_, text='Save', command= self.save_it )
         b1.pack(side="right", padx=10, pady=20)
+        b1.focus()
+        
         b2 = Button(_br_, text='Quit', command=(lambda: self.exit_pop()))
         b2.pack(side="right", padx=10, pady=4)
         _br_.pack(side="bottom", expand=True)
         
-    def save_it(self):
+    def save_it(self, event=None):
         self.master._aux_ = get_entriesvalue( self.ent_c)
+        self.exit_pop()
+        
+
+    def exit_pop(self):
+        self.grab_release() # to return to normal
+        self.destroy()# quit()
+
+
+class PromptPopUp_wck(Toplevel):
+    ''' classic prompt setup with 
+        advanced check button options'''
+    def __init__(self, master = None, **kwargs):
+        ''' (under development)'''
+        Toplevel.__init__(self, master)
+        
+        
+        briefing = ''
+        entries_txt = []
+        entries_val = []
+        title = 'PromptPopUp_wck'
+        width, height = [None, None]
+        
+        gr_ids, chck_init, res_ens = [0,[],'']
+        extra_but =None
+        
+        if 'briefing' in kwargs.keys():
+            briefing = kwargs['briefing']
+        if 'entries_txt' in kwargs.keys():
+            entries_txt = kwargs['entries_txt']
+        if 'entries_val' in kwargs.keys():
+            entries_val = kwargs['entries_val']
+        if 'title' in kwargs.keys():
+            title = kwargs['title']
+        if 'width' in kwargs.keys():
+            width = kwargs['width']
+        if 'height' in kwargs.keys():
+            height = kwargs['height']
+            
+        if 'range_id' in kwargs.keys():
+            gr_ids = kwargs['range_id']     
+        if 'chck_init' in kwargs.keys():
+            chck_init = kwargs['chck_init']
+        if 'res_ens' in kwargs.keys():
+            res_ens = kwargs['res_ens']
+        if 'extra_but' in kwargs.keys():
+            extra_but = kwargs['extra_but']
+            
+        self.master  = master  
+
+        self._briefing_ = briefing
+        self._entries_ = entries_txt
+        self._defvals_ = entries_val
+        self._width_ = width
+        self._height_ = height
+        
+        self.range_ids = gr_ids
+        self.range_ens = res_ens
+        self.ch_init = chck_init
+        
+        
+        self.set_self_vertex()
+        
+        self.wm_title(' '*5+title)
+        #print self._vertex_
+        self.geometry('{:d}x{:d}+{:d}+{:d}'.format(*self._vertex_))
+        
+        self.ent_c = []
+        self.ckb_c = []
+        self.extra_checkb = extra_but
+        #self._bstatus =[]
+        
+        self.create_content()
+        self.grab_set()# when you show the popup grab the power
+        self.bind('<Return>', self.save_it )
+        
+        
+    def set_self_vertex(self ):
+        
+        ws, hs, w_main, h_main, x_main, y_main = self.master.MAINVERTEX
+        
+        if  self._width_ == None:
+            self._width_ = w_main - 40
+        if self._height_ == None:
+            self._height_ = h_main*12/21
+        
+        x_pop = x_main + w_main - 60
+        y_pop = y_main + h_main - self._height_
+        #print w_pop, h_pop, x_pop, y_pop
+        self._vertex_= [self._width_, self._height_, x_pop, y_pop]
+
+    def create_content(self):
+        
+        label0= Label(self, text= self._briefing_ )
+        label0.pack(side="top", fill="both", expand=True, padx=50, pady=20)
+        #    just a line
+        bottom_hline_deco(self)
+        # lets create space to do some stuff ...
+        self.entr_maxlen = int((len(max(self._entries_, key=len)))*2.5/3.0)+8
+        
+        
+        self.row2fill = Frame(self)
+        
+        if self.ch_init == []:
+            for e in range(len(self._entries_)):
+                self.ent_c.append( create_entry(row2fill,
+                                                self._entries_[e],
+                                                self._defvals_[e],
+                                                self.entr_maxlen
+                                               )
+                                 )
+        else:
+            #self.ent_c=[[],[]]
+            for _e_ in range( len( self._entries_)):
+                self.create_entry_ck( self.row2fill, _e_ )
+            
+            if self.extra_checkb==None:
+            # - add 1 more x kind line
+                self.add_new_line()
+                self.ch_init+=[0]
+            else:
+                #print self.extra_checkb
+                gr, ids, k_xyz, rns, cks =self.extra_checkb
+                
+                for _e_ in range( len( gr)):
+                    
+                    cnt = gr[_e_], ids[_e_], k_xyz[_e_], rns[_e_]
+                    self.create_entry_ck( self.row2fill, None, cnt)
+                
+                self.ch_init+=cks
+                
+            
+            self.set_ckbuttonstate(self.ch_init)
+                
+        self.row2fill.pack(side="top", padx=1, pady=5)
+        
+        self.bottom_button_row()        
+    
+    def create_entry_ck( self, _row2use_, _i_=None, container =[]):
+        ''' creates a too custom check row so it aparts here'''
+        _row_ = Frame(_row2use_)
+        
+        if _i_==None:
+            _group_, _def_ids_,_def_fcoord_, _res_ens_ = container
+            
+        else:
+            _group_ = self._entries_[_i_]
+            _def_fcoord_ = self._defvals_[_i_]
+            _def_ids_ = self.range_ids[_i_]
+            _res_ens_ = self.range_ens[_i_]
+        
+        label0 = Label(_row_, width=1, text=" ", anchor='w')
+        # first check button
+        cvar = IntVar()
+        label1 = Checkbutton(_row_, width=0
+                               ,variable = cvar
+                               ,command = self.checkbuttonstuff
+                               , anchor = 'w')
+        self.ckb_c.append([cvar, label1])
+        # group description
+        label2= Label(_row_,
+                      width=6,
+                      text= 'Group ', anchor='w')
+        Ent_gr = Entry(_row_, width=8)
+        Ent_gr.insert('end', _group_)
+        
+        label2_2= Label(_row_, width= 5, text= "  ids", anchor='w')
+        # group ids
+        Ent_ids = Entry(_row_, width=10)
+        Ent_ids.insert('end', _def_ids_)
+        
+        label3= Label(_row_, width= 7,
+                      text= "  K:xyz ", anchor='w')
+        Ent_it = Entry(_row_, width=6)
+        Ent_it.insert('end', _def_fcoord_)
+        
+        label4= Label(_row_, width= 5,
+                      text= " In run", anchor='w')
+        Ent_ens = Entry(_row_, width=6)
+        Ent_ens.insert('end', _res_ens_)
+        
+        finalspace = Label(_row_, width=5, text=" ", anchor='w')
+        
+        # Just packing
+        label0.pack(side='left', padx=0)
+        label1.pack(side='left', padx=2)
+        label2.pack(side='left', padx=0)
+        Ent_gr.pack(side='left', expand=True, fill=X)
+        label2_2.pack(side='left', padx=0)
+        Ent_ids.pack(side='left', expand=True, fill=X)
+        
+        label3.pack(side='left', padx=0)
+        Ent_it.pack(side='left', expand=True, fill=X)
+        
+        label4.pack(side='left', padx=0)
+        Ent_ens.pack(side='left', expand=True, fill=X)
+        finalspace.pack(side='right', padx=0)
+        _row_.pack(side='top', fill=X, pady=3)
+        
+        # For tracing purposes list appending
+        self.ent_c.append([Ent_gr, Ent_ids, Ent_it, Ent_ens])
+        #self.ent_c[1].append(Ent_It)
+
+    def add_new_line(self, g_num=1):
+        _group_ = 'extra_g{}'.format(g_num)
+        _fcoord_ = '1:xyz'
+        _ids_= '1:2'
+        _res_ens_ = '1-2'
+        cnt = _group_, _ids_,_fcoord_, _res_ens_
+        self.create_entry_ck( self.row2fill, None, container = cnt)
+        
+        if len(self.ckb_c)>6:
+            self._vertex_[1] += 25
+            self.geometry('{:d}x{:d}+{:d}+{:d}'.format(*self._vertex_))
+        
+        
+        self.row2fill.pack(side="top", padx=1, pady=5)
+        
+        
+        
+    def set_ckbuttonstate(self, __sel__):
+        '''Button setter in charge of set on or off 
+        the entries acordingly to the check button status'''
+        self.ch_init = __sel__
+        for bck in range( len( self.ckb_c)):
+            if __sel__[bck]:
+                self.ckb_c[bck][1].select()
+                for ent in range(len(self.ent_c[bck])):
+                    self.ent_c[bck][ent].configure(state='normal')
+            else:
+                self.ckb_c[bck][1].deselect()
+                for ent in range(len(self.ent_c[bck])):
+                    self.ent_c[bck][ent].configure(state='disabled')
+
+    def checkbuttonstuff(self):
+        '''If this point is reached, some checkbutton changed,
+        so this impose the available states'''
+        auxi=-1
+        loc = len(self._entries_)
+        
+        _ckvar_g_=[]
+        ckbc_len = len(self.ckb_c)
+        # First detect wich one change, comparing the fresh value
+        for v in range(ckbc_len):
+            _ckvar_g_.append(self.ckb_c[v][0].get())
+            if self.ch_init[v]<>_ckvar_g_[v]:
+                auxi=v
+        
+        if auxi>=loc and auxi == ckbc_len-1:
+            num = ckbc_len - loc+1
+            self.add_new_line(num)
+            _ckvar_g_+=[0]
+        
+        self.set_ckbuttonstate(_ckvar_g_)
+    
+    
+    def bottom_button_row(self):
+        ''' just to order a little bit'''
+        _br_ = Frame(self)
+        b1 = Button(_br_, text='Save', command=(lambda: self.save_it()))
+        b1.pack(side="right", padx=10, pady=20)
+        b1.focus()
+        
+        b2 = Button(_br_, text='Quit', command=(lambda: self.exit_pop()))
+        b2.pack(side="right", padx=10, pady=4)
+        _br_.pack(side="bottom", expand=True)
+        
+    def save_it(self, event=None):
+        
+        g_names = []
+        g_aids = []
+        k_xyz_c = []
+        runs_c = []
+        lo = len(self._entries_)
+        
+        for g_e in range(len(self.ent_c))[:lo]:
+            gr, ids, k_xyz, rns = get_entriesvalue( self.ent_c[g_e])
+            
+            #print gr, ids, k_xyz, self.ch_init[g_e]
+            
+            g_names.append(gr)
+            g_aids.append(ids)
+            k_xyz_c.append(k_xyz)
+            runs_c.append(rns)
+        self.master._aux_ = [[], None]
+        self.master._aux_[0] = [ g_names, g_aids, k_xyz_c, runs_c,
+                                self.ch_init[:lo] ]
+        
+        if len(self.ent_c)>lo and max(self.ch_init[lo:])>0:
+            g_names = []
+            g_aids = []
+            k_xyz_c = []
+            runs_c = []
+            for g_e in range(len(self.ent_c))[lo:]:
+                gr, ids, k_xyz, rns = get_entriesvalue( self.ent_c[g_e])
+                g_names.append(gr)
+                g_aids.append(ids)
+                k_xyz_c.append(k_xyz)
+                runs_c.append(rns)
+            self.master._aux_[1] = [ g_names, g_aids, k_xyz_c, runs_c,
+                                    self.ch_init[lo:] ]
+        
         self.exit_pop() 
 
     def exit_pop(self):
@@ -266,7 +628,10 @@ class PromptPopUp2(Toplevel):
 class AboutPopUp():
     '''
     there is a lot of work to do here also,
-    but is a quite good and functional starting point
+    but is a quite good and functional starting point...
+    
+    first put as child of Toplevel
+    then change to grid
     '''
     def __init__(self, **kwargs):
         ''' (under development)'''
@@ -292,8 +657,8 @@ class AboutPopUp():
         self.create_content()
     
     def set_self_vertex(self):
-        from main_gui import MAINVERTEX
-        ws, hs, w_main, h_main, x_main, y_main = MAINVERTEX
+        
+        ws, hs, w_main, h_main, x_main, y_main = self.master.MAINVERTEX
         # calculate the greatness
         w_pop = w_main
         h_pop = h_main*14/21
@@ -380,7 +745,6 @@ class AboutPopUp():
         
         
     def bottom_button_row(self, _row_):
-
         
         b2 = Button(_row_, text='Close',bg = "white", command= self.exit_pop)
         b2.pack(side="right", padx=10, pady=4)
@@ -396,4 +760,34 @@ class AboutPopUp():
         self.pop.grab_release() # to return to normal
         self.pop.destroy()
 
+class WarningPopUp2(PromptPopUp):
+
+    def __init__(self, master = None, briefing=''):
+        ''' (under development)
+        '''
+        PromptPopUp2.__init__(self, master, content = False)
+            
+        self._briefing_ = briefing
+        self.wm_title(' '*30+'Warning! ')
+        self._height_ = 100
+        self.set_self_vertex()
+        self.geometry('{:d}x{:d}+{:d}+{:d}'.format(*self._vertex_))
+        
+        self.create_content()
+        
+
+    def create_content(self, _txt_ = 'Texto de advertencia aqui'):
+        _tr_ = Frame(self)
+        label0= Label(_tr_, text = _txt_)
+        label0.pack(side="top", fill="both", expand=True, padx=20, pady=20)
+        _tr_.pack(side="top", expand=True)
+        self.bottom_button_row()
+        
+
+    def bottom_button_row(self):
+        _br_ = Frame(self)
+        b2 = Button(_br_, text='Ok', command= self.exit_pop )
+        b2.pack(side="right", padx=10, pady=4)
+        _br_.pack(side="bottom", expand = True)
+        
 # vim:tw=80
