@@ -54,7 +54,7 @@ files = {'./grotolam.py', './__init__.py',
          './gui/img/logo2.ppm', './gui/img/small_logo2.ppm', 
          './gui/img/file.ppm', './gui/img/help.ppm', './gui/img/README.md'
          
-         './docs/COPYING', './docs/COPYING.LESSER', './docs/README.txt',
+         , './docs/COPYING', './docs/COPYING.LESSER', './docs/README.txt',
          
          './misc/file.py', './misc/warn.py',
          './misc/data.py', './misc/__init__.py',
