@@ -6,7 +6,7 @@ __merged_files__ = ['main.m', 'Reading_top.m', 'Reading_bon.m',
 
 
 
-from lib.misc.warn import wrg_1, wrg_3
+from lib.misc.warn import wrg_1, wrg_3, pop_err_1, pop_wrg_1
 from lib.misc.file import check_file, write_list2file, debugger_file
 from sys import exit
 
@@ -31,8 +31,16 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     
     ''' data files['gro file', 'top file', 'non bonded file', 'bonded file']'''
     data_container = {}
+    
     filename_nb = _data_files_[3]
-    data_container['defaults'] = ck_forcefield( filename_nb)
+    #filename_ff = '/'.join(filename_nb.split('/')[:-1])+'/forcefield.itp'
+    filename_ff = _data_files_[2]
+    print filename_ff
+    data_container['defaults'], ok_flag = ck_forcefield( filename_ff)
+    if not ok_flag:
+        return {}, ok_flag
+    
+    
     
     buckorlj = int(data_container['defaults'][0])
     
@@ -43,10 +51,13 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     #===============================================#
     startstrings = ['[ atomtypes ]', '[ nonbond_params ]']
     
-    data_container['atomtypes'] = get_gro_line( filename_nb, startstrings)
+    data_container['atomtypes'], ok_flag = get_gro_line( filename_nb, startstrings)
+    if not ok_flag:
+        return {}, ok_flag
     
     n_atomtypes = len( data_container['atomtypes'])
-    debugger_file( 'atomtypes',data_container['atomtypes'])
+    
+    #debugger_file( 'atomtypes',data_container['atomtypes'])
     #################################################
     '''----------------  FILE BON  ---------------'''
     #===============================================#
@@ -57,10 +68,12 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     for bi in range(len(startstrings))[:-1]:
         _char_str_ = startstrings[bi][ 2:-2]
         
-        data_container[_char_str_]= get_gro_line( filename_bon
-                                                 ,startstrings
-                                                 ,bi)
-        debugger_file(_char_str_, data_container[_char_str_])
+        data_container[_char_str_], ok_flag = get_gro_line( filename_bon
+                                                           ,startstrings
+                                                           ,bi)
+        #debugger_file(_char_str_, data_container[_char_str_])
+        if not ok_flag:
+            return {}, ok_flag
         
     n_bondstypes = len(data_container['bondtypes'])
     n_anglestypes = len(data_container['angletypes'])
@@ -80,11 +93,13 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
         _char_str_ = startstrings[ti][ 2:-2]
         ''' here is possible to insert a selector in case pairs and 
         others can be ovbiated'''
-        data_container[_char_str_]= get_gro_line( filename_top
-                                                 ,startstrings
-                                                 ,ti)
+        data_container[_char_str_], ok_flag = get_gro_line( filename_top
+                                                           ,startstrings
+                                                           ,ti)
+        if not ok_flag:
+            return {}, ok_flag
         
-        debugger_file( _char_str_, data_container[_char_str_])
+        #debugger_file( _char_str_, data_container[_char_str_])
             
     n_atoms = len(data_container['atoms'])
     n_bonds = len(data_container['bonds'])
@@ -95,12 +110,13 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     '''----------------  FILE GRO  ---------------'''
     #===============================================#
     filename_gro = _data_files_[0]
-    sttd_anum, _mol_, _type_, _xyz_, b_xyzhi= get_gro_fixed_line( filename_gro)
+    ok_flag, gro_pack, b_xyzhi = get_gro_fixed_line( filename_gro)
+    if not ok_flag:
+        return {}, ok_flag
     
-    data_container['atomsdata'] = [_mol_, _type_, _xyz_]
+    _mol_, _mtype_, _type_, _xyz_ = gro_pack
+    data_container['atomsdata'] = [_mol_, _mtype_, _type_, _xyz_]
     
-    if sttd_anum<>len(_type_):
-        exit('Error! -- Atom number mismatch in .gro file --')
     
     #################    BOX DEF   ##################
     xlo = 0
@@ -168,10 +184,10 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
         
         #indexoxy = find(strcmp(atom_inbondtype,_water_names_[1]) == 1)
         #indexhyd = find(strcmp(atom_inbondtype,_water_names_[2]) == 1)
-        n_atomsnew = sttd_anum
+        n_atomsnew = len(_type_)
     else:
-        n_bondsnew = n_bonds[:]
-        n_anglesnew = n_angles[:]
+        n_bondsnew = n_bonds
+        n_anglesnew = n_angles
         indexoxy = 0
         indexhyd = 0
         #indexsod=0;
@@ -183,29 +199,49 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     data_container['numbers']['type'] = [n_atomtypes, n_bondstypes,
                                          n_anglestypes, n_dihedraltypes]
     
-    
-    return data_container
+
+    return data_container, ok_flag
 
 def get_gro_fixed_line(_filename_):
     ''' reading gromacs gro fixed lines'''
     _content_ = []
     _mol_=[]
+    #_mtype_=[]
+    g_names =[]
     _type_=[]
     _xyz_=[]
+    _corrupt = True
     with open(_filename_, 'r')  as indata:
         read_flag = False
         at=0
         at_num = 0
+        
+        _buffer = []
         for j_line in indata:
             if read_flag:
-                _mol_.append( j_line[:5])
-                _type_.append(j_line[12:15].lstrip(' '))
+                at+=1
+                
+                mtype = j_line[5:10].strip(' ')
+                
+                _mol_.append( j_line[:5].lstrip(' '))
+                #_mtype_.append(mtype)
+                _type_.append(j_line[10:15].lstrip(' '))
                 _xyz_.append([j_line[20:28], j_line[28:36], j_line[36:44]])
                 
-                at+=1
+                if _buffer==[]:
+                    _buffer = [ mtype, at]
+                    
+                elif mtype<>_buffer[0]:
+                    
+                    _buffer += [at-1]
+                    g_names.append(_buffer)
+                    _buffer = [ mtype, at]
+                
+                
                 if at == at_num:
                     read_flag = False
-                
+                    g_names.append(_buffer+ [at])
+                    
             elif j_line.startswith(';'):
                 pass
             elif at_num==0:
@@ -213,9 +249,22 @@ def get_gro_fixed_line(_filename_):
                 at_num = int(j_line)
                 read_flag = True
             elif at == at_num:
+                _corrupt = False
                 box_xyz_hi = [float(x) for x in j_line.split(';')[0].split()]
                 
-    return at_num, _mol_, _type_, _xyz_, box_xyz_hi
+                
+    if at_num<>len(_type_):
+        pop_err_1('Atom number mismatch in .gro file')
+        return False, 0 ,0
+    elif _corrupt:
+        pop_err_1('Corrupt .gro file')
+        return False, 0,0
+    else:
+        return  True, [_mol_, g_names, _type_, _xyz_], box_xyz_hi
+
+def top_groups(mtype, _buffer, g_names):
+    
+    return _buffer, g_names # hook
 
 def get_gro_line(_filename_, _startstrings_, _i_=0):
     ''' reading gromacs content lines'''
@@ -245,30 +294,63 @@ def get_gro_line(_filename_, _startstrings_, _i_=0):
                 #print _ss_[_i_]
                 read_flag = True
                 
-    return content_line
+    if content_line == [] or not read_flag:
+        if '/' in _filename_:
+            _filename_ = _filename_.split('/')[-1]
+        pop_err_1('The {} section is missing on {} file'.format(_ss_[_i_] ,
+                                                                _filename_)
+                 )
+        return 0, read_flag
+    else:
+        return content_line, read_flag
 
-def ck_forcefield(_nonb_file_):
+def ck_forcefield(_ff_file_):
     '''
     podria pedirse solo este archivo y 
-    de aqui sacar la iformacion de los otros dos'''
-    
-    _ff_file_ = '/'.join(_nonb_file_.split('/')[:-1])+'/forcefield.itp'
+    de aqui sacar la iformacion de los otros dos....
+    '''
+    _flag_ = False
     comb_rule = -1
-    if check_file(_ff_file_):
-            with open(_ff_file_, 'r')  as indata:
-                for j_line in indata:
-                    line_c = j_line.split()
-                    if len(line_c)>1 and 'fudgeQQ'==line_c[-1]:
-                        j_line = indata.next()
-                        comb_rule= j_line.split()
-                        print('---> comb_rule {}'.format(comb_rule[1]))
-                        return comb_rule
-    elif comb_rule<0:
-        exit('forcefield.itp file is missing or incomplete')
+    with open(_ff_file_, 'r')  as indata:
+        for j_line in indata:
+            line_c = j_line.split()
+            if j_line.startswith('[ defaults ]'):
+                _flag_ = True
+            if len(line_c)>1 and 'fudgeQQ'==line_c[-1]:
+                j_line = indata.next()
+                comb_rule= j_line.split()
+                print('---> comb_rule {}'.format(comb_rule[1]))
+                
+            
+    if comb_rule<0 or not _flag_:
+        pop_err_1('forcefield.itp file is missing or incomplete')
+        return 0, _flag_
+    else:
+        return comb_rule, _flag_
 
+def get_top_groups(_mtype_container_, _group_):
+    
+    _mtype_ = _mtype_container_
+    _buffer = []
+    for mt in range(len( _mtype_)):
         
-        
-        
+        mtype = _mtype_[mt].strip(' ')
+        if _buffer==[] and mtype==_group_:
+            buffer = [ mtype, mt+1]
+            
+        elif _buffer<>[] and mtype<>_group_:
+            _buffer += [mt]
+            break
+            
+        elif mt==(len(_mtype_)-1):
+            
+            _buffer += [mt+1]
+                
+    print''
+    print 'Group characterized as: {} with ids {} to {}'.format(*_buffer)
+    return _buffer
+
+
 if __name__ == '__main__':
     
     pass
