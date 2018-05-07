@@ -21,7 +21,9 @@ Large-scale Atomic Molecular Massively Parallel Simulator ([Lammps]).
 ## Installation
 
 Download from:
+
     https://github.com/hernanchavezthielemann/GRO2LAM/archive/master.zip
+
 Unpack, and execute the setup file through the terminal.
 Make sure that terminal is in the GROTOLAM folder, then:
     
@@ -35,7 +37,8 @@ After that an intuitive graphical user interface should appear
 ## Usage
 
 ## # GUI
-   Follow the secuential menu bar
+   Follow the secuential menu bar.
+   
    This will create [Lammps] simulation files with setup parameters inherited from [Gromacs].
     
 ## # Command line interface
