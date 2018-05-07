@@ -20,11 +20,14 @@ Large-scale Atomic Molecular Massively Parallel Simulator ([Lammps]).
 
 ## Installation
 
-    Download and execute the setup file like: 
+Download and execute the setup file through the terminal.
+Make sure that terminal is in the GROTOLAM folder, then:
+    
     ~$ python setup
-    Then execute the run script:
+Then, without changing the folder, execute the run script:
+    
     ~$ ./run
-    After that a graphical user interface should appear
+After that an intuitive graphical user interface should appear
 
 
 ## Usage
