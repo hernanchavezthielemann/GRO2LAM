@@ -52,7 +52,7 @@ files = {'./grotolam.py', './__init__.py',
          
           './gui/img/logo.ppm', './gui/img/gear.ppm',
          './gui/img/logo2.ppm', './gui/img/small_logo2.ppm', 
-         './gui/img/file.ppm', './gui/img/help.ppm',
+         './gui/img/file.ppm', './gui/img/help.ppm', './gui/img/README.md'
          
          './docs/COPYING', './docs/COPYING.LESSER', './docs/README.txt',
          
@@ -104,3 +104,5 @@ system('mv README.md ./lib')
 system('mv setup ./lib')
 
 print 'Exit status OK!'
+
+# vim:tw=80
