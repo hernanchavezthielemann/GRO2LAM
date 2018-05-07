@@ -3,7 +3,7 @@
 __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>' 
 
 
-from lib.misc.warn import wrg_1, wrg_3 #
+from lib.misc.warn import wrg_1, wrg_3, pop_wrg_1 #
 from os import getcwd, walk, system 
 from os.path import join
 from subprocess import Popen, PIPE
@@ -18,11 +18,11 @@ def check_file(_in_file_, content = True):
                 su += len(line.rstrip('\n'))
         _auxf.close()
         if content and su == 0:
-            print wrg_3(' File {} is empty -- '.format(_in_file_))
+            pop_wrg_1(' File {} is empty -- '.format(_in_file_))
             return False
         return True
     except IOError:
-        print wrg_3(' File {} not found -- '.format(_in_file_))
+        pop_wrg_1(' File {} not found -- '.format(_in_file_))
         return False
 
 def check_file_list(files_list, extensions=['*']):
