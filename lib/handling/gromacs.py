@@ -324,7 +324,7 @@ def ck_forcefield(_ff_file_):
             
     if comb_rule<0 or not _flag_:
         pop_err_1('forcefield.itp file is missing or incomplete')
-        return 0, _flag_
+        return 0, 0
     else:
         return comb_rule, _flag_
 
