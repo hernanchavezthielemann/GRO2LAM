@@ -79,10 +79,11 @@ class Conversion(Frame):
                ]
         
         for fi in range( len( ex_files)):
-            self.objt_c.append( self.master.createfileentry( self, fi_txt[fi],
-                                                           ex_files[fi],
-                                                          )
-                             )
+            self.objt_c.append( 
+               self.master.createfileentry(
+                   self, fi_txt[fi], ex_files[fi],
+               )
+            )
         bottom_hline_deco( self)
         
         bottom_hline_deco( self, self.atomstyle)
