@@ -59,7 +59,7 @@ def check_in_file( _file_, *args, **kwargs):
                 for a in range( len( args)):
                     #print args[a]
                     line_c = k_line[ _min: _max].strip(' ')
-                    print line_c
+                    #print line_c
                     if args[a] == line_c:
                         _flags_[a] = 1
                         if min(_flags_):
