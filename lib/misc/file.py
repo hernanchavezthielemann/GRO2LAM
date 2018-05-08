@@ -50,13 +50,41 @@ def check_in_file( _file_, *args, **kwargs):
     ''' Checks if some args are in a file or not '''
     
     _flags_ = [0 for x in args]
+    
     with open( _file_, 'r')  as indata:
-        for k_line in indata:
-            for a in range(len(args)):
-                #print args[a]
-                line_c = k_line.split(args[a])
-                if len(line_c)>1:
-                    _flags_[a] = 1
+        if 'slce' in kwargs.keys():
+            
+            _min, _max = [ int(x) for x in kwargs['slce'].split(':')]
+            for k_line in indata:
+                for a in range( len( args)):
+                    #print args[a]
+                    line_c = k_line[ _min: _max].strip(' ')
+                    print line_c
+                    if args[a] == line_c:
+                        _flags_[a] = 1
+                        if min(_flags_):
+                            break
+                            
+        elif 'post' in kwargs.keys():
+            post = int(kwargs['slce'])
+            for k_line in indata:
+                for a in range( len( args)):
+                    line_c = k_line.split()
+                    if len(line_c) > post:
+                        if args[a] == line_c[post]:
+                            _flags_[a] = 1
+                            if min(_flags_):
+                                break
+                            
+        else:
+            for k_line in indata:
+                for a in range(len(args)):
+                    #print args[a]
+                    line_c = k_line.split(args[a])
+                    if len(line_c)>1:
+                        _flags_[a] = 1
+                        if min(_flags_):
+                            break
     return _flags_
 
 
