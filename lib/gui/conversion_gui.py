@@ -208,7 +208,7 @@ class Conversion(Frame):
                                                    config )
                 except:
                     pop_err_1('There are inconsistencies in your input files')
-                    
+                    flag_done_ = False
                     
             if flag_done_:
                 print_dec_g( 'Data file generated as "data.gro2lam"' )
