@@ -118,7 +118,8 @@ class Script_GUI(Frame):
             _comb_rl_ = 'No'
             lj_12_13_14_ = '0.0:0.0:0.0'
             if self._convertdata_ <> None:
-                buckorlj, comb_rule, _flg_, f14_LJ, _ = _topodata_['defaults']
+                _aux_here_ = self._convertdata_['defaults']
+                buckorlj, comb_rule, _flg_, f14_LJ, _ = _aux_here_
                 if int(buckorlj) == 2:
                     _pair_style_ = 'buck/coul/long'
                     
