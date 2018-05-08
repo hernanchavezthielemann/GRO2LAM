@@ -47,14 +47,15 @@ class Run_GUI(Frame):
         self.r_entry_c.append(
             self.master.createfileentry(
                 row2fill_l, 'Select the script to run', './in.gro2lam',
-                f_ext= _extensions_
+                f_ext= _extensions_,
+                b_enb = (self.master._convertdata_ == None)
             )
         )
         
         _entries_ = ['Machine', 'Cores']
         _defvals_=[['lammps-daily',
                     [ 'lammps', 'lmp_mpi', 'lmp_ubuntu' ,'lammps-daily']],
-                    [ 1, range(4*4*4+1)[1:]] # should be enough
+                    [ 1, {1}|set(range(3*3*3+1)[::2][1:])|{27,28}] # should be enough
                   ]
         for e in range(len(_entries_)):
             self.r_entry_c.append(create_entry(row2fill_l,
@@ -92,13 +93,13 @@ class Run_GUI(Frame):
         row.pack( side='right', fill='both', padx=5)
         
 
-def run_script( _file_, machine='lammps', _cores_=1):
+def run_script( _file_, machine='lammps', _cores_='1'):
     
     core_flag = min(check_vars([_cores_],['int'],'Run aborted!'))
     if check_file(_file_) and core_flag:
         print _file_
         command = '{} -echo both -in {}'.format( machine, _file_)
-        if _cores_>1:
+        if int(_cores_)>1:
             command = 'mpirun -np {} '.format( _cores_) + command
             
         run_command(command)
