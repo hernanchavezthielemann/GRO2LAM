@@ -20,6 +20,11 @@ Large-scale Atomic Molecular Massively Parallel Simulator ([Lammps]).
 
 ## Installation
 
+### Quantum start:
+
+    wget https://raw.githubusercontent.com/hernanchavezthielemann/utils/master/grotolam/G2L_installer
+    bash G2L_installer
+    
 ### Quick start:
 
     #!/bin/bash
@@ -28,6 +33,7 @@ Large-scale Atomic Molecular Massively Parallel Simulator ([Lammps]).
     cd GRO2LAM-*
     python setup
     ./run
+
 
 ### Step by step:
 
