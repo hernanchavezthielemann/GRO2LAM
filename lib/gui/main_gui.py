@@ -105,12 +105,19 @@ class Gro2Lam_GUI(Frame):
     def b1_hook(self, event=None):
         self.body.b1.invoke()
             
-    def createfileentry(self, parent_frame, fi_text, _def_fi_, f_ex=None):
+    def createfileentry(self, parent_frame, fi_text, _def_fi_, **kwargs):
         ''' Quite self explanatoy...
             creates a row in which is possible to search for a file'''
+        f_ext = None
+        b_enb = True
+        if 'f_ext' in kwargs.keys():
+            f_ext = kwargs[ 'f_ext']
+        if 'b_enb' in kwargs.keys():
+            b_enb = kwargs[ 'b_enb']
+        
         file_row = Frame(parent_frame)
-        if f_ex == None:
-            f_ex = ((fi_text ,'.'+_def_fi_.split('.')[-1]),)
+        if f_ext == None:
+            f_ext = ((fi_text ,'.'+_def_fi_.split('.')[-1]),)
         
         _f_labels = format_dec([file_row, fi_text], _pack_=False)
         
@@ -122,7 +129,8 @@ class Gro2Lam_GUI(Frame):
         Efile.xview_moveto(1)
         Bsearch = Button(file_row,
                          image= self.im_file,
-                         command= (lambda El=Efile: self.browsefile(El, f_ex)))
+                         command= (lambda El=Efile: self.browsefile(El, f_ext))
+                        )
         
         # Just packing
         format_dec(_f_labels, _create_=False)
@@ -131,7 +139,8 @@ class Gro2Lam_GUI(Frame):
         
         Bsearch.pack(side='right', padx=0, pady=0)
         file_row.pack(side='top', fill='x', pady=3)
-        
+        if not b_enb:
+            Bsearch.configure( state = 'disabled')
         # For tracing purposes list appending
         return Efile
 
@@ -247,3 +256,4 @@ def showuserman():
     run_command(command)
 
 # vim:tw=80
+
