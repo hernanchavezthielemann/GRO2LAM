@@ -76,8 +76,13 @@ class Script_GUI(Frame):
             _def_dataname_ = _mainpage_[0]
             _defvals_ = _mainpage_[1:] 
         
-        _aux_c_ = [row2fill_l, 'Lammps data file to work', _def_dataname_]
-        self.s_entry_c.append( self.master.createfileentry( *_aux_c_))
+        _extensions_ = (('lammps data' ,'.data'),('lammps data' ,'data.*'))
+        self.s_entry_c.append(
+            self.master.createfileentry(
+                row2fill_l, 'Lammps data file to work', _def_dataname_,
+                f_ext= _extensions_, b_enb = False
+            )
+        )
         
         _entries_=  [ 'Timestep [fs]', '-','NVE steps  [#ts]','-',
                      'NVT steps  [#ts]','Temperature at start:end [K]',
@@ -109,16 +114,30 @@ class Script_GUI(Frame):
         
         if self._container_['advanced'] == []: # advanced _init_
             
+            _pair_style_ = 'lj/cut/coul/long'
+            _comb_rl_ = 'No'
+            lj_12_13_14_ = '0.0:0.0:0.0'
+            if self._convertdata_ <> None:
+                buckorlj, comb_rule, _flg_, f14_LJ, _ = _topodata_['defaults']
+                if int(buckorlj) == 2:
+                    _pair_style_ = 'buck/coul/long'
+                    
+                mix_val = {'1':'geometric', '2':'arithmetic', '3':'geometric'}
+                _comb_rl_ = mix_val[comb_rule]
+                if _flg_ == 'yes':
+                    lj_12_13_14_ = '0.0:0.0:'+f14_LJ
+                    
+                    
             self._container_['advanced'] = [[],[]]
             self._container_['advanced'][0] = [ '10', 
                                                'array', 
-                                               'lj/cut/coul/long',
+                                               _pair_style_,
                                                '8.5','10','1.9', 
                                                'pppm',
                                                '1e-4',
-                                               '0.0:0.0:0.0','1','1',
+                                               lj_12_13_14_,'1','1',
                                                'aniso',
-                                               'No',
+                                               _comb_rl_,
                                                'NVE-NVT-NPT-NVT-R',
                                                '300'
                                               ]
@@ -206,7 +225,6 @@ class Script_GUI(Frame):
                 _pair_style_ = _pair_style_[ :3] + _pair_style_[ -2:]
             else:
                 _pair_style_ = _pair_style_[ 3:]
-                self._container_['advanced'][ 0][ 2] = _pair_style_[3]
                 
         _kspace_ = ['pppm', 'pppm/cg', 'ewald', 'pppm/disp', 'ewald/disp',
                   #'pppm/tip4p', 'pppm/disp/tip4p'
@@ -376,3 +394,6 @@ class Script_GUI(Frame):
             return _flag_
         return max_index
         
+     
+
+    
