@@ -298,7 +298,7 @@ class Conversion(Frame):
             
         list_aux = [Ox.strip(' ') for Ox in gro_Oxs.split(',')]
         list_aux += [Ox.strip(' ') for Ox in gro_Hys.split(',')]
-        _flags += check_in_file( _gro_f, *list_aux)
+        _flags += check_in_file( _gro_f, *list_aux, slce = '10:15')
         print (list_aux)
         
         if min(_flags[2:])==0:
