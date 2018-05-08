@@ -41,13 +41,16 @@ Download from:
 
 https://github.com/hernanchavezthielemann/GRO2LAM/archive/master.zip
 
-Or you can open a terminal and then execute:
+Unpack, or you can open a terminal and then execute:
     
     ~$ wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/master.zip
     ~$ unzip master.zip
     
-Unpack, and execute the setup file through the terminal.
-Make sure that terminal is in the GROTOLAM folder, then:
+Then, make sure that terminal is in the GROTOLAM folder. As example:
+    
+    user@system:~/Downloads/GRO2LAM-master$
+    
+Once there, execute the setup file through the terminal as:
     
     ~$ python setup
 Then, without changing the folder, execute the run script:
