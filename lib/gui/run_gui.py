@@ -47,7 +47,7 @@ class Run_GUI(Frame):
         self.r_entry_c.append(
             self.master.createfileentry(
                 row2fill_l, 'Select the script to run', './in.gro2lam',
-                f_ext= _extensions_, b_enb = False
+                f_ext= _extensions_
             )
         )
         
