@@ -80,7 +80,7 @@ class Script_GUI(Frame):
         self.s_entry_c.append(
             self.master.createfileentry(
                 row2fill_l, 'Lammps data file to work', _def_dataname_,
-                f_ext= _extensions_, b_enb = False
+                f_ext= _extensions_, b_enb = (if self._convertdata_ == None)
             )
         )
         
