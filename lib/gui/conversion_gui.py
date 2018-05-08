@@ -189,7 +189,7 @@ class Conversion(Frame):
         
         if ( self.objt_c[-1].get() and _solvatedinfo_ == []):
             pop_wrg_1( 'First perform the solvation configuration.'
-                      + ' You can do it pressing in solvation settings gears',
+                      + ' You can do it pressing the solvation settings gears',
                       _i_=0
                      )
             self.solv_b.invoke()
@@ -203,10 +203,13 @@ class Conversion(Frame):
                                                         _solvatedinfo_,
                                                         config[1:])
             if flag_done_:
-                flag_done_ = write_lammps_data( sim_data, 'data.gro2lam',
-                                               config
-                                              )
-            
+                try:
+                    flag_done_ = write_lammps_data( sim_data, 'data.gro2lam',
+                                                   config )
+                except:
+                    pop_err_1('There are inconsistencies in your input files')
+                    
+                    
             if flag_done_:
                 print_dec_g( 'Data file generated as "data.gro2lam"' )
                 
@@ -274,52 +277,64 @@ class Conversion(Frame):
         
         if self.master._aux_ <> [] and self.get_entriesvalues():
             _app_aux_ = self.master._aux_
-            #============ Check inputs =================
-            _flag_ = 1
-            nb_Ox, nbHy, gro_Oxs, gro_Hys, pch= _app_aux_
-            _gro_f, _, _, _nbn_f, _, _, _= self.master._convert_['setup']
-            _flags = check_in_file( _nbn_f, nb_Ox, nbHy)
-            print ([nb_Ox, nbHy])
-            list_aux = [Ox.strip(' ') for Ox in gro_Oxs.split(',')]
-            list_aux += [Ox.strip(' ') for Ox in gro_Hys.split(',')]
-            _flags += check_in_file( _gro_f, *list_aux)
-            print (list_aux)
             
-            try:
-                x = float(pch)
-                if -10<x<10:
-                    _flags += [1]
-                    partial_charges = 'Partial charges for H: {} and for O: {}'
-                    print partial_charges.format( x, x*-2)
-                else:
-                    _flags += [0]
-            except:
-                _flags += [0]
-            list_aux = [nb_Ox, nbHy] + list_aux
-            for v in range(len(_flags)):
-                err_txt = ''
-                if not _flags[v] and v <> (len(_flags)-1):
-                    filename = _nbn_f
-                    if v>1:
-                        filename = _gro_f
-                    err_txt = 'Atom tag {} not found in {}'
-                    if '/' in filename:
-                        filename = filename.split('/')[-1]
-                    err_txt = err_txt.format( list_aux[v], filename)
-                    _flag_*=0
-                
-                elif not _flags[v]:
-                    err_txt = 'Non valid partial charge {}'.format( pch)
-                    _flag_*=0
-                    
-                if err_txt<>'':
-                    pop_err_1(err_txt+'\nSetup not saved')
-            #============       Done!  =================
+            _flag_ = self.check_solvation_inputs( _app_aux_, True)
             if _flag_:
                 self.master._convert_['solvation'] = _app_aux_
                 print_dec_g('Solvation setup saved!')
                 #self.solv_b.focus()
         self.solv_b.config(bg = 'lightgrey', width = 28)
 
-    
+    def check_solvation_inputs( self, _app_aux_, _vbs_ = False):
+        ''' ================    Check inputs    ================= '''
+        _flag_ = 1
+        nb_Ox, nbHy, gro_Oxs, gro_Hys, pch= _app_aux_
+        _gro_f, _, _, _nbn_f, _, _, _= self.master._convert_['setup']
+        _flags = check_in_file( _nbn_f, nb_Ox, nbHy)
+        print ([nb_Ox, nbHy])
+        
+        if min(_flags)==0:
+            print nb_Ox, nbHy
+            
+        list_aux = [Ox.strip(' ') for Ox in gro_Oxs.split(',')]
+        list_aux += [Ox.strip(' ') for Ox in gro_Hys.split(',')]
+        _flags += check_in_file( _gro_f, *list_aux)
+        print (list_aux)
+        
+        if min(_flags[2:])==0:
+            print list_aux
+            
+        try:
+            x = float(pch)
+            if -10<x<10:
+                _flags += [1]
+                partial_charges = 'Partial charges for H: {} and for O: {}'
+                print partial_charges.format( x, x*-2)
+            else:
+                _flags += [0]
+        except:
+            _flags += [0]
+        list_aux = [nb_Ox, nbHy] + list_aux
+        
+        # ================= Now check the flags =====================
+        for v in range(len(_flags)):
+            err_txt = ''
+            if not _flags[v] and v <> (len(_flags)-1):
+                filename = _nbn_f
+                if v>1:
+                    filename = _gro_f
+                err_txt = 'Atom tag {} not found in {}'
+                if '/' in filename:
+                    filename = filename.split('/')[-1]
+                err_txt = err_txt.format( list_aux[v], filename)
+                _flag_*=0
+            
+            elif not _flags[v]:
+                err_txt = 'Non valid partial charge {}'.format( pch)
+                _flag_*=0
+                
+            if err_txt<>'':
+                pop_err_1(err_txt+'\nSetup not saved')
+        #============       Done!  ==================================
+        return _flag_
     
