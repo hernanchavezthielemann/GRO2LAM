@@ -22,8 +22,7 @@ Large-scale Atomic Molecular Massively Parallel Simulator ([Lammps]).
 
 ### Quantum start:
 
-    wget https://raw.githubusercontent.com/hernanchavezthielemann/utils/master/grotolam/G2L_installer
-    bash G2L_installer
+    wget https://raw.githubusercontent.com/hernanchavezthielemann/utils/master/grotolam/G2L_installer && bash G2L_installer
     
 ### Quick start:
 
