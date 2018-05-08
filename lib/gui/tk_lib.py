@@ -3,7 +3,7 @@
 __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
 from Tkinter import Entry, Button, Frame, Label, Scrollbar, StringVar
-from Tkinter import Listbox, Menu, IntVar, Checkbutton, Widget
+from Tkinter import Listbox, Menu, IntVar, Checkbutton, Widget, Spinbox
 
 from Tkinter import X, Y, SUNKEN, VERTICAL, END
 
@@ -36,14 +36,25 @@ def create_entry( _main_row_, _desc_txt, _def_txt_, t_len, ckbc=None, fn=None):
         
     elif type(_def_txt_) in [list, tuple]:
         
-        Ent_It = StringVar()
-        aux_ddl = Drop_Down_List(_row_,
-                                 textvariable = Ent_It,
-                                 values = tuple(_def_txt_[1]),
-                                 #state = "readonly"
-                                )
-        aux_ddl.bind("<Key>", lambda e: "break") # Magic
-        Ent_It.set(_def_txt_[0])
+        if type(_def_txt_[1]) in [set]:
+            
+            _nums_ = [str(x) for x in sorted(list(_def_txt_[1]))]
+            Ent_It = StringVar()
+            aux_spin = Spinbox(_row_,
+                               textvariable = Ent_It,
+                               values = tuple(_nums_)
+                              )
+            
+            Ent_It.set(_def_txt_[0])
+        else:
+            Ent_It = StringVar()
+            aux_ddl = Drop_Down_List(_row_,
+                                     textvariable = Ent_It,
+                                     values = tuple( _def_txt_[1]),
+                                     #state = "readonly"
+                                    )
+            aux_ddl.bind("<Key>", lambda e: "break") # Magic
+            Ent_It.set(_def_txt_[0])
         
         
     
@@ -57,7 +68,9 @@ def create_entry( _main_row_, _desc_txt, _def_txt_, t_len, ckbc=None, fn=None):
     
     if type(_def_txt_)==str: 
         Ent_It.pack(side='left', expand=True, fill=X)
-    elif type(_def_txt_) in [list, tuple]:
+    elif type(_def_txt_) in [list, tuple] and type(_def_txt_[1]) == set:
+        aux_spin.pack(side='left', expand=True, fill=X)
+    else:
         aux_ddl.pack(side='left', expand=True, fill=X)
         
     finalspace.pack(side='right', padx=0)
