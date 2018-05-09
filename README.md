@@ -1,4 +1,4 @@
-[![Build Status]()]
+
 
 # GRO2LAM
 Gromacs to Lammps simulation converter
@@ -11,6 +11,18 @@ Gromacs to Lammps simulation converter
     Hernan Chavez Thielemann
 
 - Matlab version:
+
+## Project status
+==============
+
+**Travis CI build status**
+
++----------+-------------------------------------------------------------------------------+
+| Branch   | Status                                                                        |
++==========+===============================================================================+
+| 07may18  | .. https://travis-ci.org/hernanchavezthielemann/GRO2LAM.svg?branch=07may18    |
+|          |     :target: https://travis-ci.org/rshk/jobcontrol                            |
++----------+-------------------------------------------------------------------------------+
 
 
 ## Description
