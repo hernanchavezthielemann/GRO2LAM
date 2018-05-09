@@ -62,8 +62,7 @@ After that an intuitive graphical user interface should appear
    Follow the secuential menu bar.
    
    <p align="center">
-   <img src="https://i.imgur.com/a/rm1myNi.gif" title="source: imgur.com" />
-   <img src="https://i.imgur.com/a/rm1myNi.gif" width="350"/>
+   <img src="https://i.imgur.com/gbI5H7y.gif" title="source: imgur.com" />
    </p>
    
    This will create [Lammps] simulation files with setup parameters inherited from [Gromacs].
