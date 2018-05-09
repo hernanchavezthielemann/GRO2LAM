@@ -50,7 +50,7 @@ _run_s_ = (')(rehcnual_malotorg    \n:"__niam__" == __eman__ fi\n'
            
     
 _run_t_ = (')(tset_rehcnual_malotorg\ntset_rehcnual_malotorg tropmi'
-           +'malotorg.bil morf\nnohtyp/nib/rsu/!#', 'same here ;)')
+           +' malotorg.bil morf\nnohtyp/nib/rsu/!#', 'same here ;)')
 
 
 files = {'./grotolam.py', './__init__.py',
