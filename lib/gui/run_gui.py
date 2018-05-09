@@ -75,7 +75,7 @@ class Run_GUI(Frame):
         
         if self.master.test:
             self.after(2000, self.master.master.destroy )
-            print '-'*20 + '  Test ended  ' + '-'*20
+            print '\n'+'-'*20 + '  Test ended  ' + '-'*20
     
     def build_finalbuttons(self):
         '''    Final Buttons    '''
