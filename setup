@@ -2,12 +2,16 @@
 
 
 from os import system, getcwd
-from sys import exit
+from sys import exit, argv
 
 
 _okflag_ = True
 _exit_txt_ = ''
+_test_ = False
 
+if len(argv)>1 and argv[1] == '-t':
+    _test_ = True
+    
 try:
     import Tkinter
 except ImportError:
@@ -44,17 +48,21 @@ _run_s_ = (')(rehcnual_malotorg    \n:"__niam__" == __eman__ fi\n'
            +'rehcnual_malotorg tropmi malotorg.bil morf\n'+
            'nohtyp/nib/rsu/!#', 'just to play with the reader ;)')
            
+    
+_run_t_ = (')(tset_rehcnual_malotorg\ntset_rehcnual_malotorg tropmi'
+           +'malotorg.bil morf\nnohtyp/nib/rsu/!#', 'same here ;)')
+
+
 files = {'./grotolam.py', './__init__.py',
 
          './gui/popup.py', './gui/__init__.py', './gui/main_gui.py',
          './gui/script_gui.py', './gui/run_gui.py',
-         './gui/conversion_gui.py', './gui/tk_lib.py',
+         './gui/conversion_gui.py', './gui/tk_lib.py', '/gui/img/README.md',
          
           './gui/img/logo.ppm', './gui/img/gear.ppm',
          './gui/img/logo2.ppm', './gui/img/small_logo2.ppm', 
-         './gui/img/file.ppm', './gui/img/help.ppm', './gui/img/README.md'
-         
-         , './docs/COPYING', './docs/COPYING.LESSER', './docs/README.txt',
+         './gui/img/file.ppm', './gui/img/help.ppm',
+         './docs/COPYING', './docs/COPYING.LESSER', './docs/README.txt',
          
          './misc/file.py', './misc/warn.py',
          './misc/data.py', './misc/__init__.py',
@@ -85,6 +93,7 @@ if _okflag_:
         if fi_o_flag:
             print 'File check done!'
         else:
+            _exit_txt_ += 'Warning!! some file not found!\n'
             _okflag_ = False
     else:
         _okflag_ = False
@@ -96,13 +105,16 @@ if _okflag_:
         
         
 if not _okflag_:
+    for fi in act_files:
+        print fi
     exit(_exit_txt_)
-    
-write_xfile('run', _run_s_[0][::-1])
- 
+
+if _test_:
+    write_xfile('run', _run_t_[0][::-1])
+else:
+    write_xfile('run', _run_s_[0][::-1])
+
 system('mv README.md ./lib')
 system('mv setup ./lib')
 
 print 'Exit status OK!'
-
-# vim:tw=80
