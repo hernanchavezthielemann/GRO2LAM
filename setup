@@ -64,7 +64,7 @@ files = {'./grotolam.py', './__init__.py',
          './gui/img/file.ppm', './gui/img/help.ppm',
          './docs/COPYING', './docs/COPYING.LESSER', './docs/README.txt',
          
-         './misc/file.py', './misc/warn.py',
+         './misc/file.py', './misc/warn.py', './misc/version.py',
          './misc/data.py', './misc/__init__.py',
          
          './handling/lammps.py',
