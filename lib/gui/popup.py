@@ -7,7 +7,7 @@ from Tkinter import SUNKEN, X, Y, PhotoImage, IntVar
 from tk_lib import create_entry, bottom_hline_deco, get_entriesvalue
 from tkFont import Font
 from webbrowser import open_new
-from lib.grotolam import __version__
+from lib.misc.version import __version__
 
 class Message_box(Frame):
     ''' It is a frame because at the end it is a message box launchpad'''
