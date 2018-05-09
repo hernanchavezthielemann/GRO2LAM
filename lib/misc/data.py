@@ -16,7 +16,10 @@ def check_vars( _vars_, _varstype_, _endtext_ = 'Input script not created!'):
                 _flag_c_.append(1)
             except ValueError:
                 _flag_c_.append(0)
-                err_txt = ' {} is not a valid type of integer'.format( _vars_[v])
+                aux_here = _vars_[v]
+                if _vars_[v] == '':
+                    aux_here = '<void>'
+                err_txt = ' {} is not a valid type of integer'.format( aux_here)
                 
         elif _varstype_[v] =='float':
             #print _vars_[v]
@@ -25,7 +28,10 @@ def check_vars( _vars_, _varstype_, _endtext_ = 'Input script not created!'):
                 _flag_c_.append(1)
             except ValueError:
                 _flag_c_.append(0)
-                err_txt = ' {} is not a valid type of float'.format( _vars_[v])
+                aux_here = _vars_[v]
+                if _vars_[v] == '':
+                    aux_here = '<void>'
+                err_txt = ' {} is not a valid type of float'.format( aux_here)
                 
         elif _varstype_[v] =='str':
             try:
@@ -55,15 +61,7 @@ def check_vars( _vars_, _varstype_, _endtext_ = 'Input script not created!'):
             else:
                 _flag_c_ += check_vars( _aux_, ['float']*2, _endtext_)
         
-        elif _varstype_[v] =='float::':
-            _aux_ = _vars_[v].split(':')
-            if len( _aux_) <> 3:
-                err_txt = ( 'Please separate three floats with two colons (:)'
-                           +' instead of {}'.format(_vars_[v]))
-                _flag_c_ += [0,0,0]
-            else:
-                _flag_c_ += check_vars( _aux_, ['float']*3, _endtext_)
-                
+                        
         elif _varstype_[v] == 'float:xyz':
             _aux_ = _vars_[v].split(':')
             if len( _aux_) <> 2:
@@ -82,22 +80,54 @@ def check_vars( _vars_, _varstype_, _endtext_ = 'Input script not created!'):
                     
                 _flag_c_ += _int_flag_ + [ _o_flag_]
                 
+        
+        
+        elif type(_varstype_[v]) == list and _varstype_[v][0] =='<float::<':
+            
+            _aux_v_ = [x.strip(' ') for x in _vars_[v].split(':')]
+            _min, _max = _varstype_[v][1:]
+            if len( _aux_v_) <> 3:
+                err_txt = ( 'Please separate three floats with two colons (:)'
+                           +' instead of {}'.format(_vars_[v]))
+                _flag_c_ += [0,0,0]
+            else:
+                _flag_c_ += check_vars( _aux_v_,
+                                       [['<float<', _min, _max]] * len( _aux_v_),
+                                       _endtext_)
+                
+                
+        
         elif type(_varstype_[v]) == list and _varstype_[v][0] == '<int<':
             _min, _max = _varstype_[v][1:]
-            _flag_ = check_vars( [_vars_[v][0]], ['float'], _endtext_)
+            _flag_ = check_vars( [_vars_[v]], ['int'], _endtext_)
             #print _flag_c_, _flag_
             if _flag_[0]:
-                if _min <= int(_vars_[v][0]) <= _max:
+                if _min <= int(_vars_[v]) <= _max:
                     _flag_c_ += _flag_
                 else:
                     _txt_ = ('The available range is {}:{}.\n'
                              'Consequently {} is out of range')
-                    err_txt = ( _txt_.format( _min, _max, _vars_[v][0]))
+                    err_txt = ( _txt_.format( _min, _max, _vars_[v]))
                     _flag_c_ += [0]
             else:
                 _flag_c_ += _flag_
             #print _flag_c_
-
+            
+        elif type(_varstype_[v]) == list and _varstype_[v][0] == '<float<':
+            _min, _max = _varstype_[v][1:]
+            _flag_ = check_vars( [_vars_[v]], ['float'], _endtext_)
+            #print _flag_c_, _flag_
+            if _flag_[0]:
+                if _min <= float(_vars_[v]) <= _max:
+                    _flag_c_ += _flag_
+                else:
+                    _txt_ = ('The available range is {}:{}.\n'
+                             'Consequently {} is out of range')
+                    err_txt = ( _txt_.format( _min, _max, _vars_[v]))
+                    _flag_c_ += [0]
+            else:
+                _flag_c_ += _flag_
+        
         elif type(_varstype_[v]) == list and _varstype_[v][0]==list:
             #print _varstype_[v]
             _sep_ = _varstype_[v][1]
@@ -157,13 +187,21 @@ def check_vars( _vars_, _varstype_, _endtext_ = 'Input script not created!'):
         elif type( _varstype_[v])== list and _varstype_[v][0]=='<int-x-int<:0':
             _min, _max = _varstype_[v][1:]
             if not _vars_[v].isdigit():
-                _flag_c_ += check_vars( [_vars_[v]],
-                                       [['<int-x-int<', _min, _max]],
+                _flag_c_ += check_vars( [ _vars_[v]],
+                                       [[ '<int-x-int<', _min, _max]],
+                                        _endtext_)
+                
+            elif int(_vars_[v]) > 0:
+                _flag_c_ += check_vars( [ _vars_[v]],
+                                       [['<int<', _min, _max]] ,
                                        _endtext_)
-            else:
-                if int(_vars_[v]) == 0:
+            
+            elif int(_vars_[v]) == 0:
                     _flag_c_ += [1]
-
+                    
+            else:
+                err_txt = 'Not valid number, check {}!'.format(_vars_[v])
+                _flag_c_ += [0]
         else:
             #print _varstype_[v]
             print 'Unhandled variable check for: ', _vars_[v]
