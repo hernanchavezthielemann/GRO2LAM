@@ -5,14 +5,10 @@ __version__ = 'GROTOLAM version 2.0 (07 May 2018)'#.split()[2]
 __old_ver__ = ['version 1.0 (13 Apr 2018)']
 
 __url__ = 'https://github.com/hernanchavezthielemann/GRO2LAM'
-#from os import getcwd, walk, chdir, makedirs, system
-#from os.path import join
-#from sys import exit, argv
 
-from lib.misc.file import write_file
+#from lib.misc.file import write_file
 from gui.main_gui import launch_gui
-#from handling.gromacs import extract_gromacs_data
-#from handling.lammps import write_lammps_data
+
 
 class Grotolam(object):
     def __init__(self, master=None):
