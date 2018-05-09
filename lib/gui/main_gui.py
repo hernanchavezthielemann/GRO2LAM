@@ -100,11 +100,15 @@ class Gro2Lam_GUI(Frame):
             self.body.createWidgets()
             self.body.b1.focus()
             self.master.bind('<Return>', self.b1_hook )
+            self.master.bind('<Escape>', self.quit_hook )
             self.body.pack(side='top', fill='x')
 
     def b1_hook(self, event=None):
         self.body.b1.invoke()
             
+    def quit_hook(self, event=None):
+        self.body.quit()
+        
     def createfileentry(self, parent_frame, fi_text, _def_fi_, **kwargs):
         ''' Quite self explanatoy...
             creates a row in which is possible to search for a file'''
