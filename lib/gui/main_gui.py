@@ -254,7 +254,7 @@ def launch_about( _master_window_):
     
     print 'launching about'
     
-    title_txt = 'GROTOLAM'
+    title_txt = ' '*17+'ABOUT GROTOLAM'
     
     pop = AboutPopUp(master = _master_window_,
                      title = title_txt,
