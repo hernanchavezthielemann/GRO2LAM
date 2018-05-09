@@ -1,5 +1,0 @@
-language: python
-install: 
-pip install python-tk
-python setup
-script: ./run
