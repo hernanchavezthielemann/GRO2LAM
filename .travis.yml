@@ -1,5 +1,6 @@
+language: bash
+before_install: sudo apt-get install python-tk
+
 language: python
-install:
-  - pip install python-tk
-  - python setup
+install: python setup
 script: ./run
