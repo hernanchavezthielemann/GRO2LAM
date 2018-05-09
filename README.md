@@ -16,13 +16,7 @@ Gromacs to Lammps simulation converter
 ==============
 
 **Travis CI build status**
-
-+----------+-------------------------------------------------------------------------------+
-| Branch   | Status                                                                        |
-+==========+===============================================================================+
-| 07may18  | .. https://travis-ci.org/hernanchavezthielemann/GRO2LAM.svg?branch=07may18    |
-|          |     :target: https://travis-ci.org/rshk/jobcontrol                            |
-+----------+-------------------------------------------------------------------------------+
+[![Build Status](https://travis-ci.org/hernanchavezthielemann/GRO2LAM.svg?branch=07may18)](https://travis-ci.org/hernanchavezthielemann/GRO2LAM)
 
 
 ## Description
