@@ -73,6 +73,9 @@ class Run_GUI(Frame):
         
         self.build_finalbuttons()
         
+        if self.master.test:
+            self.after(2000, self.master.master.destroy )
+    
     
     def build_finalbuttons(self):
         '''    Final Buttons    '''
