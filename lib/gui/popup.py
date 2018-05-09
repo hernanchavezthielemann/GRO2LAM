@@ -7,7 +7,7 @@ from Tkinter import SUNKEN, X, Y, PhotoImage, IntVar
 from tk_lib import create_entry, bottom_hline_deco, get_entriesvalue
 from tkFont import Font
 from webbrowser import open_new
-
+from lib.grotolam import __version__
 
 class Message_box(Frame):
     ''' It is a frame because at the end it is a message box launchpad'''
@@ -694,7 +694,7 @@ class AboutPopUp():
         firstrow.pack(side="top", padx=0)
         
         secrow = Frame(rightcolumn, bg = "white")
-        Label(secrow, text="v 1.0",
+        Label(secrow, text="v "+__version__.split()[2],
                  fg = "Gray13",bg = "white" ,
                  font = "Verdana 10").pack(side="left")
         Label(secrow, text='',bg = "white").pack(side="left", padx=75)
