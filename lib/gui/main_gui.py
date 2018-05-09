@@ -21,7 +21,7 @@ from tk_lib import format_dec, createmenubar
 
 from lib.misc.warn import wrg_3
 from lib.misc.file import check_file, run_command
-from lib.grotolam import __version__
+from lib.misc.version import __version__
 
 #------------------- GLOBALS  --------------------
 global dir_path, lib_path
