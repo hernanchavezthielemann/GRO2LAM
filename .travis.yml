@@ -3,4 +3,4 @@ before_install: sudo apt-get install python-tk
 
 language: python
 install: python setup
-script: ./run
+script: xvfb-run ./run
