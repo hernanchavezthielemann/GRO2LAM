@@ -80,7 +80,7 @@ class Script_GUI(Frame):
         self.s_entry_c.append(
             self.master.createfileentry(
                 row2fill_l, 'Lammps data file to work', _def_dataname_,
-                f_ext= _extensions_, b_enb = ( self._convertdata_ == None)
+                f_ext= _extensions_, b_enb = (self._convertdata_ == None)
             )
         )
         
@@ -268,7 +268,9 @@ class Script_GUI(Frame):
             _advanced_ = self.master._aux_
             
             _entries_ = [ 'int', '', '', 'float', 'float', 'float', '',
-                         'float', 'float::', 'int', 'int', '', '',
+                         'float', 
+                         ['<float::<', 0.0, 1.0],
+                         'int', 'int', '', '',
                          [list, '-','NVE','NVT','NPT','R'], 'float'
                          ]
             _flag_ = min( check_vars( _advanced_, _entries_,
@@ -395,6 +397,4 @@ class Script_GUI(Frame):
             return _flag_
         return max_index
         
-     
 
-    
