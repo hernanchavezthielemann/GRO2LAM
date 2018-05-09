@@ -61,6 +61,8 @@ After that an intuitive graphical user interface should appear
 ## # GUI
    Follow the secuential menu bar.
    
+   <p align='center'><img src="https://imgur.com/a/rm1myNi" title="source: imgur.com" /></p>
+   
    This will create [Lammps] simulation files with setup parameters inherited from [Gromacs].
     
 ## # Command line interface
