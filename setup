@@ -116,5 +116,6 @@ else:
 
 system('mv README.md ./lib')
 system('mv setup ./lib')
+system('rm .travis.yml ')
 
 print 'Exit status OK!'
