@@ -39,6 +39,12 @@ def grotolam_launcher():
     print '\n'+' '*20+__version__+'\n'
     
     launch_gui()
+    
+def grotolam_launcher_test():
+    
+    print '\n'+' '*20+__version__+'\n'
+    launch_gui( True)
+    
     #conv_data, ckbuttons, solva_tags,_quit_flag_ = launch_gui()
     
     #if not _quit_flag_:
