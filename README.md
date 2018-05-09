@@ -68,9 +68,12 @@ After that an intuitive graphical user interface should appear
    This will create [Lammps] simulation files with setup parameters inherited from [Gromacs].
     
 ## # Command line interface
-   there is no implementation of comand line interface
-
-
+   There is no implementation of comand line interface, more than:
+   ```bash
+   ~$ python setup -t
+   ```
+   That creates a not fully useful test GUI.
+   
 ## Licence
    [MIT](./LICENSE)
    
