@@ -36,12 +36,13 @@ lib_path = dir_path
 
 class Gro2Lam_GUI(Frame):
     ''' Graphic User Interface '''
-    def __init__(self, master=None):
+    def __init__(self, master=None, test = False):
         Frame.__init__(self, master)
         _ver= __version__.split()
         self.master.title(" "*25+"{}    {}".format(_ver[0],_ver[2]))#.master
         
         self.pack() # why I'm packing here??
+        self.test = test
         
         self.im_file = PhotoImage( file = lib_path+"/img/file.ppm")
         self.im_logo = PhotoImage( file = lib_path+"/img/logo.ppm")
@@ -108,6 +109,11 @@ class Gro2Lam_GUI(Frame):
             
     def quit_hook(self, event=None):
         self.body.quit()
+        
+    def swap_hook(self):
+        _l_ = [1,2,3]
+        b = _l_[_l_.index(self.prevailing_body)-2]
+        self.swapbody(b)
         
     def createfileentry(self, parent_frame, fi_text, _def_fi_, **kwargs):
         ''' Quite self explanatoy...
@@ -184,16 +190,17 @@ class Gro2Lam_GUI(Frame):
 '''///////////////     Sub routines     /////////////'''
 #------------------------------------------------------
 
-def launch_gui():
+def launch_gui( started = False):
     ''' launcher '''
+    
     
     print wrg_3('Before you start, make sure there are no comments',
                 '(;) in the middle of a line of the input GROMACS files.',
                 'Data after this symbol are not taken into account.')
     
     MasterWin = Tk()
-    prompt = Gro2Lam_GUI( master= MasterWin)# xl_App
-    
+    prompt = Gro2Lam_GUI( master= MasterWin, test = started)# xl_App
+        
     help_icon = PhotoImage( file= lib_path+"/img/help.ppm")
     entry_list_of_dicts = [{ 'title' : 'File',
                             'cascade' : (('Quit' ,MasterWin.quit), ) },
@@ -226,7 +233,8 @@ def launch_gui():
     #print MAINVERTEX
     # set the dimensions of the screen 
     # and where it is placed
-    MasterWin.geometry('{:d}x{:d}+{:d}+{:d}'.format(*prompt.MAINVERTEX[2:]))
+    MasterWin.geometry('{:d}x{:d}+{:d}+{:d}'.format( *prompt.MAINVERTEX[2:]))
+    
     
     prompt.mainloop()
     
