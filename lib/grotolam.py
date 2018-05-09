@@ -6,7 +6,7 @@ __old_ver__ = ['version 1.0 (13 Apr 2018)']
 
 __url__ = 'https://github.com/hernanchavezthielemann/GRO2LAM'
 
-#from lib.misc.file import write_file
+from lib.misc.file import write_file
 from gui.main_gui import launch_gui
 
 
