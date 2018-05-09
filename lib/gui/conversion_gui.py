@@ -97,7 +97,7 @@ class Conversion(Frame):
         self.build_finalbuttons()
         
         if self.master.test:
-            print '-'*15+'Test'+'-'*15
+            print 'Seeing main gro2lam converter GUI'
             self.after(2000, self.master.swap_hook  )
 
     def build_solvation_section( self):
