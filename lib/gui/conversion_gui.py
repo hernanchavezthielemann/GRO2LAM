@@ -95,9 +95,9 @@ class Conversion(Frame):
         
         #    Final Buttons
         self.build_finalbuttons()
-        print self.master.test
+        
         if self.master.test:
-            print 'test'
+            print '-'*15+'Test'+'-'*15
             self.after(2000, self.master.swap_hook  )
 
     def build_solvation_section( self):
