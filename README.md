@@ -1,9 +1,8 @@
 
+[![Build Status](https://travis-ci.org/hernanchavezthielemann/GRO2LAM.svg?branch=07may18)](https://travis-ci.org/hernanchavezthielemann/GRO2LAM)
 
 # GRO2LAM
 Gromacs to Lammps simulation converter
-
-
 
 ## Authors
 
@@ -11,13 +10,6 @@ Gromacs to Lammps simulation converter
     Hernan Chavez Thielemann
 
 - Matlab version:
-
-## Project status
-==============
-
-**Travis CI build status**
-[![Build Status](https://travis-ci.org/hernanchavezthielemann/GRO2LAM.svg?branch=07may18)](https://travis-ci.org/hernanchavezthielemann/GRO2LAM)
-
 
 ## Description
 This program was designed for easy conversion of solvated structures between 
