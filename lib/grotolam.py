@@ -34,6 +34,7 @@ def grotolam_launcher():
     
 def grotolam_launcher_test():
     
+    print '-'*21+'  TESTING  '+'-'*21+'\n\n'
     print '\n'+' '*20+__version__+'\n'
     launch_gui( True)
     
