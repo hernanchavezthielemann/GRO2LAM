@@ -47,7 +47,7 @@ class Script_GUI(Frame):
         
         #    first header row
         row = Frame(self)
-        TEXT1= "\nIn this section you can create scripts "
+        TEXT1= "\nIn this section you can create input Lammps scripts "
         Label(row, text=TEXT1, anchor='w').pack(side='top', padx=2, pady=1)
         row.pack( side='top', fill='x', padx=5)
         bottom_hline_deco(self)
@@ -90,8 +90,8 @@ class Script_GUI(Frame):
         _entries_=  [ 'Timestep [fs]', '-','NVE steps  [#ts]','-',
                      'NVT steps  [#ts]','Temperature at start:end [K]',
                      'Temperature damping [fs]',
-                     '-','NPT steps  [#ts]', 'Presure at start:end  [atm]',
-                     'Presure damping [fs]',
+                     '-','NPT steps  [#ts]', 'Pressure at start:end  [atm]',
+                     'Pressure damping [fs]',
                      'Temperature at start:end [K]', 'Temperature damping [fs]'
                     ]
         
