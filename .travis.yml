@@ -3,4 +3,10 @@ before_install: sudo apt-get install python-tk
 
 language: python
 install: python setup
-script: xvfb-run ./run < test.txt
+
+before_script:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3 # give xvfb some time to start
+
+script: xvfb python run < test.txt
