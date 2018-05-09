@@ -56,6 +56,9 @@ class Script_GUI(Frame):
         
         self.build_finalbuttons()
         
+        if self.master.test:
+            self.after(2000, self.master.swap_hook )
+    
     def createWidgets_n_pack(self):
         self.createWidgets()
         self.pack()
