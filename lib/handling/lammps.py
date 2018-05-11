@@ -17,11 +17,11 @@ def write_lammps_data(_topodata_, data_name, _config_):
     print_dec_g ('Writing Lammps data file...')
     ####---------------  Unpacking data  ----------------####
     atomstyle, _, _ = _config_
-    atsty = ['atomic', 'angle', 'full', 'charge', 'bond', 'molecular']
-    style_str='####-------  ATOM STYLE < {} >  --------####'
+    atsty = [ 'atomic', 'angle', 'full', 'charge', 'bond', 'molecular']
+    style_str = '####-------  ATOM STYLE < {} >  --------####'
     _flag_ = False
     if atomstyle in atsty:
-        nam = ''.join([ chr(ord(l)-32) for l in atomstyle])
+        nam = ''.join([ chr( ord(l) - 32) for l in atomstyle])
         print_dec_g(style_str.format(nam))
         _content_ = write_lammps_data_all(_topodata_, data_name, _config_)
         _flag_ = True
@@ -219,7 +219,6 @@ def write_lammps_data_all( _topodata_, data_name, _config_):
     
     return _text_
 
-
 def write_lammps_data_atomic(_topodata_, data_name, _config_):
     ''' Write a lammps data file
     
@@ -384,7 +383,6 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
     return txt_p_, dicts
 
 
-
 def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     ''' _simconfig_ contains the data gathered from the gui
         _topodata_ comes from the converted gromacs file
@@ -497,8 +495,8 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     if atomstyle not in ['full', 'charge]']: # no charges
         if 'coul' in pairwiseint:
             pairwiseint = pairwiseint.split('/coul')[0]
-        if 'none'in pairwiseint:
-            lj_rcutoff = ''
+        if 'zero'in pairwiseint:
+            lj_rcutoff += ' nocoeff'
         c_rcutoff = ''
     elif 'coul' not in pairwiseint:
         c_rcutoff = ''
