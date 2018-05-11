@@ -495,11 +495,12 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     if atomstyle not in ['full', 'charge]']: # no charges
         if 'coul' in pairwiseint:
             pairwiseint = pairwiseint.split('/coul')[0]
-        if 'zero'in pairwiseint:
-            lj_rcutoff += ' nocoeff'
         c_rcutoff = ''
     elif 'coul' not in pairwiseint:
         c_rcutoff = ''
+        
+    if pairwiseint == 'zero':
+            c_rcutoff = 'nocoeff'
         
     _dtxt_+= '\natom_modify map {}\n'.format(atommap)
     #===================================================
