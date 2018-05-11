@@ -294,7 +294,7 @@ class Conversion(Frame):
         _flag_ = 1
         nb_Ox, nbHy, gro_Oxs, gro_Hys, pch= _app_aux_
         _gro_f, _, _, _nbn_f, _, _, _= self.master._convert_['setup']
-        _flags = check_in_file( _nbn_f, nb_Ox, nbHy)
+        _flags = check_in_file( _nbn_f, nb_Ox, nbHy, pstn = 0)
         print ([nb_Ox, nbHy])
         
         if min(_flags)==0:
