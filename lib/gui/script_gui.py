@@ -221,12 +221,13 @@ class Script_GUI(Frame):
                         'buck/coul/long', 'buck', 'buck/coul/cut',
                         #'lj/cut/tip4p/cut', 'lj/cut/tip4p/long',
                         #'lj/gromacs', 'lj/gromacs/coul/gromacs',
-                        'zero', 'none']
+                        #, 'none',
+                        'zero']
         
         if self._convertdata_ <> None:
             buckorlj = int( self._convertdata_['defaults'][0])
             if buckorlj == 1:
-                _pair_style_ = _pair_style_[ :3] + _pair_style_[ -2:]
+                _pair_style_ = _pair_style_[ :3] + [_pair_style_[ -1]]
             else:
                 _pair_style_ = _pair_style_[ 3:]
                 
