@@ -65,13 +65,13 @@ def check_in_file( _file_, *args, **kwargs):
                         if min(_flags_):
                             break
                             
-        elif 'post' in kwargs.keys():
-            post = int(kwargs['slce'])
+        elif 'pstn' in kwargs.keys():
+            position = int(kwargs['pstn'])
             for k_line in indata:
                 for a in range( len( args)):
                     line_c = k_line.split()
-                    if len(line_c) > post:
-                        if args[a] == line_c[post]:
+                    if len(line_c) > position:
+                        if args[a] == line_c[position]:
                             _flags_[a] = 1
                             if min(_flags_):
                                 break
