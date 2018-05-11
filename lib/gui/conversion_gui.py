@@ -222,6 +222,11 @@ class Conversion(Frame):
                 
                 # Returning the values
                 self.master._convertdata_ = self._convertdata_
+                
+                # to ensure freshness of our dependant values
+                self.master._script_['advanced'] = []
+                self.master._script_['restrain'] = []
+                
                 self.master.swapbody(2)
                 
         else:
