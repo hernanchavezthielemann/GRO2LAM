@@ -142,8 +142,11 @@ class Script_GUI(Frame):
                                                lj_12_13_14_,'1','1',
                                                'aniso',
                                                _comb_rl_,
+                                               
+                                               '300',
+                                               '1e-10',
                                                'NVE-NVT-NPT-NVT-R',
-                                               '300'
+                                               '0.0001','0','0'
                                               ]
         
         self.fcb = Button( row, text = 'Advanced settings', compound='left',
@@ -213,8 +216,15 @@ class Script_GUI(Frame):
                   'Neighbor update  [#ts]',
                   'Pressure control',
                   'Force mixing rule',
-                  'Simulation order',
+                  
                   'Velocity creation Temp  [K]',
+                  'Energy minimization tolerance',
+                  'Simulation order',
+                  '---',
+                  'Shake tolerance',
+                  'Shake bonds [b#]',
+                  'Shake angles [a#]',
+                  
                  ]
                         
         _pair_style_ = ['lj/cut/coul/long','lj/cut/coul/cut', 'lj/cut',
@@ -237,12 +247,14 @@ class Script_GUI(Frame):
         
         _comb_rule_ = ['No','geometric', 'arithmetic', 'sixthpower']
         
+        #  ['advanced'][1] in case of drop down lists, to show the other cases 
         self._container_['advanced'][1] = [ '', ['array', 'hash'], 
                                             _pair_style_,
                                            '','','', _kspace_,
                                            '', '', '', '',
                                            ['aniso', 'iso', 'tri'],
-                                            _comb_rule_, '', ''
+                                            _comb_rule_, '','','',
+                                           '', '', ''
                                           ]
         _defvals_ = []
         
@@ -262,12 +274,13 @@ class Script_GUI(Frame):
                           entries_txt = askfor, 
                           entries_val = _defvals_ ,
                           width = 400,
-                          height = 565
+                          height = 665
                          )
         
         pop.wait_window()
         
-        
+        _, bnty_len, anty_len = self.check_datafile()
+        print bnty_len, anty_len
         if self.master._aux_ <> []:
             _advanced_ = self.master._aux_
             
@@ -275,7 +288,10 @@ class Script_GUI(Frame):
                          'float', 
                          ['<float::<', 0.0, 1.0],
                          'int', 'int', '', '',
-                         [list, '-','NVE','NVT','NPT','R'], 'float'
+                         'float', 'float',[list, '-','NVE','NVT','NPT','R','M']
+                         ,'float',
+                         ['<int-x-int<:0', 1, bnty_len],
+                         ['<int-x-int<:0', 1, anty_len]
                          ]
             _flag_ = min( check_vars( _advanced_, _entries_,
                                      'Advanced settings not saved!'))
@@ -290,7 +306,7 @@ class Script_GUI(Frame):
         instructions = 'Select the group to restrain'
         
         #============ grouping  ================
-        max_index = self.check_datafile()
+        max_index, _, _ = self.check_datafile()
         
         if max_index:
             
@@ -378,10 +394,12 @@ class Script_GUI(Frame):
             also is used in case of no gromacs direct data conversion
             to somehow make a check if that file is ok
         '''
-        max_index = 0
+        max_at_index, bond_types, angle_types = 0, 0, 0
         _flag_ = True
         if self._convertdata_<> None:
-            max_index = len(self._convertdata_['atomsdata'][0])
+            _numbers_ = self._convertdata_['numbers']
+            max_at_index = _numbers_['total'][0]
+            _, bond_types, angle_types, _ = _numbers_['type']
         else: 
             _filename_ = self.s_entry_c[0].get()
             try:
@@ -390,8 +408,13 @@ class Script_GUI(Frame):
                         if not k_line.startswith('#'):
                             line_c = k_line.split()
                             if 'atoms' in line_c:
-                                max_index = line_c[0]
-                                break
+                                max_at_index = line_c[0]
+                            if 'types' in line_c:
+                                if 'bond' in line_c:
+                                    bond_types = line_c[0]
+                                elif 'angle' in line_c:
+                                    angle_types = line_c[0]
+                                    break
             except IOError:
                 pop_wrg_1('Data file not found!')
                 print ('Try performing a conversion first!')
@@ -399,6 +422,6 @@ class Script_GUI(Frame):
                 
         if _bflag_<>None:
             return _flag_
-        return max_index
+        return max_at_index, bond_types, angle_types
         
 
