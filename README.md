@@ -1,5 +1,5 @@
 
-[![Build Status](https://travis-ci.org/hernanchavezthielemann/GRO2LAM.svg?branch=07may18)](https://travis-ci.org/hernanchavezthielemann/GRO2LAM)
+[![Build Status](https://travis-ci.org/hernanchavezthielemann/GRO2LAM.svg?branch=20jul18)](https://travis-ci.org/hernanchavezthielemann/GRO2LAM)
 
 # GRO2LAM
 Gromacs to Lammps simulation converter
@@ -8,8 +8,6 @@ Gromacs to Lammps simulation converter
 
 - Python version:
     Hernan Chavez Thielemann
-
-- Matlab version:
 
 ## Description
 This program was designed for easy conversion of solvated structures between 
@@ -25,8 +23,8 @@ Large-scale Atomic Molecular Massively Parallel Simulator ([Lammps]).
 ### Quick start:
 
     #!/bin/bash
-    wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/07may18.zip
-    unzip 07may18.zip
+    wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/20jul18.zip
+    unzip 20jul18.zip
     cd GRO2LAM-*
     python setup
     ./run
@@ -36,16 +34,16 @@ Large-scale Atomic Molecular Massively Parallel Simulator ([Lammps]).
 
 Download from:
 
-https://github.com/hernanchavezthielemann/GRO2LAM/archive/master.zip
+https://github.com/hernanchavezthielemann/GRO2LAM/archive/20jul18.zip
 
 Unpack, or you can open a terminal and then execute:
     
-    ~$ wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/master.zip
+    ~$ wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/20jul18.zip
     ~$ unzip master.zip
     
 Then, make sure that terminal is in the GROTOLAM folder. As example:
     
-    user@system:~/Downloads/GRO2LAM-master$
+    user@system:~/Downloads/GRO2LAM-20jul18$
     
 Once there, execute the setup file through the terminal as:
     
