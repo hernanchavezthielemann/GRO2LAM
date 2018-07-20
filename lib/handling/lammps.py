@@ -71,7 +71,7 @@ def write_lammps_data_all( _topodata_, data_name, _config_):
     _text_ +='\n Masses\n\n'
     atom_info = _topodata_['atomtypes']
     for i in range( n_atomtypes):
-        _text_ +=' {} {}\n'.format( i+1, atom_info[i][1])
+        _text_ +=' {} {} # {}\n'.format( i+1, atom_info[i][1], atom_info[i][0])
         
     #####------             Force field potentials               ------####
     
@@ -412,7 +412,8 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     thermo, atommap, pairwiseint, lj_rcutoff, c_rcutoff = _simconfig_[1][:i]
     neighbordistance, lrsolver, lrerror, in12_13_14 = _simconfig_[1][i:i+4]
     neighbordelay, neighborupdate, npt_kind = _simconfig_[1][i+4:i+7]
-    f_comb_rule, _order_, T_init_vel = _simconfig_[1][i+7:]
+    f_comb_rule, T_init_vel, f_min_tol, _order_ = _simconfig_[1][i+7:i+11]
+    shake_tol, shake_bn, shake_an = _simconfig_[1][i+11:]
     
     #===================================================
     ####------------    RESTRAIN DATA       --------####
@@ -551,6 +552,26 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     _dtxt_+= group_lines
     
     #===================================================
+    ####---------------     SHAKE       ------------####
+    shake_bn, shake_an
+    shake_txt = 'fix shake_name1 all shake {} 20 0'.format( shake_tol)
+    print shake_bn, shake_an
+    if shake_bn <> '0' or shake_an <> '0':
+        
+        if shake_bn <> '0':
+            shake_txt += ' b'
+            shake_bn = shake_bn.split('-')
+            for bn in range(len(shake_bn)):
+                shake_txt += ' '+shake_bn[bn]
+
+        if shake_an <> '0':
+            shake_txt += ' a'
+            shake_an = shake_an.split('-')
+            for an in range(len(shake_an)):
+                shake_txt += ' '+shake_an[an]
+        _dtxt_+= shake_txt+'\n\n'
+    
+    #===================================================
     ####---------------   SIMULATION    ------------####
     ensembles = _order_.split('-')
     curr_time = 0
@@ -604,6 +625,17 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
         elif ensembles[en]=='R':
             restart_txt = '\nwrite_restart restart.g2l_{}fs\n'
             _dtxt_ += restart_txt.format(int(curr_time))
+            
+        elif ensembles[en]=='M':
+            if f_min_tol > 1.0e-3:
+                e_min_tol = 1.0e-2
+                f_min_tol = 1.0e-3
+            else:
+                e_min_tol = f_min_tol*100
+            
+            emin_frm = 'minimize {} {} 10000 100000\n'
+            _dtxt_+= emin_frm.format( emin_tol, f_min_tol )
+            
             
         if tounfix <> [ [], []] and en in tounfix[0]: #       UNFIX RESTRAIN
             for unf in range( len( tounfix[0])):
