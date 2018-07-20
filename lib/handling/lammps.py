@@ -634,7 +634,7 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
                 e_min_tol = f_min_tol*100
             
             emin_frm = 'minimize {} {} 10000 100000\n'
-            _dtxt_+= emin_frm.format( emin_tol, f_min_tol )
+            _dtxt_+= emin_frm.format( e_min_tol, f_min_tol )
             
             
         if tounfix <> [ [], []] and en in tounfix[0]: #       UNFIX RESTRAIN
