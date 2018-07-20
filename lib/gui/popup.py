@@ -293,12 +293,22 @@ class PromptPopUp(Toplevel):
         # lets create space to do some stuff ...
         self.entr_maxlen = int(len(max(self._entries_, key=len))*2.5/3.0)
         row2fill = Frame(self)
+        #print self._entries_,'\n', self._defvals_,
+        #'\n',len(self._entries_),'\n', len(self._defvals_)
+        
+        aline=0
         for e in range(len(self._entries_)):
-            self.ent_c.append(create_entry(row2fill,
-                                           self._entries_[e],
-                                           self._defvals_[e],
-                                           self.entr_maxlen)
-                             )
+            if self._entries_[e] == '---':
+                aline+=1
+                bottom_hline_deco(row2fill)
+                #print self._entries_[e]
+            else:
+                self.ent_c.append(create_entry(row2fill,
+                                               self._entries_[e],
+                                               self._defvals_[e-aline],
+                                               self.entr_maxlen)
+                                 )
+                
         row2fill.pack(side="top", padx=1, pady=5)
         
         self.bottom_button_row()
@@ -791,3 +801,4 @@ class WarningPopUp2(PromptPopUp):
         _br_.pack(side="bottom", expand = True)
         
 # vim:tw=80
+
