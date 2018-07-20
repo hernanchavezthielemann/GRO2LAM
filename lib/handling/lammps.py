@@ -627,11 +627,11 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
             _dtxt_ += restart_txt.format(int(curr_time))
             
         elif ensembles[en]=='M':
-            if f_min_tol > 1.0e-3:
+            if float(f_min_tol) > 1.0e-3:
                 e_min_tol = 1.0e-2
                 f_min_tol = 1.0e-3
             else:
-                e_min_tol = f_min_tol*100
+                e_min_tol = float(f_min_tol)*100
             
             emin_frm = 'minimize {} {} 10000 100000\n'
             _dtxt_+= emin_frm.format( e_min_tol, f_min_tol )
