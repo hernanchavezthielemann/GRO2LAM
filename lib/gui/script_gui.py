@@ -357,7 +357,7 @@ class Script_GUI(Frame):
             
             if self.master._aux_ <> []:
                 sim_len = 0
-                for x in  self._container_['advanced'][0][-2].split('-'):
+                for x in  self._container_['advanced'][0][-4].split('-'):
                     if x.strip(' ') <> 'R':
                         sim_len +=1
                 _res_flag_= [[],[]]
