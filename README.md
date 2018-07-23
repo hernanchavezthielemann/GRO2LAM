@@ -159,16 +159,83 @@ In this section, every possible data to input is described (the entries required
   #### Lammps input file generation:
   
   ##### Main page
-  %Timestep [fs]
-  NVE steps  [#ts]
-  NVT steps  [#ts]
-  Temperature at start:end [K]
-  Temperature damping [fs]
-  NPT steps  [#ts]
-  Pressure at start:end  [atm]
-  Pressure damping [fs]
-  Temperature at start:end [K]
-  Temperature damping [fs]
+  
+  >Timestep [fs]
+  
+  The whole simulation time step in femto seconds (floating point number).
+  >NVE steps  [#ts]
+  
+  Number of steps in the NVE ensembles (integer number).
+  >NVT steps  [#ts]
+  
+  Number of steps in the NVT ensembles (integer number).
+  >Temperature at start:end [K]
+  
+  Temperature gradient to apply during the number of steps in the NVT ensemble as start_temperature:ending_temperature (floating point numbers).
+  >Temperature damping [fs]
+  
+  Characteristic time constant of the thermostat.
+  >NPT steps  [#ts]
+  
+  Number of steps in the NPT ensembles (integer number).
+  >Pressure at start:end  [atm]
+  
+  Presure gradient to apply during the number of steps in the NPT ensemble as start_presure:ending_presure (floating point numbers).
+  >Pressure damping [fs]
+  
+  Characteristic time constant of the barostat.
+  >Temperature at start:end [K]
+  
+  Same thing that in NVT, but now for the thermostat coupled with the barostat.
+  >Temperature damping [fs]
+  
+  Same thing that in NVT, but now for the thermostat coupled with the barostat.
+  
+  ##### Advanced Settings
+  
+  >Thermo output every  [#ts]
+  
+  Every this time steps the values are printed in the lammps.log file 
+  >Atom mapping
+  
+  >Pairwise interactions
+  
+  >L-J/Buck rcutoff  ["+u'\u00c5'+"]
+  
+  >Coulomb rcutoff  ["+u'\u00c5'+"]
+  
+  >Neighbor skin distance  ["+u'\u00c5'+"]
+  
+  >Long-range solver
+  
+  >Long-range relative error
+  
+  >Interaction 1-2:1-3:1-4
+  
+  >Neighbor delay  [#ts] 
+  
+  >Neighbor update  [#ts]
+  
+  >Pressure control
+  
+  >Force mixing rule  
+  
+  >Velocity creation Temp  [K]
+  
+  >Energy minimization tolerance
+  
+  >Simulation order
+  
+  >Shake tolerance
+  
+  >Shake bonds [b#]
+  
+  >Shake angles [a#]
+  
+  ##### Restraint
+  
+  
+  
   
   #### Lammps simulation launching:
 This GUI is mainly to test the congruency of the lammps data and input file.
