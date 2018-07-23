@@ -134,6 +134,23 @@ In this section, every possible data to input is described (the entries required
    > Solvation atoms
    
    >> yes: water atoms are taken into account and water configuration popup is enabled as a must.
+   
+   generally the following data comes from the water.stp
+   >>> O in the non bonded file
+   
+   Name of the oxigen in the non bonded itp file
+   >>> H in the non bonded file
+   
+   Name of the hydrogen in the non bonded itp file
+   >>> O in the .gro file
+   
+   Name of the oxigen in the gro file
+   >>> H in the .gro file
+   
+   Name of the oxigen in the gro file
+   >>> H - O partial charge
+   
+   Partial charge increment magnitude from H to O, equal to the whole H charge or the half of O.
    >> no: just the core particle is converted.
    
   #### Lammps input file generation:
