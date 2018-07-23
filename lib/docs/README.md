@@ -4,25 +4,26 @@
 
 # Description:
 
-    Python modular routine used to convert GROMACS input files to LAMMPS format, 
-    this includes topology, force field coefficients and simulation commands.
+   Python modular routine used to convert GROMACS input files to LAMMPS format, 
+   this includes topology, force field coefficients and simulation commands.
 
-# VERSION
-    GROTOLAM version 1.11 (20 Jul 2018)
+# Version:
+   GROTOLAM version 1.11 (20 Jul 2018)
 
 # Repository:
-
-https://github.com/hernanchavezthielemann/GRO2LAM
+   https://github.com/hernanchavezthielemann/GRO2LAM
 
 # Install:
 
-    Download the latest version, decompress and execute the setup file through the terminal, like follows.
-    Make sure that terminal is in the GROTOLAM folder, then: 
-    ~/Desktop/GRO2LAM-20jul18$python setup
-    Then, without changing the folder, execute the run script:
+   Download the latest version, decompress and execute the setup file through the terminal, like follows.
+   Make sure that terminal is in the GROTOLAM folder, then:
+   
+     ~/Desktop/GRO2LAM-20jul18$python setup
+   Then, without changing the folder, execute the run script:
+   
     ~/Desktop/GRO2LAM-20jul18$./run
-    After that an intuitive graphical user interface should appear.
-    This GUI interface will guide the user through all the inputs needed to perform the conversion correctly.
+   After that an intuitive graphical user interface should appear.
+   This GUI interface will guide the user through all the inputs needed to perform the conversion correctly.
 
 # License:
 
@@ -34,37 +35,37 @@ To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0
 
 # Files:
 
-./run
-./lib/README.md
-./lib/LICENSE
-./lib/setup
-./lib/gui/__init__.py
-./lib/misc/data.py
-./lib/docs/COPYING.LESSER
-./lib/misc/file.py
-./lib/gui/img/help.ppm
-./lib/misc/version.py
-./lib/__init__.py
-./lib/handling/gromacs.py
-./lib/gui/img/gear.ppm
-./lib/gui/conversion_gui.py
-./lib/gui/img/small_logo2.ppm
-./lib/handling/__init__.py
-./lib/misc/__init__.py
-./lib/grotolam.py
-./lib/gui/img/logo2.ppm
-./lib/gui/main_gui.py
-./lib/misc/warn.py
-./lib/gui/run_gui.py
-./lib/handling/lammps.py
-./lib/gui/img/logo.ppm
-./lib/docs/COPYING
-./lib/gui/script_gui.py
-./lib/gui/popup.py
-./lib/gui/img/README.md
-./lib/gui/tk_lib.py
-./lib/docs/README.txt
-./lib/gui/img/file.ppm
+    ./run
+    ./lib/README.md
+    ./lib/LICENSE
+    ./lib/setup
+    ./lib/gui/__init__.py
+    ./lib/misc/data.py
+    ./lib/docs/COPYING.LESSER
+    ./lib/misc/file.py
+    ./lib/gui/img/help.ppm
+    ./lib/misc/version.py
+    ./lib/__init__.py
+    ./lib/handling/gromacs.py
+    ./lib/gui/img/gear.ppm
+    ./lib/gui/conversion_gui.py
+    ./lib/gui/img/small_logo2.ppm
+    ./lib/handling/__init__.py
+    ./lib/misc/__init__.py
+    ./lib/grotolam.py
+    ./lib/gui/img/logo2.ppm
+    ./lib/gui/main_gui.py
+    ./lib/misc/warn.py
+    ./lib/gui/run_gui.py
+    ./lib/handling/lammps.py
+    ./lib/gui/img/logo.ppm
+    ./lib/docs/COPYING
+    ./lib/gui/script_gui.py
+    ./lib/gui/popup.py
+    ./lib/gui/img/README.md
+    ./lib/gui/tk_lib.py
+    ./lib/docs/README.txt
+    ./lib/gui/img/file.ppm
 
 # Code Highlights:
 
@@ -82,6 +83,7 @@ Background window, it handles the three different stages in the menu bar plus th
 Relyes in conversion_gui.py, script_gui.py, run_gui.py, popup.py and tk_lib.py.
 
 CLASSES
+```
     Tkinter.Frame(Tkinter.Widget)
      |  Gro2Lam_GUI
      |      Graphic User Interface
@@ -113,6 +115,7 @@ CLASSES
      |  
      |  swapbody(self, _pbody_)
      |      Deletes and clean the last generated body
+´´´
 
 > conversion_gui.py
 
