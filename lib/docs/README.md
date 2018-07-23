@@ -1,5 +1,5 @@
 ################################################################################
-###############################     GROTOLAM v:1.11     ############################
+############################# # # GROTOLAM v:1.11 # # ##########################
 ################################################################################
 
 # Description:
@@ -115,10 +115,10 @@ CLASSES
      |  
      |  swapbody(self, _pbody_)
      |      Deletes and clean the last generated body
-´´´
+```
 
 > conversion_gui.py
-
+```
 CLASSES
     Tkinter.Frame(Tkinter.Widget)
 class Conversion(Tkinter.Frame)
@@ -153,10 +153,10 @@ class Conversion(Tkinter.Frame)
      |  
      |  solvastuff(self)
      |      If this point is reached, some button changed
-
+```
 
 > script_gui.py
-
+```
 CLASSES
     Tkinter.Frame(Tkinter.Widget)
         Script_GUI
@@ -188,9 +188,9 @@ CLASSES
      |  further_config_script(self)
      |  
      |  write_script(self)
-
+```
 > run_gui.py
-
+```
 CLASSES
     Tkinter.Frame(Tkinter.Widget)
         Run_GUI
@@ -206,10 +206,10 @@ CLASSES
      |  
      |  createWidgets(self)
      |      create the script gui
-
+```
 > popup.py
 This file neats everything that comes out as a PopUp
-
+```
 CLASSES
     Tkinter.Frame(Tkinter.Widget)
         FilePopUp
@@ -226,11 +226,11 @@ FUNCTIONS
     message_box(message='', title='Message box', **options)
          Creates a message box through the implementation of an instance
          of class Message_box, these messages can be info, warning and error
-         
+```        
 
 > tk_lib.py
 Home made tkinter library
-
+```
 CLASSES
     Tkinter.Widget(Tkinter.BaseWidget, Tkinter.Pack, Tkinter.Place, Tkinter.Grid)
         Drop_Down_List
@@ -243,8 +243,6 @@ class Drop_Down_List(Tkinter.Widget)
      |  current(self, newindex=None)
      |  
      |  set(self, value)
-
-
 
 FUNCTIONS
     bottom_hline_deco(row, func=None)
@@ -278,4 +276,4 @@ FUNCTIONS
     get_entriesvalue(entries_container)
         ---   entry getter app ----
         mainly to obtain values of entries
-    
+ ```   
