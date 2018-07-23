@@ -10,6 +10,9 @@
    * [Version](#version)
    * [Install](#install)
    * [Input Data](#input-data)
+      * [Lammps data file generation](#lammps-data-file-generation) 
+      * [Lammps input file generation](#lammps-input-file-generation) 
+      * [Lammps simulation launching](#lammps-simulation-launching) 
    * [License](#license)
    * [Files](#files)   
    * [Code Datastream Highlights](#code-datastream-highlights)
@@ -40,7 +43,7 @@
 
 # Input Data:
 
-## Lammps Data File Generation:
+  ## Lammps data file generation:
    > Enter the gro file
 
    Gromacs .gro file with all the system coordinates, and the box size specified at the end
@@ -54,6 +57,10 @@
    
    
    > Enter the bonded file
+   
+  ## Lammps input file generation:
+  
+  ## Lammps simulation launching:
 
 # License:
 
