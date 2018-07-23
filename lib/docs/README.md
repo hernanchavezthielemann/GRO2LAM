@@ -73,12 +73,15 @@ In this section, every routine is described, explaining the several input and ou
 the entries required by the GUI and the mathematical models supported by the code.
 
 > run
+
 Starts grotolam calling grotolam_launcher() function in grotolam.py
 
 > grotolam.py
+
 Works as cap of the library and calls the GUI (main_gui.py)
 
 > main_gui.py
+
 Background window, it handles the three different stages in the menu bar plus the help button.
 Relyes in conversion_gui.py, script_gui.py, run_gui.py, popup.py and tk_lib.py.
 
@@ -118,6 +121,7 @@ CLASSES
 ```
 
 > conversion_gui.py
+
 ```
 CLASSES
     Tkinter.Frame(Tkinter.Widget)
@@ -156,6 +160,7 @@ class Conversion(Tkinter.Frame)
 ```
 
 > script_gui.py
+
 ```
 CLASSES
     Tkinter.Frame(Tkinter.Widget)
@@ -190,6 +195,7 @@ CLASSES
      |  write_script(self)
 ```
 > run_gui.py
+
 ```
 CLASSES
     Tkinter.Frame(Tkinter.Widget)
@@ -208,7 +214,9 @@ CLASSES
      |      create the script gui
 ```
 > popup.py
+
 This file neats everything that comes out as a PopUp
+
 ```
 CLASSES
     Tkinter.Frame(Tkinter.Widget)
@@ -229,7 +237,9 @@ FUNCTIONS
 ```        
 
 > tk_lib.py
+
 Home made tkinter library
+
 ```
 CLASSES
     Tkinter.Widget(Tkinter.BaseWidget, Tkinter.Pack, Tkinter.Place, Tkinter.Grid)
