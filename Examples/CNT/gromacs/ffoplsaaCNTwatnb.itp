@@ -1,0 +1,69 @@
+; This file is used to determine the parameters of the non-bond interactions.
+; The non-bond interactions of hydrogen atoms are always neglected.
+; The 1-4 interctions are neglected.
+; For combination rule set to 2 or 3: sigma [nm], epsilon [kJ*mol-1].
+;
+; Mandatory fields are: 1) atomtypes, 2) nonbond_params (LJ), 3) pairtypes 
+
+
+[ atomtypes ]
+; page 98 GROMACS manual
+; name  mass      charge         ptype   V(sigma)       W(epsilon) if the combination rule is: "1"
+; From J. Phys. Chem. B 2001, 105, 9980-9987
+C1         12.0110     0.000       A       0.355000    0.292288
+C2         12.0110     0.000       A       0.355000    0.292288
+C3         12.0110     0.000       A       0.355000    0.292288
+
+opls_116   15.9994     0.000       A       0.316600    0.650200
+opls_117   1.00800     0.000       A       0.000000    0.000000
+
+
+
+[ nonbond_params ] ; VdW
+; i j funct  V(sigma)       W(epsilon)
+
+; interaction within CNT
+C2 C2 1                  0.355000    0.292288
+C2 C3 1                  0.355000    0.292288
+C3 C3 1                  0.355000    0.292288
+
+; interaction between OW and OW 
+opls_116 opls_116 1      0.316600    0.650200
+
+; interaction between OW and HW
+opls_116 opls_117 1      0.00    0.000000
+opls_117 opls_117 1      0.000000    0.000000
+
+; interaction between OW and C 
+opls_116 C1 1            0.335300    0.435942
+opls_116 C2 1            0.335300    0.435942
+opls_116 C3 1            0.335300    0.435942
+
+; interaction between HW and C
+opls_117 C1 1            0.00    0.000000
+opls_117 C2 1            0.00    0.000000
+opls_117 C3 1            0.00    0.000000
+
+[ pairtypes ] ; 1-4 extra interactions
+
+; interaction within CNT
+C2 C2 1                  0.355000    0.000000
+C2 C3 1                  0.355000    0.000000
+C3 C3 1                  0.355000    0.000000
+
+; interaction between OW and OW 
+opls_116 opls_116 1      0.316600    0.000000
+
+; interaction between OW and HW
+opls_116 opls_117 1      0.00    0.000000
+opls_117 opls_117 1      0.000000    0.000000
+
+; interaction between OW and C 
+opls_116 C1 1            0.335300    0.000000
+opls_116 C2 1            0.335300    0.000000
+opls_116 C3 1            0.335300    0.000000
+
+; interaction between HW and C
+opls_117 C1 1            0.00    0.000000
+opls_117 C2 1            0.00    0.000000
+opls_117 C3 1            0.00    0.000000
