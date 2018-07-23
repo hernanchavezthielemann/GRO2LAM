@@ -286,7 +286,7 @@ def get_gro_line(_filename_, _startstrings_, _i_=0):
                 if _ss_[_i_+1]<>'' and j_line.startswith( _ss_[_i_+1]):
                     #print _ss_[_i_+1] + ' -exit-'
                     break
-                elif len(_line_)>=2:
+                elif len(_line_)>=2 and _line_[0]<>'#':
                     #if _i_==7: print _line_
                     content_line.append( _line_)
             
