@@ -57,31 +57,46 @@ this includes topology, force field coefficients and simulation commands.
 
 
 ## Installation
-
+To download the latest version there are at least three ways:
 ### Quantum start:
+   Copy&paste the following command in your bash console and execute it, this will download and execute Grotolam in about 5 seconds.
 
     wget https://raw.githubusercontent.com/hernanchavezthielemann/utils/master/grotolam/G2L_installer && bash G2L_installer
     
 ### Quick start:
-
-    #!/bin/bash
-    wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/20jul18.zip
-    unzip 20jul18.zip
-    cd GRO2LAM-*
-    python setup
-    ./run
-
+   
+   Download:
+   
+     wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/20jul18.zip
+   Decompress:
+   
+     unzip 20jul18.zip  
+   Make sure that terminal is in the GROTOLAM folder, then:
+   
+     cd GRO2LAM-*
+   Execute the setup file through the terminal as follows:
+   
+     ~/Desktop/GRO2LAM-20jul18$python setup
+   Then, without changing the folder, execute the run script:
+   
+     ~/Desktop/GRO2LAM-20jul18$./run
+   After that an intuitive graphical user interface should appear.
 
 ### Step by step:
 
-Download from:
+Is possible to see what are you downloading from:
 
-https://github.com/hernanchavezthielemann/GRO2LAM/archive/20jul18.zip
+     https://github.com/hernanchavezthielemann/GRO2LAM/archive/20jul18.zip
 
-Unpack, or you can open a terminal and then execute:
-    
+Unpack!!
+
+Or you can open a terminal and then execute:
+
     ~$ wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/20jul18.zip
-    ~$ unzip master.zip
+    
+That will download a zip, that you can uncompress with right click or with:
+
+    ~$ unzip 20jul18.zip
     
 Then, make sure that terminal is in the GROTOLAM folder. As example:
     
@@ -93,8 +108,9 @@ Once there, execute the setup file through the terminal as:
 Then, without changing the folder, execute the run script:
     
     ~$ ./run
-After that an intuitive graphical user interface should appear.
-
+    
+After ./run that an intuitive graphical user interface should appear.
+This GUI interface will guide the user through all the inputs needed to perform the conversion correctly as is shown in the next section.
 
 ## Usage
 
