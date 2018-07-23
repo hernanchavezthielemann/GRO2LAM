@@ -264,7 +264,7 @@ def launch_about( _master_window_):
 def showuserman():
                      
     print 'Opening readme file'
-    command = 'gedit ./lib/docs/README.txt'#
+    command = 'gedit ./lib/docs/README.md'#
     run_command(command)
 
 # vim:tw=80
