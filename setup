@@ -45,9 +45,11 @@ if _okflag_:
     print 'Checking instalation files for {}'.format(__version__)
 
   
+
     system('mv README.md ./lib/docs')
-    
-    system('mv LICENSE ./lib/docs')  
+    system('mv setup ./lib')
+    system('mv LICENSE ./lib/docs')
+    system('rm .travis.yml ')
     
 _run_s_ = (')(rehcnual_malotorg    \n:"__niam__" == __eman__ fi\n'
            +'rehcnual_malotorg tropmi malotorg.bil morf\n'+
@@ -58,7 +60,7 @@ _run_t_ = (')(tset_rehcnual_malotorg\ntset_rehcnual_malotorg tropmi'
            +' malotorg.bil morf\nnohtyp/nib/rsu/!#', 'same here ;)')
 
 
-files = {'./grotolam.py', './__init__.py',
+files = {'./grotolam.py', './__init__.py', './setup',
 
          './gui/popup.py', './gui/__init__.py', './gui/main_gui.py',
          './gui/script_gui.py', './gui/run_gui.py',
@@ -122,10 +124,5 @@ if _test_:
     write_xfile('run', _run_t_[0][::-1])
 else:
     write_xfile('run', _run_s_[0][::-1])
-
-#system('mv README.md ./lib/docs')
-system('mv setup ./lib')
-#system('mv LICENSE ./lib/docs')
-system('rm .travis.yml ')
 
 print 'Exit status OK!'
