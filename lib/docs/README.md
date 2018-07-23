@@ -12,7 +12,7 @@ Table of contents
    * [Install](#install)
    * [License](#license)
    * [Files](#files)   
-   * [Code Datastream Highlights](#code_datastream_highlights)
+   * [Code Datastream Highlights](#code-datastream-highlights)
 <!--te-->
 
 # Description:
