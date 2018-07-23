@@ -2,14 +2,14 @@
 ############################# # # GROTOLAM v:1.11 # # ##########################
 ################################################################################
 
-Table of contents
-=================
+# Table of contents
 
 <!--ts-->
    * [Table of contents](#table-of-contents)
    * [Description](#description)
    * [Version](#version)
    * [Install](#install)
+   * [Input Data](#input-data)
    * [License](#license)
    * [Files](#files)   
    * [Code Datastream Highlights](#code-datastream-highlights)
@@ -37,6 +37,9 @@ Table of contents
     ~/Desktop/GRO2LAM-20jul18$./run
    After that an intuitive graphical user interface should appear.
    This GUI interface will guide the user through all the inputs needed to perform the conversion correctly.
+
+# Input Data:
+
 
 # License:
 
