@@ -44,6 +44,11 @@ if _okflag_:
     from lib.grotolam import __version__
     print 'Checking instalation files for {}'.format(__version__)
 
+    system('mv README.md ./lib/docs')
+    system('mv setup ./lib')
+    system('mv LICENSE ./lib/docs')
+    system('rm .travis.yml ')
+    
 _run_s_ = (')(rehcnual_malotorg    \n:"__niam__" == __eman__ fi\n'
            +'rehcnual_malotorg tropmi malotorg.bil morf\n'+
            'nohtyp/nib/rsu/!#', 'just to play with the reader ;)')
@@ -53,7 +58,7 @@ _run_t_ = (')(tset_rehcnual_malotorg\ntset_rehcnual_malotorg tropmi'
            +' malotorg.bil morf\nnohtyp/nib/rsu/!#', 'same here ;)')
 
 
-files = {'./grotolam.py', './__init__.py',
+files = {'./grotolam.py', './__init__.py', 'setup',
 
          './gui/popup.py', './gui/__init__.py', './gui/main_gui.py',
          './gui/script_gui.py', './gui/run_gui.py',
@@ -62,7 +67,9 @@ files = {'./grotolam.py', './__init__.py',
           './gui/img/logo.ppm', './gui/img/gear.ppm',
          './gui/img/logo2.ppm', './gui/img/small_logo2.ppm', 
          './gui/img/file.ppm', './gui/img/help.ppm',
+         
          './docs/COPYING', './docs/COPYING.LESSER', './docs/README.md',
+         './docs/LICENSE',
          
          './misc/file.py', './misc/warn.py', './misc/version.py',
          './misc/data.py', './misc/__init__.py',
@@ -71,8 +78,10 @@ files = {'./grotolam.py', './__init__.py',
          './handling/__init__.py', './handling/gromacs.py'}
 
 if _okflag_:
+    # This gathers all the files downstream /lib
     act_files = fileseeker(getcwd()+'/lib', '', '.pyc')
-
+    
+    # so the we can compare
     if len(files) == len(act_files):
         print 'File check sum ok!'
         fi_o_flag = 1
@@ -114,9 +123,5 @@ if _test_:
 else:
     write_xfile('run', _run_s_[0][::-1])
 
-system('mv README.md ./lib')
-system('mv setup ./lib')
-system('mv LICENSE ./lib')
-system('rm .travis.yml ')
 
 print 'Exit status OK!'
