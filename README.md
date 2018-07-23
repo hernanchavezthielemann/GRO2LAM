@@ -151,15 +151,27 @@ In this section, every possible data to input is described (the entries required
    >>> H - O partial charge
    
    Partial charge increment magnitude from H to O, equal to the whole H charge or the half of O.
+   
+   At this poit without saving you cannot go on.
+   
    >> no: just the core particle is converted.
    
   #### Lammps input file generation:
   
+  
+  
   #### Lammps simulation launching:
+This GUI is mainly to test the congruency of the lammps data and input file.
 
+>Select the script to run
 
+A valid input data file to run
+>Machine
 
+According the one installed in your computer, you can select the lammps machine.
+>Cores
 
+According to your needs and computer capacity, you can select the amount of cores to launch your simulation.
 
 ### Command line interface
    There is no implementation of comand line interface, more than:
