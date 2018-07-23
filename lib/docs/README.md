@@ -85,8 +85,8 @@ Works as cap of the library and calls the GUI (main_gui.py)
 Background window, it handles the three different stages in the menu bar plus the help button.
 Relyes in conversion_gui.py, script_gui.py, run_gui.py, popup.py and tk_lib.py.
 
-CLASSES
 ```
+CLASSES
     Tkinter.Frame(Tkinter.Widget)
      |  Gro2Lam_GUI
      |      Graphic User Interface
