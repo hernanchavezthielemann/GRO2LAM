@@ -51,14 +51,17 @@ In this section, every possible data is described,
    Gromacs .gro file with all the system coordinates, and the box size specified at the end
    > Enter the top file
    
-   Gromacs .top file with [ moleculetype ], [ atoms ], [ bonds ], [ pairs ], [ angles ], [ dihedrals ], [ system ] and [ molecules ]. Any #include are omitted. In the atoms section atleast one atom should be declared.   
+   Gromacs .top file with [ moleculetype ], [ atoms ], [ bonds ], [ pairs ], [ angles ], [ dihedrals ], [ system ] and [ molecules ]. Any #include is omitted. In the atoms section atleast one atom should be declared.   
    > Enter the forcefield file
    
+   Gromacs forcefield.itp file with [ defaults ] section, also with nbfun, comb-rule, gen-pairs, fudgeLJ and fudgeQQ columns. Any #include or #define is omitted.
    
    > Enter the non bonded file
    
-   
+   Gromacs forcefield_nonbonded.itp file with [ atomtypes ]. Where [ nonbond_params ] and [ pairtypes ] are ignored.
    > Enter the bonded file
+   
+   Gromacs forcefield_bonded.itp file with [ bondtypes ], [ angletypes ] and [ dihedraltypes ].
    
   ## Lammps input file generation:
   
