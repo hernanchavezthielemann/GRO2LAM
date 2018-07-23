@@ -246,13 +246,13 @@ def launch_gui( started = False):
 
 def showlicence():
     
-    print 'opening licence file'
+    print 'Opening licence file'
     command = 'gedit ./lib/docs/COPYING'#
     run_command(command)
 
 def launch_about( _master_window_):
     
-    print 'launching about'
+    print 'Launching about'
     
     title_txt = ' '*17+'ABOUT GROTOLAM'
     
