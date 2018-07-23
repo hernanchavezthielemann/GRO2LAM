@@ -2,6 +2,15 @@
 ############################# # # GROTOLAM v:1.11 # # ##########################
 ################################################################################
 
+Table of contents
+=================
+
+<!--ts-->
+   * [Table of contents](#table-of-contents)
+   * [Description](#Description)
+   * [Installation](#installation)
+<!--te-->
+
 # Description:
 
    Python modular routine used to convert GROMACS input files to LAMMPS format, 
@@ -67,7 +76,7 @@ To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0
     ./lib/docs/README.txt
     ./lib/gui/img/file.ppm
 
-# Code Highlights:
+# Code Datastream Highlights:
 
 In this section, every routine is described, explaining the several input and output arguments, 
 the entries required by the GUI and the mathematical models supported by the code.
