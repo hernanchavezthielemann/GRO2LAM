@@ -133,8 +133,8 @@ In this section, every possible data to input is described (the entries required
    
    > Solvation atoms
    
-        yes: water atoms are taken into account and water configuration popup is enabled as a must.
-        no: just the core particle is converted.
+   >> yes: water atoms are taken into account and water configuration popup is enabled as a must.
+   >> no: just the core particle is converted.
    
   #### Lammps input file generation:
   
