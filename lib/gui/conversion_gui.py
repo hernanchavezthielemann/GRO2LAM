@@ -55,7 +55,7 @@ class Conversion(Frame):
         
         # file section
         #=======================       DEFAULTS       =========================
-        ex_files=['./Examples/IONP/gromacs/SPIO_part-water-em.gro',
+        ex_files=['./Examples/IONP/gromacs/SPIO_em.gro',
                   './Examples/IONP/gromacs/SPIO_part.top',
                   './Examples/IONP/gromacs/forcefield.itp',
                   './Examples/IONP/gromacs/ffoplsaaSI_FE_WATnb.itp',
