@@ -3,7 +3,7 @@
 
 from lib.misc.version import __version__
 from lib.misc.file import write_file
-from gui.main_gui import launch_gui
+from lib.gui.main_gui import launch_gui
 
 
 class Grotolam(object):
