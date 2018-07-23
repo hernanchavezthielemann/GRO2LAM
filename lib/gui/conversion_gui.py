@@ -55,11 +55,11 @@ class Conversion(Frame):
         
         # file section
         #=======================       DEFAULTS       =========================
-        ex_files=['./Examples/IONP/Original/SPIO_part-water-em.gro',
-                  './Examples/IONP/Original/SPIO_part.top',
-                  './Examples/IONP/Original/forcefield.itp',
-                  './Examples/IONP/Original/ffoplsaaSI_FE_WATnb.itp',
-                  './Examples/IONP/Original/ffoplsaaSI_FE_WATbon.itp'
+        ex_files=['./Examples/IONP/gromacs/SPIO_part-water-em.gro',
+                  './Examples/IONP/gromacs/SPIO_part.top',
+                  './Examples/IONP/gromacs/forcefield.itp',
+                  './Examples/IONP/gromacs/ffoplsaaSI_FE_WATnb.itp',
+                  './Examples/IONP/gromacs/ffoplsaaSI_FE_WATbon.itp'
                  ]
         #ex_files=['conf.gro','topol.top','forcefield.itp','nb.itp','bon.itp']
         _atomstyle_ = 'full'
