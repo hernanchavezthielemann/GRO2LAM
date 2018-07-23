@@ -1,0 +1,76 @@
+
+#INIT
+units real
+boundary p p p
+atom_style full
+
+#atom_modify map array
+pair_style lj/cut/coul/long 13 13
+bond_style harmonic
+angle_style harmonic
+dihedral_style charmm
+
+read_data ./data.gro2lam
+
+neighbor 1.8 bin
+kspace_style pppm 1e-6
+pair_modify shift no tail yes mix geometric
+special_bonds lj/coul 0.0 0.0 0.0
+#neigh_modify every 1 delay 1 check yes
+
+variable mass_g equal mass(all)/6.02e23
+variable vol_cm3 equal vol*1.0e-24
+variable mydensity equal v_mass_g/v_vol_cm3
+
+
+group UNK id 1:480
+group H2O id > 480
+
+
+timestep 0.5
+thermo 1000
+thermo_style custom step temp press vol epair emol etotal enthalpy
+
+velocity all create 300 1234567 rot yes dist gaussian
+
+minimize 1.0e-10 1.0e-11 100000 100000
+
+fix shake_name1 all shake 0.0001 20 0 b 6 a 13  
+
+
+fix rest_UNK_1 UNK spring/self 1 xyz
+
+fix nve_name1 all nve
+run 10000
+unfix nve_name1
+
+timestep 1
+
+fix nvt_name1 all nvt temp 300 300 200
+run 100000
+unfix nvt_name1
+
+fix npt_name1 all npt temp 300 300 200 aniso 1 1 2000
+run 50000
+
+
+unfix rest_UNK_1
+
+
+run 50000
+unfix npt_name1
+
+write_restart restart.g2l_200ps
+
+dump myDump all atom 100 dump.atom100
+dump_modify myDump image yes
+
+
+thermo 100
+thermo_style custom step temp evdwl ecoul elong etail epair ebond eangle ke etotal v_mydensity press
+
+fix npt_name1 all npt temp 300 300 200 aniso 1 1 2000
+run 100000
+
+
+unfix npt_name1
