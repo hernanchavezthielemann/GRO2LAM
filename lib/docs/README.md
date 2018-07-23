@@ -8,7 +8,11 @@ Table of contents
 <!--ts-->
    * [Table of contents](#table-of-contents)
    * [Description](#Description)
-   * [Installation](#installation)
+   * [Version](#Version)
+   * [Install](#Install)
+   * [License](#License)
+   * [Files](#Files)   
+   * [Code Datastream Highlights](#Code_Datastream_Highlights)
 <!--te-->
 
 # Description:
@@ -73,7 +77,7 @@ To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0
     ./lib/gui/popup.py
     ./lib/gui/img/README.md
     ./lib/gui/tk_lib.py
-    ./lib/docs/README.txt
+    ./lib/docs/README.md
     ./lib/gui/img/file.ppm
 
 # Code Datastream Highlights:
