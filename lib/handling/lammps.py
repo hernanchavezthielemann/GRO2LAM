@@ -633,7 +633,7 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
             else:
                 e_min_tol = float(f_min_tol)*100
             
-            emin_frm = 'minimize {} {} 10000 100000\n'
+            emin_frm = 'minimize {} {} 10000 100000\n\n'
             _dtxt_+= emin_frm.format( e_min_tol, f_min_tol )
             
             
