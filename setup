@@ -58,7 +58,7 @@ _run_t_ = (')(tset_rehcnual_malotorg\ntset_rehcnual_malotorg tropmi'
            +' malotorg.bil morf\nnohtyp/nib/rsu/!#', 'same here ;)')
 
 
-files = {'./grotolam.py', './__init__.py', 'setup',
+files = {'./grotolam.py', './__init__.py', './setup',
 
          './gui/popup.py', './gui/__init__.py', './gui/main_gui.py',
          './gui/script_gui.py', './gui/run_gui.py',
