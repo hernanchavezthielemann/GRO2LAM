@@ -278,15 +278,18 @@ def get_gro_line(_filename_, _startstrings_, _i_=0):
         for j_line in indata:
             if j_line.startswith(';'):
                 pass
-            if j_line.startswith('#include'):
-                print wrg_3(j_line.rstrip('\n')+' not included in this line\n')
+            if j_line.startswith('#'):
+		if j_line.startswith('#include'):
+                    print wrg_3(j_line.rstrip('\n')+' not included in this line\n')
+		else:
+		    pass
             elif read_flag:
                 _line_ = j_line.split(';')[0].split()
                 
                 if _ss_[_i_+1]<>'' and j_line.startswith( _ss_[_i_+1]):
                     #print _ss_[_i_+1] + ' -exit-'
                     break
-                elif len(_line_)>=2 and _line_[0]<>'#':
+                elif len(_line_)>=2:
                     #if _i_==7: print _line_
                     content_line.append( _line_)
             
