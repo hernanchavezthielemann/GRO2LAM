@@ -4,6 +4,28 @@
 # GRO2LAM
 Gromacs to Lammps simulation converter
 
+## Version:
+   GROTOLAM version 1.11 (20 Jul 2018)
+   
+## Table of contents
+
+<!--ts-->
+   * [Version](#version)
+   * [Table of contents](#table-of-contents)
+   * [Description](#description)
+   * [Installation](#installation)
+      * [Quantum start](#quantum-start)
+      * [Quick start](#quick-start)
+      * [Step by step](#step-by-step)
+   * [Usage](#usage)
+      * [Lammps data file generation](#lammps-data-file-generation)
+      * [Lammps input file generation](#lammps-input-file-generation) 
+      * [Lammps simulation launching](#lammps-simulation-launching) 
+   * [License](#license)
+   * [Files](#files)   
+   * [Code Datastream Highlights](#code-datastream-highlights)
+<!--te-->
+
 ## Authors
 
 - Python version:
@@ -12,7 +34,9 @@ Gromacs to Lammps simulation converter
 ## Description
 This program was designed for easy conversion of solvated structures between 
 the GROningen MAchine for Chemical Simulations([Gromacs]) and the 
-Large-scale Atomic Molecular Massively Parallel Simulator ([Lammps]).
+Large-scale Atomic Molecular Massively Parallel Simulator ([Lammps]). 
+It is a python modular routine used to convert 5 [Gromacs] files to 2 [Lammps] format files,
+this includes topology, force field coefficients and simulation commands.
 
 ## Installation
 
