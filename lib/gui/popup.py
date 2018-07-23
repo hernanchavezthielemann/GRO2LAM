@@ -41,6 +41,8 @@ class Message_box(Frame):
         return bt
 
 def message_box( message='', title='Message box', **options):
+    '''creates a message box through the implementation of an instance
+     of class Message_box, these messages can be info, warning and error'''
     
     options["title"] = title
     options["message"] = message
