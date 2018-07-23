@@ -158,7 +158,17 @@ In this section, every possible data to input is described (the entries required
    
   #### Lammps input file generation:
   
-  
+  ##### Main page
+  %Timestep [fs]
+  NVE steps  [#ts]
+  NVT steps  [#ts]
+  Temperature at start:end [K]
+  Temperature damping [fs]
+  NPT steps  [#ts]
+  Pressure at start:end  [atm]
+  Pressure damping [fs]
+  Temperature at start:end [K]
+  Temperature damping [fs]
   
   #### Lammps simulation launching:
 This GUI is mainly to test the congruency of the lammps data and input file.
