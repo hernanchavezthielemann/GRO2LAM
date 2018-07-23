@@ -109,7 +109,7 @@ Then, without changing the folder, execute the run script:
     
     ~$ ./run
     
-After ./run that an intuitive graphical user interface should appear.
+After ./run, an intuitive graphical user interface should appear.
 This GUI interface will guide the user through all the inputs needed to perform the conversion correctly as is shown in the next section.
 
 ## Usage
