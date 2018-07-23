@@ -23,10 +23,10 @@ Gromacs to Lammps simulation converter
    * [Usage](#usage)
       * [GUI](#gui)
       * [GUI input data](#gui-input-data)
-      * [Command line interface](#command-line-interface)   
-   * [Files](#files)   
+      * [Command line interface](#command-line-interface)
+   * [Files](#files)
    * [Code Datastream Highlights](#code-datastream-highlights)
-   * [Repository](#repository)   
+   * [Repository](#repository)
 <!--te-->
 
 ## Authors
@@ -70,7 +70,7 @@ To download the latest version there are at least three ways:
      wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/20jul18.zip
    Decompress:
    
-     unzip 20jul18.zip  
+     unzip 20jul18.zip
    Make sure that terminal is in the GROTOLAM folder, then:
    
      cd GRO2LAM-*
@@ -132,7 +132,7 @@ In this section, every possible data to input is described (the entries required
    Gromacs .gro file with all the system coordinates, and the box size specified at the end
    > Enter the top file
    
-   Gromacs .top file with [ moleculetype ], [ atoms ], [ bonds ], [ pairs ], [ angles ], [ dihedrals ], [ system ] and [ molecules ]. Any #include is omitted. In the atoms section atleast one atom should be declared.   
+   Gromacs .top file with [ moleculetype ], [ atoms ], [ bonds ], [ pairs ], [ angles ], [ dihedrals ], [ system ] and [ molecules ]. Any #include is omitted. In the atoms section atleast one atom should be declared.
    > Enter the forcefield file
    
    Gromacs forcefield.itp file with [ defaults ] section, also with nbfun, comb-rule, gen-pairs, fudgeLJ and fudgeQQ columns. Any #include or #define is omitted.
