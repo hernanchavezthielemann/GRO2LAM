@@ -200,11 +200,11 @@ In this section, every possible data to input is described (the entries required
   
   >Pairwise interactions
   
-  >L-J/Buck rcutoff  ["+u'\u00c5'+"]
+  >L-J/Buck rcutoff  [Å]
   
-  >Coulomb rcutoff  ["+u'\u00c5'+"]
+  >Coulomb rcutoff  [Å]
   
-  >Neighbor skin distance  ["+u'\u00c5'+"]
+  >Neighbor skin distance  [Å]
   
   >Long-range solver
   
