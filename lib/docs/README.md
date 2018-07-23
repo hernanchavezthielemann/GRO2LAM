@@ -7,12 +7,12 @@ Table of contents
 
 <!--ts-->
    * [Table of contents](#table-of-contents)
-   * [Description](#Description)
-   * [Version](#Version)
-   * [Install](#Install)
-   * [License](#License)
-   * [Files](#Files)   
-   * [Code Datastream Highlights](#Code_Datastream_Highlights)
+   * [Description](#description)
+   * [Version](#version)
+   * [Install](#install)
+   * [License](#license)
+   * [Files](#files)   
+   * [Code Datastream Highlights](#code_datastream_highlights)
 <!--te-->
 
 # Description:
