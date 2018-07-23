@@ -43,6 +43,8 @@
 
 # Input Data:
 
+In this section, every possible data is described,
+
   ## Lammps data file generation:
    > Enter the gro file
 
