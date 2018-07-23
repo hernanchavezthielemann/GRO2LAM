@@ -62,6 +62,11 @@ In this section, every possible data is described,
    > Enter the bonded file
    
    Gromacs forcefield_bonded.itp file with [ bondtypes ], [ angletypes ] and [ dihedraltypes ].
+   > Choose an atom style
+   
+   
+   > Solvation atoms
+        >yes or no
    
   ## Lammps input file generation:
   
