@@ -22,13 +22,11 @@ Gromacs to Lammps simulation converter
       * [Step by step](#step-by-step)
    * [Usage](#usage)
       * [GUI](#gui)
-      * [GUI-data](#gui-data)
-        * [Lammps data file generation](#lammps-data-file-generation)
-        * [Lammps input file generation](#lammps-input-file-generation) 
-        * [Lammps simulation launching](#lammps-simulation-launching) 
-
+      * [GUI input data](#gui-input-data)
+      * [Command line interface](#command-line-interface)   
    * [Files](#files)   
    * [Code Datastream Highlights](#code-datastream-highlights)
+   * [Repository](#repository)   
 <!--te-->
 
 ## Authors
@@ -109,7 +107,7 @@ After that an intuitive graphical user interface should appear
    
    This will create [Lammps] simulation files with setup parameters inherited from [Gromacs].
 
-### GUI-data
+### GUI input data
 In this section, every possible data to input is described.
 
   #### Lammps data file generation:
