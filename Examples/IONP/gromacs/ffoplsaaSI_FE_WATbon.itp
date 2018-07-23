@@ -1,0 +1,166 @@
+; This file is used to determine the parameters of the bond interactions.
+; All the following data are taken from MacKerel et al. JPCB v.110 p.2782 (2006), suppl. data, except b0 and th0 that are taken from the geometry.
+; Pay attention to the conversion of the unit of measure.
+; In this case we don't need any constrain definition.
+; 
+; Possible fields are: 1) bondtypes, 2) angletypes, 3) dihedraltypes, 4) constrainttypes
+
+
+[ bondtypes ]
+; page 125 GROMACS manual table 5.5
+; interaction type: harmonic
+; [b0] = nm, [kb] = kJ/mol/nm^2
+; i    j               func         b0          kb
+;
+SiB   OSi                1       0.16100     400000
+SiB   OHSi               1       0.16100     400000
+HB    OHSi               1       0.09600     400000 
+opls_116  opls_117       1       0.1         345000
+
+Fe2   OFe                1       0.18870     400000
+Fe3   OFe                1       0.20580     400000
+Fe2   OHF2               1       0.18870     400000
+Fe3   OHF3               1       0.20580     400000
+FeS2  OFe                1       0.18870     400000
+FeS3  OFe                1       0.20580     400000
+FeS2  OHF2               1       0.18870     400000
+FeS3  OHF3               1       0.20580     400000
+HB    OHF2               1       0.09600     400000 
+HB    OHF3               1       0.09600     400000 
+
+
+[ angletypes ]
+; page 125 GROMACS manual table 5.5
+; interaction type: harmonic
+; [th0] = deg, [kth] = kJ/mol/rad^2
+; i     j    k	      		      func     th0	       kth
+;
+OSi    SiB   OSi 	               1      109.800        400
+OSi    SiB   OHSi 	               1      109.800 	     400
+SiB    OSi   SiB                       1      109.800        400
+SiB    OHSi  SiB                       1      143.600        400
+SiB    OHSi  HB                        1      128.800        400
+OHSi   SiB   OHSi 	               1      109.800 	     400
+opls_117  opls_116  opls_117           1      109.470        383 
+
+OFe    Fe2   OFe                       1      109.471         400
+OFe    Fe3   OFe                       1      180.000         400
+OHF2   Fe2   OFe                       1      109.471         400
+OHF3   Fe3   OFe                       1      180.000         400
+OHF2   Fe2   OHF2                      1      109.471         400
+OHF3   Fe3   OHF3                      1      180.000         400
+OFe    FeS2  OFe                       1      109.471         400
+OFe    FeS3  OFe                       1      180.000         400
+OHF2   FeS2  OFe                       1      109.471         400
+OHF3   FeS3  OFe                       1      180.000         400
+OHF2   FeS2  OHF2                      1      109.471         400
+OHF3   FeS3  OHF3                      1      180.000         400
+
+Fe2    OFe   Fe3                       1      123.665         400
+Fe2    OFe   FeS3                      1      123.665         400
+FeS2   OFe   Fe3                       1      123.665         400
+FeS2   OFe   FeS3                      1      123.665         400
+Fe3    OFe   Fe3                       1       92.239         400
+FeS3   OFe   Fe3                       1       92.239         400
+FeS3   OFe   FeS3                      1       92.239         400
+
+FeS2   OHF2  HB                        1      128.800         400
+FeS3   OHF3  HB                        1      128.800         400
+
+
+
+[ dihedraltypes ]
+; page 125 GROMACS manual table 5.5
+; interaction type: proper dihedral
+; [phi] = deg, [k] = kJ/mol, [n] = -
+;  i  j     k    l         func     	  phi        k       n
+;
+SiB   OHSi  SiB  OHSi        1	     0.0000  0.00000 5.00000
+SiB   OHSi  SiB  OSi         1           0.0000  0.00000 5.00000
+SiB   OSi   SiB  OHSi        1           0.0000  0.00000 5.00000 
+SiB   OSi   SiB  OSi         1           0.0000  0.00000 5.00000
+OSi   SiB   OHSi HB 	     1           0.0000  0.00000 3.00000
+OHSi  SiB   OHSi HB 	     1           0.0000  0.00000 3.00000
+
+OFe   Fe2   OFe  Fe2         1           0.0000  0.00000 3.00000
+OFe   Fe2   OFe  Fe3         1           0.0000  0.00000 3.00000
+OHF2  Fe2   OFe  Fe3         1           0.0000  0.00000 3.00000
+OHF2  Fe2   OFe  Fe2         1           0.0000  0.00000 3.00000
+Fe2   OFe   Fe2  OFe         1           0.0000  0.00000 3.00000
+Fe3   OFe   Fe2  OFe         1           0.0000  0.00000 3.00000
+Fe3   OHF2  Fe2  OFe         1           0.0000  0.00000 3.00000
+Fe2   OHF2  Fe2  OFe         1           0.0000  0.00000 3.00000
+
+OFe   Fe2   OFe  FeS2        1           0.0000  0.00000 3.00000
+OFe   FeS2  OFe  Fe3         1           0.0000  0.00000 3.00000
+OHF2  FeS2  OFe  Fe3         1           0.0000  0.00000 3.00000
+OHF2  FeS2  OFe  Fe2         1           0.0000  0.00000 3.00000
+FeS2  OFe   Fe2  OFe         1           0.0000  0.00000 3.00000
+FeS3  OFe   Fe2  OFe         1           0.0000  0.00000 3.00000
+FeS3  OHF2  Fe2  OFe         1           0.0000  0.00000 3.00000
+FeS2  OHF2  Fe2  OFe         1           0.0000  0.00000 3.00000
+
+OFe   FeS2  OFe  FeS2        1           0.0000  0.00000 3.00000
+OFe   FeS2  OFe  FeS3        1           0.0000  0.00000 3.00000
+OHF2  FeS2  OFe  FeS3        1           0.0000  0.00000 3.00000
+OHF2  FeS2  OFe  FeS2        1           0.0000  0.00000 3.00000
+FeS2  OFe   FeS2 OFe         1           0.0000  0.00000 3.00000
+FeS3  OFe   FeS2 OFe         1           0.0000  0.00000 3.00000
+FeS3  OHF2  FeS2 OFe         1           0.0000  0.00000 3.00000
+FeS2  OHF2  FeS2 OFe         1           0.0000  0.00000 3.00000
+
+OFe   FeS2  OFe  Fe2         1           0.0000  0.00000 3.00000
+OFe   Fe2   OFe  FeS3        1           0.0000  0.00000 3.00000
+OHF2  Fe2   OFe  FeS3        1           0.0000  0.00000 3.00000
+OHF2  Fe2   OFe  FeS2        1           0.0000  0.00000 3.00000
+Fe2   OFe   FeS2  OFe        1           0.0000  0.00000 3.00000
+Fe3   OFe   FeS2  OFe        1           0.0000  0.00000 3.00000
+Fe3   OHF2  FeS2  OFe        1           0.0000  0.00000 3.00000
+Fe2   OHF2  FeS2  OFe        1           0.0000  0.00000 3.00000
+
+
+OFe   Fe3   OFe  Fe3         1           0.0000  0.00000 3.00000
+OFe   Fe3   OFe  Fe2         1           0.0000  0.00000 3.00000
+OHF3  Fe3   OFe  Fe2         1           0.0000  0.00000 3.00000
+OHF3  Fe3   OFe  Fe3         1           0.0000  0.00000 3.00000
+Fe3   OFe   Fe3  OFe         1           0.0000  0.00000 3.00000
+Fe2   OFe   Fe3  OFe         1           0.0000  0.00000 3.00000
+Fe2   OHF3  Fe3  OFe         1           0.0000  0.00000 3.00000
+Fe3   OHF3  Fe3  OFe         1           0.0000  0.00000 3.00000
+
+OFe   FeS3  OFe  Fe3         1           0.0000  0.00000 3.00000
+OFe   FeS3  OFe  Fe2         1           0.0000  0.00000 3.00000
+OHF3  FeS3  OFe  Fe2         1           0.0000  0.00000 3.00000
+OHF3  FeS3  OFe  Fe3         1           0.0000  0.00000 3.00000
+FeS3  OFe   Fe3  OFe         1           0.0000  0.00000 3.00000
+FeS2  OFe   Fe3  OFe         1           0.0000  0.00000 3.00000
+FeS2  OHF3  Fe3  OFe         1           0.0000  0.00000 3.00000
+FeS3  OHF3  Fe3  OFe         1           0.0000  0.00000 3.00000
+
+OFe   FeS3  OFe  FeS3        1           0.0000  0.00000 3.00000
+OFe   FeS3  OFe  FeS2        1           0.0000  0.00000 3.00000
+OHF3  FeS3  OFe  FeS2        1           0.0000  0.00000 3.00000
+OHF3  FeS3  OFe  FeS3        1           0.0000  0.00000 3.00000
+FeS3  OFe   FeS3 OFe         1           0.0000  0.00000 3.00000
+FeS2  OFe   FeS3 OFe         1           0.0000  0.00000 3.00000
+FeS2  OHF3  FeS3 OFe         1           0.0000  0.00000 3.00000
+FeS3  OHF3  FeS3 OFe         1           0.0000  0.00000 3.00000
+
+OFe   Fe3   OFe  FeS3        1           0.0000  0.00000 3.00000
+OFe   Fe3   OFe  FeS2        1           0.0000  0.00000 3.00000
+OHF3  Fe3   OFe  FeS2        1           0.0000  0.00000 3.00000
+OHF3  Fe3   OFe  FeS3        1           0.0000  0.00000 3.00000
+Fe3   OFe   FeS3 OFe         1           0.0000  0.00000 3.00000
+Fe2   OFe   FeS3 OFe         1           0.0000  0.00000 3.00000
+Fe2   OHF3  FeS3 OFe         1           0.0000  0.00000 3.00000
+Fe3   OHF3  FeS3 OFe         1           0.0000  0.00000 3.00000
+
+
+OFe   FeS3  OHF3 HB          1           0.0000  0.00000 3.00000
+OHF3  FeS3  OHF3 HB          1           0.0000  0.00000 3.00000
+OFe   FeS2  OHF2 HB          1           0.0000  0.00000 3.00000
+OHF2  FeS2  OHF2 HB          1           0.0000  0.00000 3.00000
+OFe   Fe3   OHF3 HB          1           0.0000  0.00000 3.00000
+OHF3  Fe3   OHF3 HB          1           0.0000  0.00000 3.00000
+OFe   Fe2   OHF2 HB          1           0.0000  0.00000 3.00000
+OHF2  Fe2   OHF2 HB          1           0.0000  0.00000 3.00000

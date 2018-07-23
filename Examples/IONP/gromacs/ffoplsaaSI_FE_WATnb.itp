@@ -1,0 +1,285 @@
+; This file is used to determine the parameters of the non-bond interactions.
+; All the following data are taken from Malani et al. JPCB v.113 p.13825 (2009).
+; The non-bond interactions of hydrogen atoms are always neglected.
+; The 1-4 interctions are neglected.
+; For combination rule set to 2 or 3: sigma [nm], epsilon [kJ*mol-1].
+;
+; Mandatory fields are: 1) atomtypes, 2) nonbond_params (LJ), 3) pairtypes 
+
+
+[ atomtypes ] ; Define all atom types of your problem.
+; Note that the charge is set to zero because it has already been imposed in the .n2t file.
+; name  mass    charge   ptype  V(sigma)  (epsilon) if the combination rule is: "2"
+;
+SiB          28.0860    0.000	    	    A    0.31540E+00   0.64870E+00    
+OHSi         15.9994    0.000               A    0.37950E+00   0.53360E+00 
+OSi          15.9994    0.000               A    0.37950E+00   0.53360E+00 
+HB           1.00800    0.000               A    0.00000E+00   0.00000E+00      
+opls_116     15.9994    0.000               A    0.31660E+00   0.65020E+00
+opls_117     1.00800    0.000               A    0.00000E+00   0.00000E+00 
+
+Fe2          55.8470    0.000               A    0.43000E+00   2.49434E+01
+Fe3          55.8470    0.000               A    0.43000E+00   2.49434E+01
+FeS2         55.8470    0.000               A    0.43000E+00   2.49434E+01
+FeS3         55.8470    0.000               A    0.43000E+00   2.49434E+01
+OFe          15.9994    0.000               A    0.37950E+00   0.53360E+00
+OHF2         15.9994    0.000               A    0.37950E+00   0.53360E+00
+OHF3         15.9994    0.000               A    0.37950E+00   0.53360E+00
+
+
+
+[ nonbond_params ] ; VdW through the Lennard-Jones potential
+; i 	j  funct  V(sigma)       W(epsilon)
+;
+; interaction within the crystal
+SiB   SiB    1   0.31540E+00   0.64870E+00
+SiB   OHSi   1   0.34745E+00   0.58834E+00
+SiB   OSi    1   0.34745E+00   0.58834E+00
+SiB   HB     1   0.15770E+00   0.00000E+00  
+OHSi  OHSi   1   0.37950E+00   0.53360E+00
+OHSi  OSi    1   0.37950E+00   0.53360E+00
+OHSi  HB     1   0.18975E+00   0.00000E+00
+OSi   OSi    1   0.37950E+00   0.53360E+00
+OSi   HB     1   0.18975E+00   0.00000E+00
+HB    HB     1   0.00000E+00   0.00000E+00 
+
+; interaction between OW and OW
+opls_116   opls_116   1   0.31660E+00   0.65020E+00
+
+; interaction between OW and HW
+opls_116   opls_117   1   0.15830E+00   0.00000E+00
+opls_117   opls_117   1   0.00000E+00   0.00000E+00
+
+; interaction between OW and crystal
+opls_116   SiB  1   0.31600E+00   0.64945E+00
+opls_116   OSi  1   0.34805E+00   0.58902E+00
+opls_116   OHSi 1   0.34805E+00   0.58902E+00
+opls_116   HB   1   0.15830E+00   0.00000E+00
+
+; interaction between HW and crystal
+opls_117   SiB    1   0.15770E+00   0.00000E+00
+opls_117   OSi    1   0.18975E+00   0.00000E+00
+opls_117   OHSi   1   0.18975E+00   0.00000E+00
+opls_117   HB     1   0.00000E+00   0.00000E+00 
+
+
+; interaction within the crystal
+Fe2   Fe2    1   0.43000E+00   2.49434E+01
+Fe2   Fe3    1   0.43000E+00   2.49434E+01
+Fe2   FeS2   1   0.43000E+00   2.49434E+01
+Fe2   FeS3   1   0.43000E+00   2.49434E+01
+Fe2   OFe    1   0.40480E+00   3.64830E+00
+Fe2   OHF2   1   0.40480E+00   3.64830E+00
+Fe2   OHF3   1   0.40480E+00   3.64830E+00
+Fe2   HB     1   0.21500E+00   0.00000E+00
+
+Fe3   Fe3    1   0.43000E+00   2.49434E+01
+Fe3   FeS2   1   0.43000E+00   2.49434E+01
+Fe3   FeS3   1   0.43000E+00   2.49434E+01
+Fe3   OFe    1   0.40480E+00   3.64830E+00
+Fe3   OHF2   1   0.40480E+00   3.64830E+00
+Fe3   OHF3   1   0.40480E+00   3.64830E+00
+Fe3   HB     1   0.21500E+00   0.00000E+00
+
+FeS2  FeS2   1   0.43000E+00   2.49434E+01
+FeS2  FeS3   1   0.43000E+00   2.49434E+01
+FeS2  OFe    1   0.40480E+00   3.64830E+00
+FeS2  OHF2   1   0.40480E+00   3.64830E+00
+FeS2  OHF3   1   0.40480E+00   3.64830E+00
+FeS2  HB     1   0.21500E+00   0.00000E+00
+
+FeS3  FeS3   1   0.43000E+00   2.49434E+01
+FeS3  OFe    1   0.40480E+00   3.64830E+00
+FeS3  OHF2   1   0.40480E+00   3.64830E+00
+FeS3  OHF3   1   0.40480E+00   3.64830E+00
+FeS3  HB     1   0.21500E+00   0.00000E+00
+
+OFe   OFe    1   0.37950E+00   0.53360E+00
+OFe   OHF2   1   0.37950E+00   0.53360E+00
+OFe   OHF3   1   0.37950E+00   0.53360E+00
+OFe   HB     1   0.18980E+00   0.00000E+00
+
+OHF2  OHF2   1   0.37950E+00   0.53360E+00
+OHF2  OHF3   1   0.37950E+00   0.53360E+00
+OHF2  HB     1   0.18980E+00   0.00000E+00
+
+OHF3  OHF3   1   0.37950E+00   0.53360E+00
+OHF3  HB     1   0.18980E+00   0.00000E+00
+
+HB    HB     1   0.00000E+00   0.00000E+00 
+
+
+; interaction between OW and crystal
+opls_116   Fe2  1   0.37330E+00   4.02720E+00
+opls_116   Fe3  1   0.37330E+00   4.02720E+00
+opls_116   FeS2 1   0.37330E+00   4.02720E+00
+opls_116   FeS3 1   0.37330E+00   4.02720E+00
+opls_116   OFe  1   0.34805E+00   0.58902E+00
+opls_116   OHF2 1   0.34805E+00   0.58902E+00
+opls_116   OHF3 1   0.34805E+00   0.58902E+00
+opls_116   HB   1   0.15830E+00   0.00000E+00
+
+; interaction between HW and crystal
+opls_117   Fe2    1   0.21500E+00   0.00000E+00
+opls_117   Fe3    1   0.21500E+00   0.00000E+00
+opls_117   FeS2   1   0.21500E+00   0.00000E+00
+opls_117   FeS3   1   0.21500E+00   0.00000E+00
+opls_117   OFe    1   0.18980E+00   0.00000E+00
+opls_117   OHF2   1   0.18980E+00   0.00000E+00
+opls_117   OHF3   1   0.18980E+00   0.00000E+00
+opls_117   HB     1   0.00000E+00   0.00000E+00 
+
+; interaction between SPIOs and SILICA
+Fe2        SiB    1   0.37270E+00   4.02250E+00
+Fe3        SiB    1   0.37270E+00   4.02250E+00
+FeS2       SiB    1   0.37270E+00   4.02250E+00
+FeS3       SiB    1   0.37270E+00   4.02250E+00
+OFe        SiB    1   0.34745E+00   0.58834E+00
+OHF2       SiB    1   0.34745E+00   0.58834E+00
+OHF3       SiB    1   0.34745E+00   0.58834E+00
+
+Fe2        OHSi   1   0.40480E+00   3.64830E+00
+Fe3        OHSi   1   0.40480E+00   3.64830E+00
+FeS2       OHSi   1   0.40480E+00   3.64830E+00
+FeS3       OHSi   1   0.40480E+00   3.64830E+00
+OFe        OHSi   1   0.37950E+00   0.53360E+00
+OHF2       OHSi   1   0.37950E+00   0.53360E+00
+OHF3       OHSi   1   0.37950E+00   0.53360E+00
+
+Fe2        OSi    1   0.40480E+00   3.64830E+00
+Fe3        OSi    1   0.40480E+00   3.64830E+00
+FeS2       OSi    1   0.40480E+00   3.64830E+00
+FeS3       OSi    1   0.40480E+00   3.64830E+00
+OFe        OSi    1   0.37950E+00   0.53360E+00
+OHF2       OSi    1   0.37950E+00   0.53360E+00
+OHF3       OSi    1   0.37950E+00   0.53360E+00
+
+
+
+
+
+[ pairtypes ] ; 1-4 extra interactions
+; i 	j  funct  V(sigma)       W(epsilon)
+;
+; interaction within the crystal
+SiB   SiB    1   0.31540E+00   0.00000E+00
+SiB   OHSi   1   0.34745E+00   0.00000E+00
+SiB   OSi    1   0.34745E+00   0.00000E+00
+SiB   HB     1   0.15770E+00   0.00000E+00  
+OHSi  OHSi   1   0.37950E+00   0.00000E+00
+OHSi  OSi    1   0.37950E+00   0.00000E+00
+OHSi  HB     1   0.18975E+00   0.00000E+00
+OSi   OSi    1   0.37950E+00   0.00000E+00
+OSi   HB     1   0.18975E+00   0.00000E+00
+HB    HB     1   0.00000E+00   0.00000E+00 
+
+; interaction between OW and OW
+opls_116   opls_116   1   0.31660E+00   0.00000E+00
+
+; interaction between OW and HW
+opls_116   opls_117   1   0.15830E+00   0.00000E+00
+opls_117   opls_117   1   0.00000E+00   0.00000E+00
+
+; interaction between OW and crystal
+opls_116   SiB  1   0.31600E+00   0.00000E+00
+opls_116   OSi  1   0.34805E+00   0.00000E+00
+opls_116   OHSi 1   0.34805E+00   0.00000E+00
+opls_116   HB   1   0.15830E+00   0.00000E+00
+
+; interaction between HW and crystal
+opls_117   SiB    1   0.15770E+00   0.00000E+00
+opls_117   OSi    1   0.18975E+00   0.00000E+00
+opls_117   OHSi   1   0.18975E+00   0.00000E+00
+opls_117   HB     1   0.00000E+00   0.00000E+00 
+
+
+; interaction within the crystal
+Fe2   Fe2    1   0.43000E+00   0.00000E+00
+Fe2   Fe3    1   0.43000E+00   0.00000E+00
+Fe2   FeS2   1   0.43000E+00   0.00000E+00
+Fe2   FeS3   1   0.43000E+00   0.00000E+00
+Fe2   OFe    1   0.40480E+00   0.00000E+00
+Fe2   OHF2   1   0.40480E+00   0.00000E+00
+Fe2   OHF3   1   0.40480E+00   0.00000E+00
+Fe2   HB     1   0.21500E+00   0.00000E+00
+
+Fe3   Fe3    1   0.43000E+00   0.00000E+00
+Fe3   FeS2   1   0.43000E+00   0.00000E+00
+Fe3   FeS3   1   0.43000E+00   0.00000E+00
+Fe3   OFe    1   0.40480E+00   0.00000E+00
+Fe3   OHF2   1   0.40480E+00   0.00000E+00
+Fe3   OHF3   1   0.40480E+00   0.00000E+00
+Fe3   HB     1   0.21500E+00   0.00000E+00
+
+FeS2  FeS2   1   0.43000E+00   0.00000E+00
+FeS2  FeS3   1   0.43000E+00   0.00000E+00
+FeS2  OFe    1   0.40480E+00   0.00000E+00
+FeS2  OHF2   1   0.40480E+00   0.00000E+00
+FeS2  OHF3   1   0.40480E+00   0.00000E+00
+FeS2  HB     1   0.21500E+00   0.00000E+00
+
+FeS3  FeS3   1   0.43000E+00   0.00000E+00
+FeS3  OFe    1   0.40480E+00   0.00000E+00
+FeS3  OHF2   1   0.40480E+00   0.00000E+00
+FeS3  OHF3   1   0.40480E+00   0.00000E+00
+FeS3  HB     1   0.21500E+00   0.00000E+00
+
+OFe   OFe    1   0.37950E+00   0.00000E+00
+OFe   OHF2   1   0.37950E+00   0.00000E+00
+OFe   OHF3   1   0.37950E+00   0.00000E+00
+OFe   HB     1   0.18980E+00   0.00000E+00
+
+OHF2  OHF2   1   0.37950E+00   0.00000E+00
+OHF2  OHF3   1   0.37950E+00   0.00000E+00
+OHF2  HB     1   0.18980E+00   0.00000E+00
+
+OHF3  OHF3   1   0.37950E+00   0.00000E+00
+OHF3  HB     1   0.18980E+00   0.00000E+00
+
+HB    HB     1   0.00000E+00   0.00000E+00 
+
+; interaction between OW and crystal
+opls_116   Fe2  1   0.37330E+00   0.00000E+00
+opls_116   Fe3  1   0.37330E+00   0.00000E+00
+opls_116   FeS2 1   0.37330E+00   0.00000E+00
+opls_116   FeS3 1   0.37330E+00   0.00000E+00
+opls_116   OFe  1   0.34805E+00   0.00000E+00
+opls_116   OHF2 1   0.34805E+00   0.00000E+00
+opls_116   OHF3 1   0.34805E+00   0.00000E+00
+opls_116   HB   1   0.15830E+00   0.00000E+00
+
+; interaction between HW and crystal
+opls_117   Fe2    1   0.21500E+00   0.00000E+00
+opls_117   Fe3    1   0.21500E+00   0.00000E+00
+opls_117   FeS2   1   0.21500E+00   0.00000E+00
+opls_117   FeS3   1   0.21500E+00   0.00000E+00
+opls_117   OFe    1   0.18980E+00   0.00000E+00
+opls_117   OHF2   1   0.18980E+00   0.00000E+00
+opls_117   OHF3   1   0.18980E+00   0.00000E+00
+opls_117   HB     1   0.00000E+00   0.00000E+00 
+
+; interaction between SPIOs and SILICA
+Fe2        SiB    1   0.37270E+00   0.00000E+00 
+Fe3        SiB    1   0.37270E+00   0.00000E+00 
+FeS2       SiB    1   0.37270E+00   0.00000E+00 
+FeS3       SiB    1   0.37270E+00   0.00000E+00 
+OFe        SiB    1   0.34745E+00   0.00000E+00 
+OHF2       SiB    1   0.34745E+00   0.00000E+00 
+OHF3       SiB    1   0.34745E+00   0.00000E+00 
+
+Fe2        OHSi   1   0.40480E+00   0.00000E+00 
+Fe3        OHSi   1   0.40480E+00   0.00000E+00 
+FeS2       OHSi   1   0.40480E+00   0.00000E+00 
+FeS3       OHSi   1   0.40480E+00   0.00000E+00 
+OFe        OHSi   1   0.37950E+00   0.00000E+00 
+OHF2       OHSi   1   0.37950E+00   0.00000E+00 
+OHF3       OHSi   1   0.37950E+00   0.00000E+00 
+
+Fe2        OSi    1   0.40480E+00   0.00000E+00 
+Fe3        OSi    1   0.40480E+00   0.00000E+00 
+FeS2       OSi    1   0.40480E+00   0.00000E+00 
+FeS3       OSi    1   0.40480E+00   0.00000E+00 
+OFe        OSi    1   0.37950E+00   0.00000E+00 
+OHF2       OSi    1   0.37950E+00   0.00000E+00 
+OHF3       OSi    1   0.37950E+00   0.00000E+00 
+
