@@ -53,7 +53,7 @@ this includes topology, force field coefficients and simulation commands.
 ## Citation
    The publication associated with this code is found here:
    
-        Hernan Chavez Thielemann, Annalisa Cardellini, Matteo Fasano, Gianmarco Ciorra, Luca Bergamasco, Matteo Alberghini, Eliodoro Chiavazzo, Pietro Asinari.
+   Hernan Chavez Thielemann, Annalisa Cardellini, Matteo Fasano, Gianmarco Ciorra, Luca Bergamasco, Matteo Alberghini, Eliodoro Chiavazzo, Pietro Asinari.
 
 
 ## Installation
@@ -93,7 +93,7 @@ Once there, execute the setup file through the terminal as:
 Then, without changing the folder, execute the run script:
     
     ~$ ./run
-After that an intuitive graphical user interface should appear
+After that an intuitive graphical user interface should appear.
 
 
 ## Usage
@@ -108,7 +108,7 @@ After that an intuitive graphical user interface should appear
    This will create [Lammps] simulation files with setup parameters inherited from [Gromacs].
 
 ### GUI input data
-In this section, every possible data to input is described.
+In this section, every possible data to input is described (the entries required by the GUI).
 
   #### Lammps data file generation:
    > Enter the gro file
@@ -129,9 +129,12 @@ In this section, every possible data to input is described.
    Gromacs forcefield_bonded.itp file with [ bondtypes ], [ angletypes ] and [ dihedraltypes ].
    > Choose an atom style
    
+   Atom style accordingly to lammps styles, in this software can be full, charge, molecular, angle, bond and atomic.
    
    > Solvation atoms
-        >yes or no
+   
+        yes: water atoms are taken into account and water configuration popup is enabled as a must.
+        no: just the core particle is converted.
    
   #### Lammps input file generation:
   
@@ -184,8 +187,8 @@ In this section, every possible data to input is described.
 
 # Code Datastream Highlights:
 
-In this section, every routine is described, explaining the several input and output arguments, 
-the entries required by the GUI and the mathematical models supported by the code.
+In this section, every important routine is described.
+
 
 > run
 
