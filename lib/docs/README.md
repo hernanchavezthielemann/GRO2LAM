@@ -40,6 +40,22 @@
 
 # Input Data:
 
+## Lammps Data File Generation:
+   > Enter the gro file
+   
+   Gromacs .gro file with all the system coordinates, and the box size specified at the end
+   
+   > Enter the top file
+   
+   Gromacs .top file with [ moleculetype ], [ atoms ], [ bonds ], [ pairs ], [ angles ], [ dihedrals ], [ system ] and [ molecules ]. Any #include are omitted. In the atoms section atleast one atom should be declared.
+   
+   > Enter the forcefield file
+   
+   
+   > Enter the non bonded file
+   
+   
+   > Enter the bonded file
 
 # License:
 
