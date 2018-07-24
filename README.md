@@ -12,7 +12,6 @@ Gromacs to Lammps simulation converter
 <!--ts-->
    * [Version](#version)
    * [Table of contents](#table-of-contents)
-   * [Authors](#authors)
    * [Description](#description)
    * [License](#license)
    * [Citation](#citation)
@@ -27,12 +26,8 @@ Gromacs to Lammps simulation converter
    * [Files](#files)
    * [Code Datastream Highlights](#code-datastream-highlights)
    * [Repository](#repository)
+      * [Authors](#authors)
 <!--te-->
-
-## Authors
-
-- Python version:
-    Hernan Chavez Thielemann
 
 ## Description
 This program was designed for easy conversion of solvated structures between 
@@ -531,7 +526,11 @@ FUNCTIONS
 
 ## Repository:
    https://github.com/hernanchavezthielemann/GRO2LAM
+   
+### Authors
 
+- Python version:
+    Hernan Chavez Thielemann
 
 
 [Lammps]: http://lammps.sandia.gov/
