@@ -154,7 +154,7 @@
    >> yes
    Water atoms are taken into account, and water configuration popup is enabled.
    
-   Generally, the following data comes from the water.stp:
+   Generally, the following data comes from the water_model.itp:
    
    >>> O in the non bonded file
    Label for the oxigen atom in the non bonded .itp file.
