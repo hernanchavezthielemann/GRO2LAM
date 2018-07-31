@@ -1,10 +1,10 @@
-
+ 
 [![Build Status](https://travis-ci.org/hernanchavezthielemann/GRO2LAM.svg?branch=20jul18)](https://travis-ci.org/hernanchavezthielemann/GRO2LAM)
 
 # GRO2LAM
-Gromacs to Lammps simulation converter
+   Gromacs to Lammps simulation converter
 
-## Version:
+## Version
    GROTOLAM version 1.11 (20 Jul 2018)
    
 ## Table of contents
@@ -12,6 +12,7 @@ Gromacs to Lammps simulation converter
 <!--ts-->
    * [Version](#version)
    * [Table of contents](#table-of-contents)
+   * [Authors](#authors)
    * [Description](#description)
    * [License](#license)
    * [Citation](#citation)
@@ -26,15 +27,20 @@ Gromacs to Lammps simulation converter
    * [Files](#files)
    * [Code Datastream Highlights](#code-datastream-highlights)
    * [Repository](#repository)
-      * [Authors](#authors)
 <!--te-->
 
+## Authors
+   - Python version:
+       Hernan Chavez Thielemann  
+   - Protocol definition:
+       Gianmarco Ciorra, Matteo Fasano, Annalisa Cardellini 
+
 ## Description
-This program was designed for easy conversion of solvated structures between 
-the GROningen MAchine for Chemical Simulations([Gromacs]) and the 
-Large-scale Atomic Molecular Massively Parallel Simulator ([Lammps]). 
-It is a python modular routine used to convert 5 [Gromacs] files to 2 [Lammps] format files,
-this includes topology, force field coefficients and simulation commands.
+   This program was designed for easy conversion of solvated structures between 
+   the GROningen MAchine for Chemical Simulations ([Gromacs]) and the 
+   Large-scale Atomic Molecular Massively Parallel Simulator ([Lammps]). 
+   It is a python modular routine used to convert [Gromacs] input files to [Lammps] input files,
+   which include topology, force field coefficients and simulation commands.
    
 ## Licence
    [MIT](./LICENSE)
@@ -48,165 +54,164 @@ this includes topology, force field coefficients and simulation commands.
 ## Citation
    The publication associated with this code is found here:
    
-   Hernan Chavez Thielemann, Annalisa Cardellini, Matteo Fasano, Gianmarco Ciorra, Luca Bergamasco, Matteo Alberghini, Eliodoro Chiavazzo, Pietro Asinari.
-
+   Hernan Chavez Thielemann, Annalisa Cardellini, Matteo Fasano, Gianmarco Ciorra, Luca Bergamasco, Matteo Alberghini, Eliodoro Chiavazzo, Pietro Asinari. From GROMACS to LAMMPS: GRO2LAM
+   A converter for molecular dynamics software. Article submitted to Journal of Molecular Modeling (2018)
 
 ## Installation
-To download the latest version there are at least three ways:
-### Quantum start:
-   Copy&paste the following command in your bash console and execute it, this will download and execute Grotolam in about 5 seconds.
+   To download the latest version there are at least three ways:
+
+### Quantum start
+   Copy&paste the following command in your bash console and execute it, this will download and execute Grotolam in about 5 seconds:
 
     wget https://raw.githubusercontent.com/hernanchavezthielemann/utils/master/grotolam/G2L_installer && bash G2L_installer
     
-### Quick start:
-   
-   Download:
+### Quick start
+   Download the compressed package of GRO2LAM:
    
      wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/20jul18.zip
-   Decompress:
+  
+   Decompress it:
    
      unzip 20jul18.zip
+   
    Make sure that terminal is in the GROTOLAM folder, then:
    
      cd GRO2LAM-*
+   
    Execute the setup file through the terminal as follows:
    
      ~/Desktop/GRO2LAM-20jul18$python setup
+   
    Then, without changing the folder, execute the run script:
    
      ~/Desktop/GRO2LAM-20jul18$./run
-   After that an intuitive graphical user interface should appear.
+  
+   After that, an intuitive graphical user interface should appear.
 
-### Step by step:
-
-Is possible to see what are you downloading from:
+### Step by step
+   The download page of GRO2LAM can be found at the following link:
 
      https://github.com/hernanchavezthielemann/GRO2LAM/archive/20jul18.zip
 
-Unpack!!
-
-Or you can open a terminal and then execute:
+   The installation package can be downloaded through the bash console as:
 
     ~$ wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/20jul18.zip
     
-That will download a zip, that you can uncompress with right click or with:
+   This will download a zipped file, that you can uncompress with right click or with the command:
 
     ~$ unzip 20jul18.zip
     
-Then, make sure that terminal is in the GROTOLAM folder. As example:
+   Then, make sure that terminal is in the GROTOLAM folder. For example:
     
     user@system:~/Downloads/GRO2LAM-20jul18$
     
-Once there, execute the setup file through the terminal as:
+   Once there, execute the setup file through the terminal as:
     
     ~$ python setup
-Then, without changing the folder, execute the run script:
+   
+   Then, without changing the folder, execute the run script:
     
     ~$ ./run
     
-After ./run, an intuitive graphical user interface should appear.
-This GUI interface will guide the user through all the inputs needed to perform the conversion correctly as is shown in the next section.
+   After the ./run command, an intuitive graphical user interface should appear.
+   This GUI interface will guide the user through all the inputs needed to perform the conversion correctly, as shown in the next section.
 
 ## Usage
 
 ### GUI
-   Follow the secuential menu bar.
+   In the GIF below, the typical protocol to convert Gromacs input file into Lammps input files is summed up.
    
    <p align="center">
    <img src="https://i.imgur.com/gbI5H7y.gif" title="source: imgur.com" />
    </p>
    
-   This will create [Lammps] simulation files with setup parameters inherited from [Gromacs].
+   This procedure will create [Lammps] simulation files with setup parameters inherited from [Gromacs] input files.
 
 ### GUI input data
-In this section, every possible data to input is described (the entries required by the GUI).
+   In this section, the simulation data that can be imported are listed (that is the entries required by the GUI).
 
   #### Lammps data file generation:
    > Enter the gro file
-
-   Gromacs .gro file with all the system coordinates, and the box size specified at the end
+   Gromacs .gro file with the system coordinates, and the box size specified at the end of file.
+   
    > Enter the top file
+   Gromacs .top (topology) file with [ moleculetype ], [ atoms ], [ bonds ], [ pairs ], [ angles ], [ dihedrals ], [ system ] and [ molecules ]. Any #include is omitted. In the atoms section, at least one atom should be declared.
    
-   Gromacs .top file with [ moleculetype ], [ atoms ], [ bonds ], [ pairs ], [ angles ], [ dihedrals ], [ system ] and [ molecules ]. Any #include is omitted. In the atoms section atleast one atom should be declared.
    > Enter the forcefield file
-   
    Gromacs forcefield.itp file with [ defaults ] section, also with nbfun, comb-rule, gen-pairs, fudgeLJ and fudgeQQ columns. Any #include or #define is omitted.
    
    > Enter the non bonded file
+   Gromacs forcefield_nonbonded.itp file with [ atomtypes ], where [ nonbond_params ] and [ pairtypes ] are ignored.
    
-   Gromacs forcefield_nonbonded.itp file with [ atomtypes ]. Where [ nonbond_params ] and [ pairtypes ] are ignored.
    > Enter the bonded file
-   
    Gromacs forcefield_bonded.itp file with [ bondtypes ], [ angletypes ] and [ dihedraltypes ].
-   > Choose an atom style
    
-   Atom style accordingly to lammps styles, in this software can be full, charge, molecular, angle, bond and atomic.
+   > Choose an atom style
+   Atom style according to Lammps styles, which can be full, charge, molecular, angle, bond and atomic.
    
    > Solvation atoms
    
-   >> yes: water atoms are taken into account and water configuration popup is enabled as a must.
+   >> yes
+   Water atoms are taken into account, and water configuration popup is enabled.
    
-   generally the following data comes from the water.stp
+   Generally, the following data comes from the water.stp:
+   
    >>> O in the non bonded file
+   Label for the oxigen atom in the non bonded .itp file.
    
-   Name of the oxigen in the non bonded itp file
    >>> H in the non bonded file
+   Label for the hydrogen atom in the non bonded .itp file.
    
-   Name of the hydrogen in the non bonded itp file
    >>> O in the .gro file
+   Label for the oxigen atom in the .gro file.
    
-   Name of the oxigen in the gro file
    >>> H in the .gro file
+   Label for the hydrogen atom in the .gro file.
    
-   Name of the oxigen in the gro file
    >>> H - O partial charge
+   Partial charge increment magnitude from H to O, equal to the whole H charge (or the half of O).
    
-   Partial charge increment magnitude from H to O, equal to the whole H charge or the half of O.
+   After inserting the solvation parameters, data must be saved by clicking on the Save icon.
    
-   At this poit without saving you cannot go on.
-   
-   >> no: just the core particle is converted.
+   >> no
+   Solvation molecules are not converted by GRO2LAM.
    
   #### Lammps input file generation:
   
   ##### Main page
-  
   >Timestep [fs]
+  The simulation time step, expressed in femtoseconds (floating point number).
   
-  The whole simulation time step in femto seconds (floating point number).
   >NVE steps  [#ts]
-  
   Number of steps in the NVE ensembles (integer number).
+  
   >NVT steps  [#ts]
-  
   Number of steps in the NVT ensembles (integer number).
+  
   >Temperature at start:end [K]
-  
-  Temperature gradient to apply during the number of steps in the NVT ensemble as start_temperature:ending_temperature (floating point numbers).
+  Temperature gradient to apply in the NVT ensemble, as start_temperature:ending_temperature (floating point numbers).
+ 
   >Temperature damping [fs]
-  
   Characteristic time constant of the thermostat.
+  
   >NPT steps  [#ts]
-  
   Number of steps in the NPT ensembles (integer number).
+  
   >Pressure at start:end  [atm]
+  Pressure gradient to apply in the NPT ensemble, as start_presure:ending_presure (floating point numbers).
   
-  Presure gradient to apply during the number of steps in the NPT ensemble as start_presure:ending_presure (floating point numbers).
   >Pressure damping [fs]
-  
   Characteristic time constant of the barostat.
+  
   >Temperature at start:end [K]
+  Same thing that in the NVT case, but for the thermostat coupled with the barostat in the NPT runs.
   
-  Same thing that in NVT, but now for the thermostat coupled with the barostat.
   >Temperature damping [fs]
-  
-  Same thing that in NVT, but now for the thermostat coupled with the barostat.
+  Same thing that in NVT, but for the thermostat coupled with the barostat in the NPT runs.
   
   ##### Advanced Settings
-  
   >Thermo output every  [#ts]
   
-  Every this time steps the values are printed in the lammps.log file 
   >Atom mapping
   
   >Pairwise interactions
@@ -244,31 +249,28 @@ In this section, every possible data to input is described (the entries required
   >Shake angles [a#]
   
   ##### Restraint
-  
-  
-  
+  Definition of the harmonic potentials to restrain some groups of atoms in their initial positions. 
   
   #### Lammps simulation launching:
-This GUI is mainly to test the congruency of the lammps data and input file.
+  This GUI can be employed to test the congruency of the Lammps data and input files.
 
->Select the script to run
+  >Select the script to run
+  A valid input data file to run.
 
-A valid input data file to run
->Machine
+  >Machine
+  Select the Lammps run file, according to the version installed on the local machine.
 
-According the one installed in your computer, you can select the lammps machine.
->Cores
-
-According to your needs and computer capacity, you can select the amount of cores to launch your simulation.
+  >Cores
+  Select the amount of computational cores to be used for the Lammps simulation, according to the characteristics of the local machine.
 
 ### Command line interface
-   There is no implementation of comand line interface, more than:
+   Currently, there is no implementation of command line interface. The only available command is:
    ```bash
    ~$ python setup -t
    ```
-   That creates a not fully useful test GUI.
+   that creates a test GUI.
 
-# Files:
+# Files
 
     ./run
     ./lib/README.md
@@ -302,23 +304,17 @@ According to your needs and computer capacity, you can select the amount of core
     ./lib/docs/README.md
     ./lib/gui/img/file.ppm
 
-# Code Datastream Highlights:
+# Code Datastream Highlights
+  In this section, the most important routines in the GRO2LAM package are described.
 
-In this section, every important routine is described.
+  > run
+  Starts GRO2LAM calling grotolam_launcher() function in grotolam.py.
 
+  > grotolam.py
+  Works as cap of the library, and calls the GUI (main_gui.py).
 
-> run
-
-Starts grotolam calling grotolam_launcher() function in grotolam.py
-
-> grotolam.py
-
-Works as cap of the library and calls the GUI (main_gui.py)
-
-> main_gui.py
-
-Background window, it handles the three different stages in the menu bar plus the help button.
-Relyes in conversion_gui.py, script_gui.py, run_gui.py, popup.py and tk_lib.py.
+  > main_gui.py
+  Background window, it handles the three different stages in the menu bar as well as the help button. It relies on conversion_gui.py, script_gui.py, run_gui.py, popup.py and tk_lib.py.
 
 ```
 CLASSES
@@ -332,20 +328,19 @@ CLASSES
      |      Browse a file <button> action binder
      |  
      |  create_conversion_gui(self)
-     |      Hook to create conversion gui
+     |      Hook to create conversion GUI
      |  
      |  create_run_gui(self)
-     |      Hook to create run gui
+     |      Hook to create run GUI
      |  
      |  create_script_gui(self)
-     |      Hook to create script gui
+     |      Hook to create script GUI
      |  
-     |  createfileentry(self, parent_frame, fi_text, _def_fi_, **kwargs)
-     |      Quite self explanatoy...
-     |      creates a row in which is possible to search for a file
+     |  createfileentry(self, parent_frame, fi_text, _def_fi_, **kwargs) 
+     |      Creates a row in which it is possible to search for a file
      |  
      |  createmainPennon(self)
-     |      Self explanatory neated with subroutines to make it more readable
+     |      Improve readibility
      |  
      |  quit_hook(self, event=None)
      |  
@@ -367,7 +362,7 @@ class Conversion(Tkinter.Frame)
      |  __init__(self, master=None, **options)
      |  
      |  atomstyle(self)
-     |      in this case just one, but could be modified 
+     |      In this case just one, but it could be modified 
      |      to be generic, accepting <row>, <text> and <options>
      |  
      |  build_finalbuttons(self)
@@ -384,7 +379,7 @@ class Conversion(Tkinter.Frame)
      |  
      |  get_entriesvalues(self)
      |      ---   app entry getter   ----
-     |      mainly to obtain values beside check buttons
+     |      Mainly to obtain values beside check buttons
      |  
      |  getdata_and_convert(self)
      |  
@@ -411,14 +406,14 @@ CLASSES
      |      Final Buttons section builder
      |  
      |  check_datafile(self, _bflag_=None)
-     |      function to get the max atom number 
-     |      also is used in case of no gromacs direct data conversion
-     |      to somehow make a check if that file is ok
+     |      Function to get the max atom number 
+     |      It is also used in case of no Gromacs direct data conversion
+     |      to make a check if that file is ok
      |  
      |  config_restrain(self)
      |  
      |  createWidgets(self)
-     |      create the script gui
+     |      Create the script GUI
      |  
      |  createWidgets_n_pack(self)
      |  
@@ -450,7 +445,7 @@ CLASSES
 ```
 > popup.py
 
-This file neats everything that comes out as a PopUp
+This file neats everything that comes out as a popup.
 
 ```
 CLASSES
@@ -468,12 +463,12 @@ CLASSES
 FUNCTIONS
     message_box(message='', title='Message box', **options)
          Creates a message box through the implementation of an instance
-         of class Message_box, these messages can be info, warning and error
+         of class Message_box. These messages can be info, warning and error
 ```        
 
 > tk_lib.py
 
-Home made tkinter library
+Home made tkinter library.
 
 ```
 CLASSES
@@ -491,21 +486,20 @@ class Drop_Down_List(Tkinter.Widget)
 
 FUNCTIONS
     bottom_hline_deco(row, func=None)
-        adds a sunken line in the bottom of a tkinter function
+        Adds a sunken line in the bottom of a tkinter function
     
     create_check_row(_s_row_, _text_, func, _desc_=[''])
-        creates a tkinter entry with a check button
+        Creates a tkinter entry with a check button
 
     create_entry(_main_row_, _desc_txt, _def_txt_, t_len, ckbc=None, fn=None)
-        creates a tkinter entry
+        Creates a tkinter entry
     
     create_file_entry(_master_, ups_frame, fi_text, _default_file)
-        Quite self explanatoy...
-        creates a row in which is possible to search for a file
+        Creates a row in which is possible to search for a file
     
     createmenubar(_root_window_, _listofentriesdicts_)
-        under development 
-        input format example: 
+        Under development. 
+        Input format example: 
             <class app>
             [{ 'title' : 'Title1', 'title_com' : (print , '>command11<') },
             { 'title' : 'Title2',
@@ -513,24 +507,19 @@ FUNCTIONS
             ('separator'),('cnd_label' ,'>command33<'))}]
     
     format_dec(_rnt_or_lc_, _create_=True, _pack_=True, _lastline_=True)
-        can be re-thought as a function wrapper
-        furthermore as a class... but for now works perfect
+        Can be re-thought as a function wrapper or as a class... but for now works perfectly
     
     generate_listbox(row, fill_list)
     
     get_entriesvalue(entries_container)
         ---   entry getter app ----
-        mainly to obtain values of entries
+        Mainly to obtain values of entries
  ```   
 
 
 ## Repository:
    https://github.com/hernanchavezthielemann/GRO2LAM
-   
-### Authors
 
-- Python version:
-    Hernan Chavez Thielemann
 
 
 [Lammps]: http://lammps.sandia.gov/
