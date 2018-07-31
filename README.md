@@ -171,7 +171,7 @@
    >>> H - O partial charge
    Partial charge increment magnitude from H to O, equal to the whole H charge (or the half of O).
    
-   After inserting the solvation parameters, data must be saved by clicking on the Save icon.
+   After inserting the solvation parameters, data must be saved by clicking on the Save button.
    
    >> no
    Solvation molecules are not converted by GRO2LAM.
