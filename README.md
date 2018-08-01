@@ -132,122 +132,167 @@
 
   #### Lammps data file generation:
    > Enter the gro file
+   
    Gromacs .gro file with the system coordinates, and the box size specified at the end of file.
    
    > Enter the top file
+   
    Gromacs .top (topology) file with [ moleculetype ], [ atoms ], [ bonds ], [ pairs ], [ angles ], [ dihedrals ], [ system ] and [ molecules ]. Any #include is omitted. In the atoms section, at least one atom should be declared.
    
    > Enter the forcefield file
+   
    Gromacs forcefield.itp file with [ defaults ] section, also with nbfun, comb-rule, gen-pairs, fudgeLJ and fudgeQQ columns. Any #include or #define is omitted.
    
    > Enter the non bonded file
+   
    Gromacs forcefield_nonbonded.itp file with [ atomtypes ], where [ nonbond_params ] and [ pairtypes ] are ignored.
    
    > Enter the bonded file
+   
    Gromacs forcefield_bonded.itp file with [ bondtypes ], [ angletypes ] and [ dihedraltypes ].
    
    > Choose an atom style
+   
    Atom style according to Lammps styles, which can be full, charge, molecular, angle, bond and atomic.
    
    > Solvation atoms
    
    >> yes
+   
    Water atoms are taken into account, and water configuration popup is enabled.
    
    Generally, the following data comes from the water_model.itp:
    
    >>> O in the non bonded file
+   
    Label for the oxigen atom in the non bonded .itp file.
    
    >>> H in the non bonded file
+   
    Label for the hydrogen atom in the non bonded .itp file.
    
    >>> O in the .gro file
+   
    Label for the oxigen atom in the .gro file.
    
    >>> H in the .gro file
+   
    Label for the hydrogen atom in the .gro file.
    
    >>> H - O partial charge
+   
    Partial charge increment magnitude from H to O, equal to the whole H charge (or the half of O).
    
    After inserting the solvation parameters, data must be saved by clicking on the Save button.
    
    >> no
+   
    Solvation molecules are not converted by GRO2LAM.
    
   #### Lammps input file generation:
   
   ##### Main page
   >Timestep [fs]
+  
   The simulation time step, expressed in femtoseconds (floating point number).
   
   >NVE steps  [#ts]
+  
   Number of steps in the NVE ensembles (integer number).
   
   >NVT steps  [#ts]
+  
   Number of steps in the NVT ensembles (integer number).
   
   >Temperature at start:end [K]
+  
   Temperature gradient to apply in the NVT ensemble, as start_temperature:ending_temperature (floating point numbers).
  
   >Temperature damping [fs]
+  
   Characteristic time constant of the thermostat.
   
   >NPT steps  [#ts]
+  
   Number of steps in the NPT ensembles (integer number).
   
   >Pressure at start:end  [atm]
+  
   Pressure gradient to apply in the NPT ensemble, as start_presure:ending_presure (floating point numbers).
   
   >Pressure damping [fs]
+  
   Characteristic time constant of the barostat.
   
   >Temperature at start:end [K]
+  
   Same thing that in the NVT case, but for the thermostat coupled with the barostat in the NPT runs.
   
   >Temperature damping [fs]
+  
   Same thing that in NVT, but for the thermostat coupled with the barostat in the NPT runs.
   
   ##### Advanced Settings
+  Section to change further default simulation parameters. 
+  
   >Thermo output every  [#ts]
   
+  Print thermodynamic info on time steps that are a multiple of this number of time steps.
   >Atom mapping
   
+  Array, in each processor stores a lookup table of length as the atoms in the system, else, hash value uses a hash table, being slower.
   >Pairwise interactions
   
+  To set wich set of formulas will LAMMPS use to compute pairwise interactions. (where, cut = cut off distance, long = long-range interactions, coul = Coulombics and zero = do not compute any pairwise and build neighbor list)
   >L-J/Buck rcutoff  [Å]
   
+  Global cut off distance in Angstrom for Lennard Jones or Buckingham interactions.
   >Coulomb rcutoff  [Å]
   
+  Global cutoff distance in Angstrom for Coulombic interactions.
   >Neighbor skin distance  [Å]
   
+  Extra skin distance beyond force cutoff in Angstrom.
   >Long-range solver
   
+  Define a long-range solver to use each timestep to compute long-range Coulombic and/or 1/r^6 interactions.
   >Long-range relative error
   
+  Desired relative RMS error in per-atom forces calculated by the long-range-solver.
   >Interaction 1-2:1-3:1-4
   
+  Sets weighting coefficients for pairwise contributions between atoms that are permanently bonded to each other.
+  The 1st of the 3 numbers is the factor on 1-2 atom pairs, atoms directly bonded to each other. The 2nd number is the factor on 1-3 atom pairs which are separated by 2 bonds or 1 angle. And the 3rd is the factor on 1-4 atom pairs which are those separated by 3 bonds or 2 angles.
   >Neighbor delay  [#ts] 
   
+  Delays the building until this many time steps since last build.
   >Neighbor update  [#ts]
   
+  Build the neighbor list every this many time steps.
   >Pressure control
   
+  To specify an isometric or anisometric external stress tensor in the constant-pressure simulation adjust 3 dimensions. In triclinic simulation boxes adjust 6 dimensions.
   >Force mixing rule  
   
+  Mixing rule that affects pair coefficients for pairwise interactions, mixing the "Pair Coeffs" of the data file, according to geometric, arithmetic or sixth power combination formulas.
   >Velocity creation Temp  [K]
   
+  Set the velocities of all atoms in the system as the specified temperature demands.
   >Energy minimization tolerance
   
+  Stopping tolerance for force (force units) when an energy minimization of the system is performed.
   >Simulation order
   
+  The order in which the simulated ensembles perform. The possible keys are: NVE, NVT, NPT, R and M. The key R stands for restart point and M stands for energy minimization. The different components must be separated by a minus dash, as example NVE-M-M-NVT-NPT-NPT-NVT.
   >Shake tolerance
   
+  Accuracy tolerance of SHAKE solution for 20 iterations.
   >Shake bonds [b#]
   
+  Bond types that will be constrained.
   >Shake angles [a#]
   
+  Angle types that will be constrained.
   ##### Restraint
   Definition of the harmonic potentials to restrain some groups of atoms in their initial positions. 
   
