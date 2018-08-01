@@ -161,7 +161,9 @@
    
    Water atoms are taken into account, and water configuration popup is enabled.
    
-   Generally, the following data comes from the water_model.itp:
+   >> Configuration Popup
+   
+   The following data can be extracted from the water_model.itp according the user chosen model. 
    
    >>> O in the non bonded file
    
