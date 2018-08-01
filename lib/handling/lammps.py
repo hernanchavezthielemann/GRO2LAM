@@ -244,7 +244,7 @@ def write_lammps_data_atomic(_topodata_, data_name, _config_):
     atom_info = _topodata_['atomtypes']
     atomstyle, _solvated_f_, _ = _config_ 
     ####--------------- TITLE ----------------####
-    _text_ = '#Lammps data file. Geometry for PEG\n\n'
+    _text_ = '#Lammps data file created with Gro2lam\n\n'
     ####---------------     NUMBERS      ----------------####
     _text_ +=' {} atoms\n'.format(n_atoms)
     ####----------------    TYPES       -----------------####
