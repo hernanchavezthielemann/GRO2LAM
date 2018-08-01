@@ -10,42 +10,30 @@ from lib.misc.warn import wrg_1, wrg_3, pop_err_1, pop_wrg_1
 from lib.misc.file import check_file, write_list2file, debugger_file
 from sys import exit
 
-#%% DATABASE
-''' this "data base" seems not used at all'''
-#=================================================
-#%%%%-------------------BOND---------------%%%%%%%
-# database of bond potentials type
-BondDataBase=['harmonic','G96','morse','cubic','connection','harmonic',
-		  'fene','tabulated','tabulated','restraint'] 
-#%%%%-------------------ANGLE--------------%%%%%%%
-# database of angle potentials type
-AngleDataBase=['harmonic','G96','cross bond-bond','cross bond-angle',
-		   'charmm','quartic angle','','tabulated'] 
-#%%%%-------------------DIHEDRALS----------%%%%%%%
-# database of dihedral potential types, %Fourier is called opls
-DihedralDataBase=['charmm','improper','Ryckaert-Bellemans','periodic',
-		      'opls','tabulated','charmm'] 
-#%% END DATABASE
 
 def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     
-    ''' data files['gro file', 'top file', 'non bonded file', 'bonded file']'''
+    ''' data files ---> ['gro file', 'top file', 'forcefield',
+        'non bonded file', 'bonded file']'''
+    
+    filename_gro    = _data_files_[0]
+    filename_top    = _data_files_[1]
+    filename_ff     = _data_files_[2]
+    filename_nb     = _data_files_[3]
+    filename_bon    = _data_files_[4]
+    
     data_container = {}
     
-    filename_nb = _data_files_[3]
-    #filename_ff = '/'.join(filename_nb.split('/')[:-1])+'/forcefield.itp'
-    filename_ff = _data_files_[2]
     print filename_ff
     data_container['defaults'], ok_flag = ck_forcefield( filename_ff)
     if not ok_flag:
         return {}, ok_flag
     
-    
-    
     buckorlj = int(data_container['defaults'][0])
     
     _solvated_f_, _paramfi_f_= _ck_buttons_
     print 'Solvation: {} | Parametrization: {}\n'.format( *_ck_buttons_)
+    
     #################################################
     '''-----------------  FILE NB  ---------------'''
     #===============================================#
@@ -61,7 +49,7 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     #################################################
     '''----------------  FILE BON  ---------------'''
     #===============================================#
-    filename_bon = _data_files_[4]
+    
     
     startstrings=['[ bondtypes ]', '[ angletypes ]', '[ dihedraltypes ]', '']
     
@@ -83,7 +71,7 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     #################################################
     '''----------------  FILE TOP  ---------------'''
     #===============================================#
-    filename_top = _data_files_[1]
+    
     
     startstrings=['[ moleculetype ]', '[ atoms ]','[ bonds ]', '[ pairs ]',
                   '[ angles ]', '[ dihedrals ]', '[ system ]',
@@ -109,7 +97,7 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     #################################################
     '''----------------  FILE GRO  ---------------'''
     #===============================================#
-    filename_gro = _data_files_[0]
+    
     ok_flag, gro_pack, b_xyzhi = get_gro_fixed_line( filename_gro)
     if not ok_flag:
         return {}, ok_flag
@@ -279,10 +267,11 @@ def get_gro_line(_filename_, _startstrings_, _i_=0):
             if j_line.startswith(';'):
                 pass
             if j_line.startswith('#'):
-		if j_line.startswith('#include'):
+                if j_line.startswith('#include'):
                     print wrg_3(j_line.rstrip('\n')+' not included in this line\n')
-		else:
-		    pass
+                else:
+                    pass
+                
             elif read_flag:
                 _line_ = j_line.split(';')[0].split()
                 
