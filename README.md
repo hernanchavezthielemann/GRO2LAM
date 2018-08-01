@@ -302,12 +302,15 @@
   This GUI can be employed to test the congruency of the Lammps data and input files.
 
   >Select the script to run
+  
   A valid input data file to run.
 
   >Machine
+  
   Select the Lammps run file, according to the version installed on the local machine.
 
   >Cores
+  
   Select the amount of computational cores to be used for the Lammps simulation, according to the characteristics of the local machine.
 
 ### Command line interface
@@ -355,12 +358,15 @@
   In this section, the most important routines in the GRO2LAM package are described.
 
   > run
+  
   Starts GRO2LAM calling grotolam_launcher() function in grotolam.py.
 
   > grotolam.py
+  
   Works as cap of the library, and calls the GUI (main_gui.py).
 
   > main_gui.py
+  
   Background window, it handles the three different stages in the menu bar as well as the help button. It relies on conversion_gui.py, script_gui.py, run_gui.py, popup.py and tk_lib.py.
 
 ```
