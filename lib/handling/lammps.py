@@ -2,17 +2,19 @@
 #    Ported to Python and barely optimized by Hernan Chavez Thielemann
 
 from lib.misc.file import write_file
-from lib.misc.warn import print_dec_g
+from lib.misc.warn import print_dec_g, pop_wrg_1, pop_err_1
+
+from sys import exit
 
 __merged_files__ = ['main.m', 'Writing_input.m', ]
                     
-                    
+
 def extract_lammps_data(_data_file_,_ck_buttons_, _forcefield_):
     ''' already implemented in  topology analizer
             MIXER
     '''
 
-def write_lammps_data(_topodata_, data_name, _config_):
+def write_lammps_data( _topodata_, df_name, _config_):
     ''' Write a lammps data file'''
     print_dec_g ('Writing Lammps data file...')
     ####---------------  Unpacking data  ----------------####
@@ -20,25 +22,31 @@ def write_lammps_data(_topodata_, data_name, _config_):
     atsty = [ 'atomic', 'angle', 'full', 'charge', 'bond', 'molecular']
     style_str = '####-------  ATOM STYLE < {} >  --------####'
     _flag_ = False
+    _content_=''
     if atomstyle in atsty:
         nam = ''.join([ chr( ord(l) - 32) for l in atomstyle])
         print_dec_g(style_str.format(nam))
-        _content_ = write_lammps_data_all(_topodata_, data_name, _config_)
-        _flag_ = True
+        
+        _content_, _flag_ = write_lammps_data_all( _topodata_,
+                                                  df_name,
+                                                  _config_
+                                                 )
+        if _flag_:
+            write_file( df_name, _content_)
+            print_dec_g ('Successful writing!!')
+        else:
+            pop_err_1('Error writing lammps data file')
     else: #if atomstyle == 'Angle':
-        _content_=''
+        print '\n\nExit'
         exit(('Error 037!!  -  Atom style {} '
               +'not implemented yet').format(atomstyle))
-    
-    write_file( data_name, _content_)
-    
-    print_dec_g ('Successful writing!!')
     
     return _flag_
 
 def write_lammps_data_all( _topodata_, data_name, _config_):
     
     ''' Write a lammps data file'''
+    _flag_ = False
     ####---------------  Unpacking data  ----------------####
     _numbers_ = _topodata_['numbers']
     n_atoms, n_bonds, n_angles, n_dihedrals = _numbers_['total']
@@ -81,8 +89,10 @@ def write_lammps_data_all( _topodata_, data_name, _config_):
         #charge[known_atoms[na][4]]= float(known_atoms[na][6])
         #conv_dict[known_atoms[na][4].lstrip(' ')] = known_atoms[na][1]
     #_topodata_['S_translation'] = conv_dict
-        
-    aux_pot_txt, dicts = write_lammps_potentials( _topodata_, atomstyle)
+    
+    
+    aux_pot_txt, dicts, _flag_ = write_lammps_potentials( _topodata_,
+                                                          atomstyle)
     _text_ += aux_pot_txt
     #a_dict={}
     #print dicts[0]
@@ -99,7 +109,7 @@ def write_lammps_data_all( _topodata_, data_name, _config_):
         conv_dict = _topodata_['S_translation'] # key s_tag : val l_tag
     
     
-    _text_ +='\n Atoms\n\n'
+    _text_ +='\n Atoms #{}\n\n'.format( atomstyle)
     
     if atomstyle in ['charge','full']:
         atom_shape = ' {}'*3+' {:7.4f}'*4+' # {}\n'# idx mol atype charge x y z
@@ -112,8 +122,8 @@ def write_lammps_data_all( _topodata_, data_name, _config_):
     for i in range( base_atoms_n):
         aty = known_atoms[i][1]
         _text_ += atom_shape.format( i+1, _mol_[i],
-                                    dicts[0][aty],
-                                    float(known_atoms[i][6]),
+                                    dicts[0][ aty],
+                                    float(known_atoms[ i][6]),
                                     float(_xyz_[i][0])*10,
                                     float(_xyz_[i][1])*10,
                                     float(_xyz_[i][2])*10,
@@ -217,7 +227,7 @@ def write_lammps_data_all( _topodata_, data_name, _config_):
             _text_+= dihedral_shape.format( i+1, _dihe_ty_, at1, at2, at3, at4)
     
     
-    return _text_
+    return _text_, _flag_
 
 def write_lammps_data_atomic(_topodata_, data_name, _config_):
     ''' Write a lammps data file
@@ -277,7 +287,8 @@ def write_lammps_data_atomic(_topodata_, data_name, _config_):
     return _text_
 
 def write_lammps_potentials( _topodata_, atomstyle = 'full'):
-    
+    ''' writes the potential part in the data file'''
+    _flag_ = True
     atom_info = _topodata_['atomtypes'] # index 1: mass ; index 4 -5 : eps-sig
     _numbers_ = _topodata_['numbers']
     n_atomtypes, n_bondtypes, n_angletypes, n_dihedraltypes= _numbers_['type']
@@ -328,29 +339,98 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
     
     
     ####----------- DEFINING BONDED INTERACTIONS     ----------####
-    txt_p_b ='\n Bond Coeffs\n\n' # bond_style hybrid
+    ########    -----------     BOND        ----------     ########
+    BondDataBase = ['harmonic','G96','morse','cubic','connection','harmonic',
+                    'fene','tabulated','tabulated','restraint']
+    Bonds_structures = {'harmonic': {},
+                       'morse': {}}
+    
     bty = _topodata_['bondtypes']
+    bondtypename = BondDataBase[ int(bty[0][2])-1]
+    
+    txt_p_b ='\n Bond Coeffs #{}\n\n'.format( bondtypename) # bond_style hybrid
+    
+    blm = len(bty[0]) - 3 # bond length multiplier
+    bond_string = ' {}'+ ' {:.4f}'*blm + '\n'
+    
     bondtypes_d = {}
+    
     for i in range(n_bondtypes):
         bondtypes_d[bty[i][0]+'-'+bty[i][1]]= i+1
         bondtypes_d[bty[i][1]+'-'+bty[i][0]]= i+1
-        txt_p_b += ' {} {:.4f} {:.4f}\n'.format( i+1,
-                                              float(bty[i][-1])/ 100/ 4.186/2,
-                                              float(bty[i][-2])*10)
-    
-    txt_p_a ='\n Angle Coeffs\n\n'
+        if int(bty[i][2]) <> int(bty[i-1][2]):
+            wr_str = 'More than one bond type than {}'
+            pop_wrg_1( wr_str.format( bondtypename)
+                     )
+            _flag_ = False
+            
+        elif int(bty[i][2]) == 1:
+            txt_p_b += bond_string.format(i+1,
+                                          float(bty[i][4])/ 100/ 4.186/2,
+                                          float(bty[i][3])*10)
+        elif int(bty[i][2]) == 3:
+            txt_p_b += bond_string.format(i+1,
+                                          float(bty[i][4])/ 100/ 4.186/2,
+                                          float(bty[i][5])/10,
+                                          float(bty[i][3])*10)
+        else:
+            wr_str = 'Bond type {} not implemented yet!'
+            pop_wrg_1( wr_str.format( bondtypename)
+                     )
+            _flag_ = False
+    ########    -----------     ANGLE      ----------     ########
+    AngleDataBase = ['harmonic','G96','cross bond-bond','cross bond-angle',
+                     'charmm','quartic angle','','tabulated'] 
+        
     aty = _topodata_['angletypes']
+    angletypename = AngleDataBase[ int(aty[0][3])- 1]
+    
+    txt_p_a ='\n Angle Coeffs #{}\n\n'.format( angletypename)
+    
+    alm = len(aty[0]) - 4 # bond length multiplier
+    angle_string = ' {}'+ ' {:.4f}'*alm + '\n'
+    
     angletypes_d = {}
     i=0
     for i in range(n_angletypes):
         angletypes_d[aty[i][0]+'-'+aty[i][1]+'-'+aty[i][2]]= i+1
         angletypes_d[aty[i][2]+'-'+aty[i][1]+'-'+aty[i][0]]= i+1
-        txt_p_a += ' {} {:.4f} {:.4f}\n'.format( i+1,
-                                              float(aty[i][-1])/ 4.186/2,
-                                              float(aty[i][-2]))
-    
-    txt_p_d ='\n Dihedral Coeffs\n\n'
+        if int(aty[i][3]) <> int(aty[i-1][3]):
+            wr_str = 'More than one angle type than {}'
+            pop_wrg_1( wr_str.format( angletypename)
+                     )
+            _flag_ = False
+            
+        elif int(aty[i][3]) == 1:
+            txt_p_a += angle_string.format( i+1,
+                                           float(aty[i][-1])/ 4.186/2,
+                                           float(aty[i][-2]))
+        elif int(aty[i][3]) == 5:
+            txt_p_a += angle_string.format( i+1,
+                                           float(aty[i][5])/ 4.186/2,
+                                           float(aty[i][4]),
+                                           float(aty[i][7])/ 4.186/2,
+                                           float(aty[i][6])*10)
+        else:
+            wr_str = 'Angle type {} not implemented yet!'
+            pop_wrg_1( wr_str.format( angletypename)
+                     )
+            _flag_ = False
+            
+    ########    -----------     DIHEDRAL      ----------     ########
+    DihedralDataBase=['charmm','improper','Ryckaert-Bellemans','periodic',
+                      'opls','tabulated','charmm'] 
+                      
     dty = _topodata_['dihedraltypes']
+    dihedtypename = DihedralDataBase[ int( dty[0][4])- 1]
+    
+    txt_p_d ='\n Dihedral Coeffs #{}\n\n'.format( dihedtypename)
+    
+    dlm = len( dty[0]) - 4 # bond length multiplier
+    dihed_string = ' {}'+ ' {:.4f}'*dlm + '\n'
+    
+    
+                  
     dihedraltypes_d = {}
     i=0
     for i in range(n_dihedraltypes):
@@ -358,13 +438,25 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
         _type_backward_ = dty[i][3]+'-'+dty[i][2]+'-'+dty[i][1]+'-'+dty[i][0]
         dihedraltypes_d[ _type_forward_ ] = i+1
         dihedraltypes_d[ _type_backward_] = i+1
+        if int(dty[i][4]) <> int(dty[i-1][4]):
+            wr_str = 'More than one dihedral type than {}'
+            pop_wrg_1( wr_str.format( dihedtypename)
+                     )
+            _flag_ = False
+            
         txt_p_d += ' {} {:.4f} {} {} {}\n'.format( i+1,
                                                   float(dty[i][-2])/4.186/2,
                                                   int(float(dty[i][-1])),
                                                   int(float(dty[i][-3])),
                                                   '0.0'
                                                  )
+    if int(dty[0][4]) <> 1:
+        _flag_ = False
+        wr_str = 'Dihedral type {} not implemented yet!'
+        pop_wrg_1( wr_str.format( dihedtypename))
     
+    ########    ---------    Final selector section   ----------     ########
+    #bad_sty = [ bondtypename, angletypename, dihedtypename]
     if atomstyle in ['full', 'molecular']:
         dicts = [ atom_type_d, bondtypes_d, angletypes_d, dihedraltypes_d]
         txt_p_ = txt_p_p+txt_p_b+txt_p_a+txt_p_d
@@ -379,8 +471,10 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
         txt_p_ = txt_p_p
     else:
         print ('\nWeird thing, it is supposed impossible to reach this place\n')
-    
-    return txt_p_, dicts
+        _flag_ = False
+        
+        
+    return txt_p_, dicts, _flag_
 
 
 def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
@@ -465,18 +559,21 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     ####------------      TOPO DATA         --------####
     
     print '\n'+data_file + '\n'
-    if _topodata_<>None:
-        atomstyle, _solvated_, _parametric_ = _topodata_['config'] 
-        
+    if _topodata_ <> None:
+        atomstyle_o, _solvated_, _parametric_ = _topodata_['config'] 
         buckorlj, comb_rule, _, f_LJ, _ = _topodata_['defaults']
         
     else:
         print 'non _topodata_'
-        atomstyle = 'full'
+        atomstyle_o = ''
         comb_rule = ''
         buckorlj = 0
         
-        
+    ## -------------------------- getting styles
+    atomstyle, bondstyle, anglstyle, dihestyle = get_style_info( data_file)
+    if atomstyle_o <> '' and atomstyle_o <> atomstyle:
+        pop_wrg_1('Incongruence between atom styles!')
+    
     if f_comb_rule in mix_value.values():
         mix_value_s=' mix '+f_comb_rule
     elif f_comb_rule=='from_gromacs' and _topodata_<>None:
@@ -487,12 +584,12 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
         
 
     #===================================================
-    '''=======    Writing Lammps data file    ======='''
+    '''====   Writing Lammps input command file  ===='''
     #===================================================
-    _dtxt_= '\n'+'#INIT\n'+'units real\n'+'boundary p p p\n'+'atom_style '
+    _dtxt_= '# Generated with Gro2lam\n\n'+'units real\nboundary p p p\n'
     # as I understand lammps default is 3
     #_dtxt_+= '%s %d\n'.format('dimension',dimension)
-    _dtxt_+= atomstyle+'\n'
+    _dtxt_+= 'atom_style '+atomstyle+'\n'
     if atomstyle not in ['full', 'charge]']: # no charges
         if 'coul' in pairwiseint:
             pairwiseint = pairwiseint.split('/coul')[0]
@@ -503,15 +600,15 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     if pairwiseint == 'zero':
             c_rcutoff = 'nocoeff'
         
-    _dtxt_+= '\natom_modify map {}\n'.format(atommap)
+    _dtxt_+= '\natom_modify map {}\n'.format( atommap)
     #===================================================
     ####------------  SYSTEM CONFIGURATION  --------####
     
     _dsc_txt=['pair_style {} {}'.format( pairwiseint, lj_rcutoff)]
     _dsc_txt.append(' {}\n'.format( c_rcutoff))
-    _dsc_txt.append( 'bond_style harmonic\n')
-    _dsc_txt.append( 'angle_style harmonic\n')
-    _dsc_txt.append( 'dihedral_style charmm\n')
+    _dsc_txt.append( 'bond_style '+bondstyle+'\n')
+    _dsc_txt.append( 'angle_style '+anglstyle+'\n')
+    _dsc_txt.append( 'dihedral_style '+dihestyle+'\n')
     _dtxt_+= ''.join(_dsc_txt[:_asty_d_[atomstyle]])+'\n'
     
     
@@ -651,6 +748,49 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
      #-------------------- here would be optimum some further check
     return True
 
+def get_style_info( lammps_datafile):
+    
+    atom_sty, bond_sty, angl_sty, dihe_sty = '', '', '', ''
+    default_styles = [ 'full', 'harmonic', 'harmonic', 'charm']
+    
+    try:
+        with open( lammps_datafile, 'r')  as indata:
+            for k_line in indata:
+                aux_cont = k_line.split('#')
+                if len(aux_cont)>1 and 'Atoms' in aux_cont[0]:
+                    atom_sty = aux_cont[1].strip(' ').strip('\n')
+                elif len(aux_cont)>1 and 'Bond Coeffs' in aux_cont[0]:
+                    bond_sty = aux_cont[1].strip(' ').strip('\n')
+                elif len(aux_cont)>1 and 'Angle Coeffs' in aux_cont[0]:
+                    angl_sty = aux_cont[1].strip(' ').strip('\n')
+                elif len(aux_cont)>1 and 'Dihedral Coeffs' in aux_cont[0]:
+                    dihe_sty = aux_cont[1].strip(' ').strip('\n')
+                elif '' not in [atom_sty, bond_sty, angl_sty, dihe_sty]:
+                    break
+                    
+        if atom_sty == '':
+            atom_sty = default_styles[0]
+            pop_wrg_1('Atom style info not found in data file!'
+                      +'using default : '+ atom_sty)
+        if bond_sty == '':
+            bond_sty = default_styles[1]
+            pop_wrg_1('Bond style info not found in data file!'
+                      +'using default : '+ bond_sty)
+        if angl_sty == '':
+            angl_sty = default_styles[2]
+            pop_wrg_1('Angle style info not found in data file!'
+                      +'using default : '+ angl_sty)
+        if dihe_sty == '':
+            dihe_sty = default_styles[3]
+            pop_wrg_1('Dihedral style info not found in data file!'
+                      +'using default : '+ dihe_sty)
+            
+    except IOError:
+        pop_wrg_1('Data file not found!')
+        print ('Try performing a conversion first!')
+        _flag_ = False
+
+    return atom_sty, bond_sty, angl_sty, dihe_sty
 
 if __name__ == '__main__':
     pass
