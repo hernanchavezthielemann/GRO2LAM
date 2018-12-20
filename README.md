@@ -8,10 +8,11 @@
    GROTOLAM version 1.12 (20 Dec 2018)
    
    New features: 
-    <!--ts-->
-       * Autoload force field files
-       * Works with more than one side molecule (eg. water + ions +...)
-    <!--te-->
+<!--ts-->
+   * New option to autoload itp force field files.
+   * Works with more than one side molecule (eg. water + ions +...).
+<!--te-->
+    
 ## Table of contents
 
 <!--ts-->
