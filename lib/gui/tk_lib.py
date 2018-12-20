@@ -2,12 +2,39 @@
 #    By Hernan Chavez Thielemann
 __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
-from Tkinter import Entry, Button, Frame, Label, Scrollbar, StringVar
-from Tkinter import Listbox, Menu, IntVar, Checkbutton, Widget, Spinbox
-
+from Tkinter import Entry, Button, Frame, Label, Scrollbar, StringVar, Menu
+from Tkinter import Listbox, IntVar, Checkbutton, Widget, Spinbox
 from Tkinter import X, Y, SUNKEN, VERTICAL, END
 
+'''     Home made ttk library     '''
 
+#================================
+#        Classes definition
+#================================
+        
+class Drop_Down_List(Widget):
+    """The lean version of the Ttk Combobox from ttk library"""
+
+    def __init__(self, master=None, **kw):
+        Widget.__init__(self, master, "ttk::combobox", kw)
+        self.bind("<Key>", lambda e: "break") # Magic
+    
+    def current(self, newindex=None):
+        """If newindex is supplied, sets the combobox value to the
+        element at position newindex in the list of values. Otherwise,
+        returns the index of the current value in the list of values
+        or -1 if the current value does not appear in the list."""
+        if newindex is None:
+            return self.tk.getint(self.tk.call(self._w, "current"))
+        return self.tk.call(self._w, "current", newindex)
+
+    def set(self, value):
+        """Sets the value of the combobox to value."""
+        self.tk.call(self._w, "set", value)
+
+#================================
+#        Functions definition
+#================================
 
 def create_entry( _main_row_, _desc_txt, _def_txt_, t_len, ckbc=None, fn=None):
     ''' creates a tkinter entry '''
@@ -87,26 +114,6 @@ def get_entriesvalue(entries_container):
             e_values.append(entries_container[ent].get())
         return e_values
 
-class Drop_Down_List(Widget):
-    """The lean version of the Ttk Combobox from ttk library"""
-
-    def __init__(self, master=None, **kw):
-        Widget.__init__(self, master, "ttk::combobox", kw)
-        self.bind("<Key>", lambda e: "break") # Magic
-    
-    def current(self, newindex=None):
-        """If newindex is supplied, sets the combobox value to the
-        element at position newindex in the list of values. Otherwise,
-        returns the index of the current value in the list of values
-        or -1 if the current value does not appear in the list."""
-        if newindex is None:
-            return self.tk.getint(self.tk.call(self._w, "current"))
-        return self.tk.call(self._w, "current", newindex)
-
-    def set(self, value):
-        """Sets the value of the combobox to value."""
-        self.tk.call(self._w, "set", value)
-
 def bottom_hline_deco(row, func=None):
     ''' adds a sunken line in the bottom of a tkinter function'''
     if func <> None:
@@ -146,7 +153,7 @@ def create_file_entry( _master_, ups_frame, fi_text, _default_file):
     Efile.insert(END, _default_file)
     Efile.xview_moveto(1)
     Bsearch = Button(file_row,
-                     image= _master_.im_file,
+                     image= get_file_img(),
                      command=(lambda El=Efile: _master_.browsefile(El, f_ex)))
     
     # Just packing
