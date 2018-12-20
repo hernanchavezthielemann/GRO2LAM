@@ -70,8 +70,7 @@ class Gro2Lam_GUI(Frame):
 
     def swapbody(self, _pbody_):# checked ok 16/09 -----------WF
         ''' Deletes and clean the last generated body
-            maybe lacks a real body destroyer?? but works fine with
-            this, because it is just a "small" overlapping I gess
+            maybe lacks a real body destroyer?? but works fine
         '''
         
         if self.prevailing_body <> _pbody_:
