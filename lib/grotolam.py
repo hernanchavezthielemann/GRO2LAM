@@ -1,10 +1,8 @@
 #!/usr/bin/python
-#    -------------    runing simulations   ----------------
-
+#    -------------    runing   ----------------
 from lib.misc.version import __version__
 from lib.misc.file import write_file
 from lib.gui.main_gui import launch_gui
-
 
 class Grotolam(object):
     def __init__(self, master=None):
@@ -19,7 +17,7 @@ class Grotolam(object):
         self._data_ = value
     
     def save_data(self):
-        ' in beta version'
+        ' in beta.beta version'
         import pickle
         output = ''
         pickle.dump(self._data_ , output, pickle.HIGHEST_PROTOCOL)
@@ -45,4 +43,5 @@ def grotolam_launcher_test():
     #    sim_data = extract_gromacs_data(conv_data[1:], solva_tags, ckbuttons)
     #    config = conv_data[0], ckbuttons
     #    flag_done_ = write_lammps_data( sim_data, 'data.gro2lam', config)
+    
 # vim:tw=79
