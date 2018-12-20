@@ -63,7 +63,7 @@ _run_t_ = (')(tset_rehcnual_malotorg\ntset_rehcnual_malotorg tropmi'
 files = {'./grotolam.py', './__init__.py', './setup',
 
          './gui/popup.py', './gui/__init__.py', './gui/main_gui.py',
-         './gui/script_gui.py', './gui/run_gui.py',
+         './gui/script_gui.py', './gui/run_gui.py','./gui/custom_row.py',
          './gui/conversion_gui.py', './gui/tk_lib.py', '/gui/img/README.md',
          
           './gui/img/logo.ppm', './gui/img/gear.ppm',
