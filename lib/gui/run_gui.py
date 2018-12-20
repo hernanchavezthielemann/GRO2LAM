@@ -10,6 +10,7 @@ __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 from Tkinter import Frame, Button, Label
 
 from tk_lib import create_entry, get_entriesvalue, bottom_hline_deco
+from custom_row import createfileentry
 from lib.misc.data import check_vars
 from lib.misc.file import check_file, run_command
 
@@ -25,7 +26,7 @@ class Run_GUI(Frame):
     def __init__(self, master=None, **options):
         self.master  = master
         Frame.__init__(self, master)
-        
+        self.img = self.master.img
 
     def createWidgets(self):
         'create the script gui'
@@ -43,15 +44,15 @@ class Run_GUI(Frame):
         row2fill = Frame(self)
         row2fill_l = Frame( row2fill)
         
-        _extensions_ = (('lammps input' ,'.in'),('lammps input' ,'in.*'))
-        self.r_entry_c.append(
-            self.master.createfileentry(
-                row2fill_l, 'Select the script to run', './in.gro2lam',
-                f_ext= _extensions_,
-                b_enb = (self.master._convertdata_ == None)
-            )
-        )
-        
+        b_enb = ( self.master._convertdata_ == None)
+        self.r_entry_c.append( createfileentry( self,
+                                               'Select the script to run',
+                                               './in.gro2lam',
+                                               ['.in', 'in.*'],
+                                               ['lammps input',]*2,
+                                               b_enb
+                                              )
+                            )
         _entries_ = ['Machine', 'Cores']
         _defvals_=[['lammps-daily',
                     [ 'lammps', 'lmp_mpi', 'lmp_ubuntu' ,'lammps-daily']],
