@@ -5,7 +5,6 @@ __merged_files__ = ['main.m', 'Reading_top.m', 'Reading_bon.m',
                     'Reading_nb.m','Counting_lines.m', 'Reading_xyz.m']
 
 
-
 from lib.misc.warn import wrg_1, wrg_3, pop_err_1, pop_wrg_1
 from lib.misc.file import check_file, write_list2file, debugger_file
 from sys import exit
@@ -295,6 +294,48 @@ def get_gro_line(_filename_, _startstrings_, _i_=0):
         return 0, read_flag
     else:
         return content_line, read_flag
+
+def get_ffldfiles( _topfile_):
+    ''' 
+    self explanatory... sub routine to get the force field files
+    if they are stated in the top file.
+    '''
+    ff_file = ''
+    
+    with open( _topfile_, 'r')  as indata:
+        for j_line in indata:
+            if j_line.startswith('#include'):
+                ff_file =  j_line.split('"')[1]
+                break
+            elif j_line.startswith('[ moleculetype ]'):
+                break
+    
+    root_folder = '/'.join(_topfile_.split('/')[:-1]+[''])
+    ff_file = ff_file.lstrip('.').lstrip('/')
+    
+    if ff_file <> '':
+        file_cont = ['', '', '']
+        print '----- Loading :'
+        file_cont[0] =  root_folder + ff_file
+        print file_cont[0]
+        i = 0
+        root_folder = '/'.join( file_cont[0].split('/')[:-1]+[''])
+        with open( file_cont[0], 'r')  as indata2:
+            for k_line in indata2:
+                if k_line.startswith('#include'):
+                    i+=1
+                    file_cont[i] = ( root_folder + k_line.split('"')[1])
+                    print file_cont[i]
+                    if i==2:
+                        break
+    else:
+        pop_wrg_1(' itp file not found')
+        
+    if '' in file_cont:
+        return ['', '', '']
+    else:
+        # a file integrity check should be done outside
+        return file_cont
 
 def ck_forcefield(_ff_file_):
     '''
