@@ -14,6 +14,8 @@ from popup import PromptPopUp, PromptPopUp_wck
 from tk_lib import bottom_hline_deco, format_dec, Drop_Down_List
 from tk_lib import createmenubar, create_entry, get_entriesvalue
 
+from custom_row import File_Entry, createfileentry
+
 from lib.handling.lammps import write_lammps_input
 
 from lib.misc.data import check_vars
@@ -37,7 +39,7 @@ class Script_GUI(Frame):
         
         # Just as an extension
         self._convertdata_ = self.master._convertdata_
-        self.im_gear = self.master.im_gear
+        self.img = self.master.img
         
         self._container_ = self.master._script_
         
@@ -79,14 +81,15 @@ class Script_GUI(Frame):
             _def_dataname_ = _mainpage_[0]
             _defvals_ = _mainpage_[1:] 
         
-        _extensions_ = (('lammps data' ,'.data'),('lammps data' ,'data.*'))
-        self.s_entry_c.append(
-            self.master.createfileentry(
-                row2fill_l, 'Lammps data file to work', _def_dataname_,
-                f_ext= _extensions_, b_enb = (self._convertdata_ == None)
-            )
-        )
-        
+        self.s_entry_c.append( createfileentry( self,
+                                               'Lammps data file to work',
+                                               _def_dataname_,
+                                               ['.data', 'data.*'],
+                                               ['lammps data', 'lammps data'],
+                                               (self._convertdata_ == None)
+                                              )
+                            )
+
         _entries_=  [ 'Timestep [fs]', '-','NVE steps  [#ts]','-',
                      'NVT steps  [#ts]','Temperature at start:end [K]',
                      'Temperature damping [fs]',
@@ -150,7 +153,7 @@ class Script_GUI(Frame):
                                               ]
         
         self.fcb = Button( row, text = 'Advanced settings', compound='left',
-                          image = self.im_gear, bg='gray86',
+                          image = self.img['gear'], bg='gray86',
                           height = 15, width = 145,
                           command = self.further_config_script
                          )
@@ -424,4 +427,4 @@ class Script_GUI(Frame):
             return _flag_
         return max_at_index, bond_types, angle_types
         
-
+# vim:tw=80
