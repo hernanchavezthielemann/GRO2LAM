@@ -13,12 +13,13 @@ from Tkinter import Widget, Button
 from popup import PromptPopUp, PromptPopUp_wck
 from tk_lib import bottom_hline_deco, format_dec, Drop_Down_List
 from tk_lib import createmenubar, create_entry, get_entriesvalue
+from custom_row import File_Entry
 
 from lib.misc.data import check_vars
 from lib.misc.warn import print_dec_g, pop_wrg_1, pop_err_1
 from lib.misc.file import check_file, check_in_file
 
-from lib.handling.gromacs import extract_gromacs_data
+from lib.handling.gromacs import extract_gromacs_data, get_ffldfiles
 from lib.handling.lammps import write_lammps_data
 
 #------------------------------------------------------
@@ -31,70 +32,101 @@ class Conversion(Frame):
         in order to neat
         this is a better place for it
     '''
-    def __init__(self, master=None, **options):
+    def __init__(self, master=None, **kwargs):
         
         #if not master and options.get('parent'):
         #    master = options['parent']
         self.master  = master
         Frame.__init__(self, master)
         
-        self.im_gear = self.master.im_gear
-        
+        self.img = self.master.img
         # inner class object container
         self.objt_c = []
-        
+        self.file_e = []
 
     def create_conversion_gui(self):
         
-        #    first header row
+        # file section
+        #=======================       DEFAULTS       =========================
+        
+        _autoload_ = 0
+        
+        eg_files=['./Examples/IONP/gromacs/SPIO_em.gro',
+                  './Examples/IONP/gromacs/SPIO_part.top',
+                  './Examples/IONP/gromacs/forcefield.itp',
+                  './Examples/IONP/gromacs/ffoplsaaSI_FE_WATnb.itp',
+                  './Examples/IONP/gromacs/ffoplsaaSI_FE_WATbon.itp'
+                 ]
+        
+        #eg_files=['conf.gro','topol.top','forcefield.itp','nb.itp','bon.itp']
+        _atomstyle_ = 'full'
+        _radio_ = 1
+        
+        data_cont = self.master._convert_['setup']
+        if data_cont <> []:
+            _autoload_ = data_cont[0]
+            eg_files = data_cont[1:-2]
+            _atomstyle_ = data_cont[-2]
+            _radio_ = data_cont[-1]
+            
+        if _autoload_:
+            enabled = [ 1, 1, 0, 0, 0]
+        else:
+            enabled = [ 1, 1, 1, 1, 1]
+            
+        fi_txt=['Enter the gro file',
+                'Enter the top file',
+                'Enter the forcefield file',
+                'Enter the non bonded file',
+                'Enter the bonded file'
+                 ]
+        
+        ######            CONSTRUCTION SITE      ###############
+        ## CS   first header row
         row = Frame(self)
         TEXT1= "\nSelect the parameters to perform the conversion: "
         Label(row, text=TEXT1, anchor='w').pack(side='top', padx=2, pady=10)
         row.pack( side='top', fill='x', padx=5)
         bottom_hline_deco(self)
         
-        # file section
-        #=======================       DEFAULTS       =========================
-        ex_files=['./Examples/IONP/gromacs/SPIO_em.gro',
-                  './Examples/IONP/gromacs/SPIO_part.top',
-                  './Examples/IONP/gromacs/forcefield.itp',
-                  './Examples/IONP/gromacs/ffoplsaaSI_FE_WATnb.itp',
-                  './Examples/IONP/gromacs/ffoplsaaSI_FE_WATbon.itp'
-                 ]
-        #ex_files=['conf.gro','topol.top','forcefield.itp','nb.itp','bon.itp']
-        _atomstyle_ = 'full'
-        _radio_ = 1
-        
-        data_cont = self.master._convert_['setup']
-        if data_cont <> []:
-            ex_files = data_cont[:-2]
-            _atomstyle_ = data_cont[-2]
-            _radio_ = data_cont[-1]
-        
-        fi_txt=['Enter the gro file',
-                'Enter the top file',
-                'Enter the forcefield file',
-                'Enter the non bonded file',
-                'Enter the bonded file'
-               ]
-        
-        for fi in range( len( ex_files)):
-            self.objt_c.append( 
-               self.master.createfileentry(
-                   self, fi_txt[fi], ex_files[fi],
-               )
-            )
+        ## CS   files
+        # appends file entries capturing button also 
+        self.objt_c.append( 1) # allocating space for autoload in space [0]
+        for fi in range( len( eg_files)):
+            self.file_e.append( File_Entry( self,
+                                           e_txt = fi_txt[fi],
+                                           e_val = eg_files[fi])
+                              )
+            self.file_e[-1].setter( enabled[fi])
+            self.objt_c.append( self.file_e[-1]._entry)
+            self.file_e[-1].pack(fill='x')
+            
+            if fi == 1:
+                bottom_hline_deco( self)
+                ## CS   autoload
+                # self.objt_c.append inside 
+                self.autoload_buffer = _autoload_
+                self.objt_c[0] = self.autoloadff()
+                self.objt_c[0].set( _autoload_)
+            
+            
         bottom_hline_deco( self)
         
+        ## CS   atom style
+        # self.objt_c.append inside 
         bottom_hline_deco( self, self.atomstyle)
         self.objt_c[-1].set( _atomstyle_)
         
+        ## CS   solvation selector
+        # self.objt_c.append inside 
         self.sol_buffer = _radio_
         bottom_hline_deco( self, self.build_solvation_section)
         self.objt_c[-1].set( _radio_)
         
         #    Final Buttons
         self.build_finalbuttons()
+        
+        ######     END CONSTRUCTION SITE  -> PACK OUTSIDE #########
         
         if self.master.test:
             print 'Seeing main gro2lam converter GUI'
@@ -106,7 +138,7 @@ class Conversion(Frame):
         
         self.radio_part( row, 'Solvation atoms', [' yes',' no'])
         
-        self.solv_b = Button( row, image= self.im_gear,
+        self.solv_b = Button( row, image= self.img['gear'],
                              width = 25, height=23,
                              command= self.config_solvation
                             )
@@ -128,7 +160,6 @@ class Conversion(Frame):
                                   )
             label_rb.pack(side='left', padx=6)
         self.objt_c.append( radio_var)
-        
     
     def solvastuff(self):
         '''If this point is reached, some button changed '''
@@ -144,7 +175,6 @@ class Conversion(Frame):
                                 ,' If some solvent molecules are in the'
                                 +' .gro file they will be ignored!', _i_=0)
                 self.solv_b.configure( state = 'disabled')
-
 
     def atomstyle( self):
         ''' in this case just one, but could be modified 
@@ -176,17 +206,82 @@ class Conversion(Frame):
         
         a_mainrow.pack(side='top', fill='x', pady=3)
 
+    def autoloadff(self):
+        '''
+        function that enables the autoload of the forcefield files as
+        stated in the top file, also as a logic side effect disables the 
+        file load option for forcefields
+        '''
+        _s_row_ = Frame(self)
+        
+        _text_ =  'Autoload forcefield files'
+        
+        # in a future release this can be done with "self.radio_part"
+        # but there is the need to implenet it with function dependance
+        _desc_ = [' yes',' no']
+        _f_labels = format_dec([_s_row_, _text_])
+        
+        radio_var = IntVar()
+        for d in range( len( _desc_)):
+            label_rb = Radiobutton(_s_row_, width=0, text= _desc_[d]
+                                   ,variable = radio_var
+                                   , value= len( _desc_)-1-d
+                                   ,command = self.autoloadstuff
+                                   , anchor='w'
+                                  )
+            label_rb.pack(side='left', padx=6)
+        
+        _s_row_.pack( side='top', fill='x', pady=3)
+        return radio_var
+
+    def autoloadstuff(self):
+        
+        _autoload_ = self.objt_c[0].get()
+        if self.autoload_buffer <> _autoload_:
+            self.autoload_buffer = _autoload_
+            
+            if _autoload_:
+                pop_wrg_1('You are choosing to autoload the forcefield files.',
+                          ' ', _i_=0)
+                
+                aux_cont = get_ffldfiles( self.objt_c[2].get())
+                err_flag = True
+                if aux_cont <> ['','','']:
+                    # asign and disable file_row 3 4 5
+                    for i in [2, 3, 4]:
+                        err_flag *= check_file( aux_cont[i-2])
+                        self.file_e[i]._entry.delete(0, 'end')
+                        self.file_e[i]._entry.insert(0, aux_cont[i-2])
+                        self.file_e[i]._entry.xview_moveto(1)
+                        
+                        self.file_e[i].setter( 0)
+                        
+                else:
+                    err_flag = False
+                        
+                        
+                if not err_flag:
+                    pop_err_1('Autoload failed!')
+                    self.objt_c[0].set( 0)
+                    self.autoload_buffer = 0
+                    for i in [2, 3, 4]:
+                        self.file_e[i].setter( 1)
+            else:
+                for i in [2, 3, 4]:
+                    self.file_e[i].setter( 1)
+                
+
     def build_finalbuttons(self):
         
-        Frame(self).pack(side="top", fill='x', pady=20) # Space
+        Frame(self).pack(side="top", fill='x', pady=10) # Space
         
         _row_= self
         self.b1 = Button(_row_, text='Convert',
                          command = self.getdata_and_convert)
-        self.b1.pack( side = 'right', padx=30, pady=15)
+        self.b1.pack( side = 'right', padx=30, pady=10)
         
         b2 = Button(_row_, text = 'Quit', command = self.quit)
-        b2.pack( side = 'right', padx=10, pady=4)
+        b2.pack( side = 'right', padx=10, pady=10)
 
     def getdata_and_convert(self):
         _solvatedinfo_ = self.master._convert_['solvation']
@@ -203,7 +298,7 @@ class Conversion(Frame):
             data_cont = self.master._convert_['setup']
             config = data_cont[-2:]+[0]
             
-            sim_data, flag_done_ = extract_gromacs_data(data_cont[:-2],
+            sim_data, flag_done_ = extract_gromacs_data(data_cont[1:-2],
                                                         _solvatedinfo_,
                                                         config[1:])
             if flag_done_:
@@ -235,20 +330,23 @@ class Conversion(Frame):
 
     def get_entriesvalues(self):
         ''' ---   app entry getter   ----
-        mainly to obtain values beside check buttons'''
+        mainly to obtain values beside check buttons
+        ... which check buttons?
+        '''
         e_values=[]
         _flag_ = True
         ent_rang  =  range(len(self.objt_c))
         
         for ent in ent_rang:#[1:]:
             e_values.append(self.objt_c[ent].get())
-            if ent <= 4:
+            if 0< ent and ent <= 5:
                 _flag_ *= check_file(e_values[-1])
             
         self.master._convert_['setup'] = e_values
         return _flag_
 
     def createWidgets(self):
+        ''' unified name hook'''
         self.create_conversion_gui()
 
     def config_solvation( self):
@@ -298,7 +396,7 @@ class Conversion(Frame):
         ''' ================    Check inputs    ================= '''
         _flag_ = 1
         nb_Ox, nbHy, gro_Oxs, gro_Hys, pch= _app_aux_
-        _gro_f, _, _, _nbn_f, _, _, _= self.master._convert_['setup']
+        _,_gro_f, _, _, _nbn_f, _, _, _= self.master._convert_['setup']
         _flags = check_in_file( _nbn_f, nb_Ox, nbHy, pstn = 0)
         print ([nb_Ox, nbHy])
         
