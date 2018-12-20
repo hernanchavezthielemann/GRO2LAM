@@ -6,29 +6,21 @@ __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 #------------------------------------------------------
 #///    Packages and globals definitions are here   ///
 #------------------------------------------------------
-
-from Tkinter import Tk, Frame, Label, Button, Entry, PhotoImage, TclError
-
 from os.path import dirname, realpath
-from sys import exc_info, exit
+from sys import exit
+
+from Tkinter import Tk, Frame, Label, TclError, PhotoImage
 
 from conversion_gui import Conversion
 from script_gui import Script_GUI
 from run_gui import Run_GUI
 
-from popup import FilePopUp, AboutPopUp
-from tk_lib import format_dec, createmenubar
+from popup import AboutPopUp
+from tk_lib import createmenubar
 
 from lib.misc.warn import wrg_3
-from lib.misc.file import check_file, run_command
+from lib.misc.file import run_command
 from lib.misc.version import __version__
-
-#------------------- GLOBALS  --------------------
-global dir_path, lib_path
-
-dir_path = dirname( realpath( __file__))
-lib_path = dir_path
-
 
 #------------------------------------------------------
 '''///////////////        Class        /////////////'''
@@ -41,13 +33,18 @@ class Gro2Lam_GUI(Frame):
         _ver= __version__.split()
         self.master.title(" "*25+"{}    {}".format(_ver[0],_ver[2]))#.master
         
-        self.pack() # why I'm packing here??
+        self.pack() # ... why I'm packing here?? coords?
         self.test = test
         
-        self.im_file = PhotoImage( file = lib_path+"/img/file.ppm")
-        self.im_logo = PhotoImage( file = lib_path+"/img/logo.ppm")
-        self.im_gear = PhotoImage( file = lib_path+"/img/gear.ppm")
+        # images storaging
+        dir_path = dirname( realpath( __file__))
+        self.img = dict()
+        self.img['logo']    = PhotoImage( file = dir_path + "/img/logo.ppm")
+        self.img['help']    = PhotoImage( file = dir_path + "/img/help.ppm")
+        self.img['file']    = PhotoImage( file = dir_path + "/img/file.ppm")
+        self.img['gear']    = PhotoImage( file = dir_path + "/img/gear.ppm")
         
+        # body init
         self.prevailing_body = 0
         self.body = None
         self.MAINVERTEX = [ 0, 0, 0, 0, 0, 0]
@@ -66,13 +63,16 @@ class Gro2Lam_GUI(Frame):
         
         row = Frame(self,bg = "white")
         Label( row, bg = "white",
-              image = self.im_logo).pack( side= 'left', padx=25)
+              image = self.img['logo']).pack( side= 'left', padx=25)
         row.pack(side="top", fill='x', padx=1)
         
         self.swapbody(1)
 
     def swapbody(self, _pbody_):# checked ok 16/09 -----------WF
-        ''' Deletes and clean the last generated body '''
+        ''' Deletes and clean the last generated body
+            maybe lacks a real body destroyer?? but works fine with
+            this, because it is just a "small" overlapping I gess
+        '''
         
         if self.prevailing_body <> _pbody_:
             if self.body == None:
@@ -115,65 +115,6 @@ class Gro2Lam_GUI(Frame):
         b = _l_[_l_.index(self.prevailing_body)-2]
         self.swapbody(b)
         
-    def createfileentry(self, parent_frame, fi_text, _def_fi_, **kwargs):
-        ''' Quite self explanatoy...
-            creates a row in which is possible to search for a file'''
-        f_ext = None
-        b_enb = True
-        if 'f_ext' in kwargs.keys():
-            f_ext = kwargs[ 'f_ext']
-        if 'b_enb' in kwargs.keys():
-            b_enb = kwargs[ 'b_enb']
-        
-        file_row = Frame(parent_frame)
-        if f_ext == None:
-            f_ext = ((fi_text ,'.'+_def_fi_.split('.')[-1]),)
-        
-        _f_labels = format_dec([file_row, fi_text], _pack_=False)
-        
-        Efile = Entry(file_row, width=13)
-        Efile.insert('end', _def_fi_)
-        
-        Efile.bind("<Key>", lambda e: "break") # Magic
-        
-        Efile.xview_moveto(1)
-        Bsearch = Button(file_row,
-                         image= self.im_file,
-                         command= (lambda El=Efile: self.browsefile(El, f_ext))
-                        )
-        
-        # Just packing
-        format_dec(_f_labels, _create_=False)
-        
-        Efile.pack(side='left', expand='yes', fill='x')
-        
-        Bsearch.pack(side='right', padx=0, pady=0)
-        file_row.pack(side='top', fill='x', pady=3)
-        if not b_enb:
-            Bsearch.configure( state = 'disabled')
-        # For tracing purposes list appending
-        return Efile
-
-    def browsefile(self, entry, ext=None):
-        '''Browse a file <button> action binder'''
-        
-        pop = FilePopUp(master=self)
-        if ext<>None and isinstance(ext, tuple):
-            #print '--- ', ext, type(ext)
-            pop.filetypes['filetypes']=ext #(("All","*"),) # 
-        filepath = pop.getfilepath()
-        
-        try:
-            fito = open(filepath,"r")
-            fito.close()
-            entry.delete(0, 'end')
-            entry.insert(0, filepath)
-            entry.xview_moveto(1)
-        except:
-            if filepath not in [ '', ()]:
-                print "Could not open File: ", filepath
-                print exc_info()[1]
-
     def create_conversion_gui(self):
         'Hook to create conversion gui'
         return Conversion(self)# Hook
@@ -191,8 +132,9 @@ class Gro2Lam_GUI(Frame):
 #------------------------------------------------------
 
 def launch_gui( started = False):
-    ''' launcher '''
-    
+    ''' launcher 
+        Main GUI constructor
+    '''
     
     print wrg_3('Before you start, make sure there are no comments',
                 '(;) in the middle of a line of the input GROMACS files.',
@@ -200,8 +142,9 @@ def launch_gui( started = False):
     
     MasterWin = Tk()
     prompt = Gro2Lam_GUI( master= MasterWin, test = started)# xl_App
-        
-    help_icon = PhotoImage( file= lib_path+"/img/help.ppm")
+    
+    # Top main pennon menu bar definition
+    
     entry_list_of_dicts = [{ 'title' : 'File',
                             'cascade' : (('Quit' ,MasterWin.quit), ) },
                            { 'title' : 'Data File Creation',
@@ -210,7 +153,7 @@ def launch_gui( started = False):
                             'title_com' : (prompt.swapbody , 2)},
                            { 'title' : 'Run',
                             'title_com' : (prompt.swapbody , 3)},
-                           { 'titlei' : help_icon, 
+                           { 'titlei' : prompt.img['help'], 
                             'cascade' : (('User manual' , showuserman),
                                          ('About' , launch_about, prompt),)}
                           ]
@@ -242,7 +185,6 @@ def launch_gui( started = False):
         MasterWin.destroy()
     except TclError:
         pass
-    
 
 def showlicence():
     
@@ -268,4 +210,3 @@ def showuserman():
     run_command(command)
 
 # vim:tw=80
-
