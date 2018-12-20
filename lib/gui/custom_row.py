@@ -125,3 +125,5 @@ def createfileentry(frame, label_txt, entry_val, extension, ex_descrptn, flag):
     FE.setter( flag )
     FE.pack(fill='x')
     return FE._entry
+
+# vim:tw=80
