@@ -163,9 +163,10 @@ class Conversion(Frame):
     
     def solvastuff(self):
         '''If this point is reached, some button changed '''
-        
+        _autoload_ = self.objt_c[0].get()
         _solvation_ = self.objt_c[-1].get()
-        if self.sol_buffer <> _solvation_:
+        
+        if not _autoload_ and self.sol_buffer <> _solvation_:
             self.sol_buffer = _solvation_
             
             if _solvation_:
@@ -175,6 +176,9 @@ class Conversion(Frame):
                                 ,' If some solvent molecules are in the'
                                 +' .gro file they will be ignored!', _i_=0)
                 self.solv_b.configure( state = 'disabled')
+        elif _autoload_ and self.sol_buffer <> _solvation_:
+            self.sol_buffer = 1
+            self.objt_c[-1].set( 1)
 
     def atomstyle( self):
         ''' in this case just one, but could be modified 
@@ -240,16 +244,23 @@ class Conversion(Frame):
         if self.autoload_buffer <> _autoload_:
             self.autoload_buffer = _autoload_
             
+            nonerr_flag = True
+            
             if _autoload_:
                 pop_wrg_1('You are choosing to autoload the forcefield files.',
                           ' ', _i_=0)
                 
+                ############ solvastuff
+                self.solv_b.configure( state = 'disabled')
+                self.sol_buffer = 1
+                self.objt_c[-1].set( 1)
+                
                 aux_cont = get_ffldfiles( self.objt_c[2].get())
-                err_flag = True
+                
                 if aux_cont <> ['','','']:
                     # asign and disable file_row 3 4 5
                     for i in [2, 3, 4]:
-                        err_flag *= check_file( aux_cont[i-2])
+                        nonerr_flag *= check_file( aux_cont[i-2])
                         self.file_e[i]._entry.delete(0, 'end')
                         self.file_e[i]._entry.insert(0, aux_cont[i-2])
                         self.file_e[i]._entry.xview_moveto(1)
@@ -257,20 +268,21 @@ class Conversion(Frame):
                         self.file_e[i].setter( 0)
                         
                 else:
-                    err_flag = False
+                    nonerr_flag = False
                         
                         
-                if not err_flag:
+                if not nonerr_flag:
                     pop_err_1('Autoload failed!')
                     self.objt_c[0].set( 0)
                     self.autoload_buffer = 0
-                    for i in [2, 3, 4]:
-                        self.file_e[i].setter( 1)
             else:
+                nonerr_flag = False
+            
+            if not nonerr_flag:
+                self.solv_b.configure( state = 'normal')
                 for i in [2, 3, 4]:
                     self.file_e[i].setter( 1)
-                
-
+            
     def build_finalbuttons(self):
         
         Frame(self).pack(side="top", fill='x', pady=10) # Space
@@ -285,8 +297,9 @@ class Conversion(Frame):
 
     def getdata_and_convert(self):
         _solvatedinfo_ = self.master._convert_['solvation']
-        
-        if ( self.objt_c[-1].get() and _solvatedinfo_ == []):
+        _autoload_ = self.objt_c[0].get()
+        _solvation_ = self.objt_c[-1].get()
+        if ( not _autoload_ and _solvation_  and _solvatedinfo_ == []):
             pop_wrg_1( 'First perform the solvation configuration.'
                       + ' You can do it pressing the solvation settings gears',
                       _i_=0
@@ -296,7 +309,7 @@ class Conversion(Frame):
         elif self.get_entriesvalues():
             
             data_cont = self.master._convert_['setup']
-            config = data_cont[-2:]+[0]
+            config = data_cont[-2:]+[_autoload_]
             
             sim_data, flag_done_ = extract_gromacs_data(data_cont[1:-2],
                                                         _solvatedinfo_,
