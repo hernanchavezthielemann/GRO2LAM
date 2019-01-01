@@ -6,7 +6,7 @@ __merged_files__ = ['main.m', 'Reading_top.m', 'Reading_bon.m',
 
 
 from lib.misc.warn import wrg_1, wrg_3, pop_err_1, pop_wrg_1
-from lib.misc.file import check_file, write_list2file, debugger_file
+from lib.misc.file import check_file, debugger_file
 from sys import exit
 
 
@@ -15,23 +15,25 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     ''' data files ---> ['gro file', 'top file', 'forcefield',
         'non bonded file', 'bonded file']'''
     
-    filename_gro    = _data_files_[0]
-    filename_top    = _data_files_[1]
-    filename_ff     = _data_files_[2]
-    filename_nb     = _data_files_[3]
-    filename_bon    = _data_files_[4]
+    filename_gro    =   _data_files_[0]
+    filename_top    =   _data_files_[1]
+    filename_ff     =   _data_files_[2]
+    filename_nb     =   _data_files_[3]
+    filename_bon    =   _data_files_[4]
     
-    data_container = {}
+    data_container  =   {}
     
-    print filename_ff
+    _solvated_f_, _autoload_= _ck_buttons_
+    if not _autoload_:
+        print filename_ff # or not
+        
     data_container['defaults'], ok_flag = ck_forcefield( filename_ff)
     if not ok_flag:
         return {}, ok_flag
     
     buckorlj = int(data_container['defaults'][0])
     
-    _solvated_f_, _paramfi_f_= _ck_buttons_
-    print 'Solvation: {} | Parametrization: {}\n'.format( *_ck_buttons_)
+    print 'Solvation: {} | Autoload: {}\n'.format( *_ck_buttons_)
     
     #################################################
     '''-----------------  FILE NB  ---------------'''
@@ -42,7 +44,7 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     if not ok_flag:
         return {}, ok_flag
     
-    n_atomtypes = len( data_container['atomtypes'])
+    n_atomtypes     =   len( data_container['atomtypes'])
     
     #debugger_file( 'atomtypes',data_container['atomtypes'])
     #################################################
@@ -62,9 +64,9 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
         if not ok_flag:
             return {}, ok_flag
         
-    n_bondstypes = len(data_container['bondtypes'])
-    n_anglestypes = len(data_container['angletypes'])
-    n_dihedraltypes = len(data_container['dihedraltypes'])
+    n_bondstypes    =   len( data_container['bondtypes'])
+    n_anglestypes   =   len( data_container['angletypes'])
+    n_dihedraltypes =   len( data_container['dihedraltypes'])
     
     
     #################################################
@@ -88,10 +90,10 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
         
         #debugger_file( _char_str_, data_container[_char_str_])
             
-    n_atoms = len(data_container['atoms'])
-    n_bonds = len(data_container['bonds'])
-    n_angles = len(data_container['angles'])
-    n_dihedrals = len(data_container['dihedrals'])
+    n_atoms     =   len( data_container['atoms'])
+    n_bonds     =   len( data_container['bonds'])
+    n_angles    =   len( data_container['angles'])
+    n_dihedrals =   len( data_container['dihedrals'])
     
     #################################################
     '''----------------  FILE GRO  ---------------'''
@@ -102,7 +104,7 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
         return {}, ok_flag
     
     _mol_, _mtype_, _type_, _xyz_ = gro_pack
-    data_container['atomsdata'] = [_mol_, _mtype_, _type_, _xyz_]
+    data_container['atomsdata'] = [ _mol_, _mtype_, _type_, _xyz_]
     
     
     #################    BOX DEF   ##################
@@ -118,7 +120,53 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     #################################################
     '''--------------   Solvation   --------------'''
     #===============================================#
-    if _solvated_f_:
+    n_atomsnew = len( _type_)
+    
+    if _autoload_:
+        # research in topology for new molecules / side molecules
+        data_container, ok_flag = sidemol_data( filename_top, data_container)
+        if not ok_flag:
+            return {}, ok_flag
+        
+        # maths
+        sidemol = data_container['sidemol']
+        side_bonds_n = 0
+        side_angles_n = 0
+        for sb in range( len( sidemol['tag'])):
+            bonds_x_mol = len( sidemol['data'][sb]['bonds'])
+            angles_x_mol = len( sidemol['data'][sb]['angles'])
+            
+            side_bonds_n += sidemol['num'][sb]*bonds_x_mol
+            side_angles_n += sidemol['num'][sb]*angles_x_mol
+        
+        n_bondsnew = n_bonds + side_bonds_n
+        n_anglesnew = n_angles + side_angles_n
+        
+        print n_bonds, side_bonds_n, n_bonds + side_bonds_n
+        print n_angles, side_angles_n, n_angles + side_angles_n
+        
+        # Regarding the itp format:
+        #   charges index 6 in data-atoms
+        #   opls names in index 1
+        #   atom tags in index 4
+        _charge_ = {}
+        _conv_dict_ = {}
+        for sb in range( len( sidemol['tag'])):
+            for at in range( len( sidemol['data'][sb]['atoms'])):
+                a_opls_tag = sidemol['data'][sb]['atoms'][at][1]
+                a_elem_tag = sidemol['data'][sb]['atoms'][at][4]
+                a_charge = float( sidemol['data'][sb]['atoms'][at][6])
+                _charge_[a_opls_tag] = a_charge
+                _conv_dict_[ a_elem_tag] = a_opls_tag
+        print 'Charges found: '
+        print _charge_
+        print _conv_dict_
+        
+        data_container['S_charge'] =_charge_
+        data_container['S_translation'] =_conv_dict_
+        
+    ##======= OLD TIMES :-)
+    elif _solvated_f_:
         n_molwater=0
         _aux_m_ = data_container['molecules']
         for i in range(len(_aux_m_)) :
@@ -135,7 +183,7 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
         
         oxy_gf = _water_names_[2].split(',')
         hyd_gf = _water_names_[3].split(',')
-        _conv_dict_= {}
+        _conv_dict_ = {}
         for Ox in oxy_gf:
             _conv_dict_[Ox.strip(' ')] = _water_names_[0]
             #_charge_[Ox] = _ch_O_
@@ -146,32 +194,7 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
         data_container['S_charge'] =_charge_
         data_container['S_translation'] =_conv_dict_
         
-        #oxy = _water_names_[2]
-        #hyd = _water_names_[3]
-        
-        #if len(_water_names_)>4:#===--------------------  <WFS>
-        #    sod =_water_names_[4]
-        #    if len(_water_names_)>5:
-        #        clo =_water_names_[5]
-        # as the indexes themselves are not needed the next lines conversion 
-        # were avoided 
-        #indexchangeoxy =  find(strncmp(type_,oxy,2) == 1)
-        #indexchangeoxy = [ i for i in range(len(_type_))
-        #                       if _type_[i][:2]==oxy[:2]]
-        # there is no need to store this indexes so:
-        
-        #for i in range( len( _type_)):
-        #    if _type_[i][:2]==oxy[:2]:
-        #        _type_[i]= _water_names_[0]
-        #    elif _type_[i][:2]==hyd[:2]:
-        #        _type_[i]= _water_names_[1]
-        
-        #indexoxy = [ i for i in range(len(_type_)) if _type_[i][:2]==oxy[:2]]
-        #indexhyd = [ i for i in range(len(_type_)) if _type_[i][:2]==oxy[:2]]
-        
-        #indexoxy = find(strcmp(atom_inbondtype,_water_names_[1]) == 1)
-        #indexhyd = find(strcmp(atom_inbondtype,_water_names_[2]) == 1)
-        n_atomsnew = len(_type_)
+    
     else:
         n_bondsnew = n_bonds
         n_anglesnew = n_angles
@@ -188,6 +211,107 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     
 
     return data_container, ok_flag
+
+def sidemol_data( _file_top_, data_container):
+    ''' getter of the side molecules data'''
+    
+    sidemol = {'tag': [],'num':[], 'data':[] }# Tag # mol_number
+    sm_flag = True
+    # names of non side molecules
+    non_sm = data_container['moleculetype']
+    non_sm = [non_sm[i][0] for i in range(len(non_sm))]
+    # side molecules info
+    _aux_m_ = data_container['molecules']
+    
+    for i in range(len(_aux_m_)) :
+        if _aux_m_[i][0] not in non_sm:
+            sidemol['tag'].append( _aux_m_[i][0])
+            sidemol['num'].append( int(_aux_m_[i][1]))
+            
+    #////////========= Side molecule >>> file <<< search   ============////////
+    print ('Loading side molecule files: ' )
+    _sm_files_ = []
+    root_folder = '/'.join( _file_top_.split('/')[:-1]+[''])
+    with open( _file_top_, 'r')  as topdata:
+        _buffer_ = ''
+        for k_line in topdata:
+            if k_line.startswith('#'):
+                logic_test = ('#if' not in _buffer_ and _buffer_ <> '')
+                if k_line.startswith('#include') and logic_test:
+                    new_filename = k_line.split('"')[1].lstrip('.').lstrip('/')
+                    _sm_files_.append( root_folder + new_filename)
+                    print _sm_files_[-1]
+                    sm_flag *= check_file( _sm_files_[-1], content='[ atoms ]')
+                else:
+                    _buffer_ = k_line
+    # do it in the same loop or not that is the thing... maybe is better
+    # to not just beacause the indentation going to +inf atoms
+    #////////========= Side molecule >>> data <<< search   ============////////
+    if sm_flag:
+        for sm in sidemol['tag']:
+            aux_data, aux_flag = sidemol_data_gatherer( _sm_files_, sm)
+            sm_flag *= aux_flag
+            sidemol['data'].append( aux_data)
+            
+    
+    data_container['sidemol'] = sidemol
+    return data_container, sm_flag
+
+def sidemol_data_gatherer( _sm_files_, sm):
+    ''' collects all the data related with one kind of side molecule
+        the data types are specified in startstrings
+    '''
+    _flag_ = True
+    _file_ = ''
+    _sm_data_c_ = {}
+    # is sm in sm_file?? in cases with more than one file
+    for smfile in _sm_files_:
+        with open( smfile, 'r')  as sm_data:
+            for j_line in sm_data:
+                if j_line.startswith('[ moleculetype ]'):
+                    j_line = sm_data.next()
+                    j_line = sm_data.next()
+                    if j_line.startswith(sm):
+                        _file_ = smfile
+                        break
+    if _file_=='':
+        pop_err_1('Error!! side molecule {} not found in itp -- '.format( sm))
+        _flag_ = False
+    else:
+        tag_str = [ 'atoms', 'bonds', 'angles', 'dihedral','fin']
+        _sm_data_c_ = { x:[] for x in tag_str if x <> 'fin'}
+        read_flag = False
+        iner_flag = False
+        cd_tag = ''
+        i=0
+        with open( _file_, 'r')  as sm_data:
+            for j_line in sm_data:
+                if j_line.startswith(';') or j_line.startswith('#'):
+                    pass
+                # at this point starts reading
+                elif j_line.startswith( sm):
+                    read_flag = True
+                elif len( j_line.rstrip()) < 2:
+                    #print j_line
+                    iner_flag = False
+                elif read_flag and j_line.startswith('[ '):
+                    content = j_line.lstrip('[ ').rstrip(' ]\n')
+                    if content == tag_str[i]:
+                        cd_tag = tag_str[i]
+                        iner_flag = True
+                        i+=1
+                        
+                    elif content == 'moleculetype':
+                        break
+                    else:
+                        print '> {} not considered in {}'.format( content, sm)
+                
+                elif iner_flag:
+                    # print j_line.rstrip()
+                    _sm_data_c_[cd_tag].append( j_line.rstrip().split())
+                    
+        # todo add a new check in case of empty container
+    return _sm_data_c_, _flag_
 
 def get_gro_fixed_line(_filename_):
     ''' reading gromacs gro fixed lines'''
@@ -253,7 +377,7 @@ def top_groups(mtype, _buffer, g_names):
     
     return _buffer, g_names # hook
 
-def get_gro_line(_filename_, _startstrings_, _i_=0):
+def get_gro_line( _filename_, _startstrings_, _i_=0):
     ''' reading gromacs content lines'''
     content_line = []
     _ss_=_startstrings_
@@ -267,7 +391,8 @@ def get_gro_line(_filename_, _startstrings_, _i_=0):
                 pass
             if j_line.startswith('#'):
                 if j_line.startswith('#include'):
-                    print wrg_3(j_line.rstrip('\n')+' not included in this line\n')
+                    print wrg_3( j_line.rstrip('\n') + 
+                                ' not included this time')
                 else:
                     pass
                 
@@ -288,8 +413,8 @@ def get_gro_line(_filename_, _startstrings_, _i_=0):
     if content_line == [] or not read_flag:
         if '/' in _filename_:
             _filename_ = _filename_.split('/')[-1]
-        pop_err_1('The {} section is missing on {} file'.format(_ss_[_i_] ,
-                                                                _filename_)
+        pop_err_1( 'The {} section is missing on {} file'.format( _ss_[_i_] ,
+                                                                  _filename_)
                  )
         return 0, read_flag
     else:
