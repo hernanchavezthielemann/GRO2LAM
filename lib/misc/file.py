@@ -8,25 +8,39 @@ from os import getcwd, walk, system
 from os.path import join
 from subprocess import Popen, PIPE
 
-def check_file(_in_file_, content = True):
+def check_file(_in_file_, content = True, string = ''):
     '''Check the correctness of the given input file address'''
+    
+    flag = False
     try:
         _auxf = open(_in_file_,"r")
         su = 0
+        strcheck = False
         if content:
-            for line in _auxf:
-                su += len(line.rstrip('\n'))
+            if string == '':
+                for line in _auxf:
+                    su += len(line.rstrip('\n'))
+            else:
+                for line in _auxf:
+                    line = line.rstrip('\n')
+                    if string in line:
+                        strcheck = True
+                    
         _auxf.close()
-        if content and su == 0:
+        
+        if content and su == 0 and string == '':
             pop_wrg_1(' File {} is empty -- '.format(_in_file_))
-            return False
-        return True
+        elif string <> '' and content and not strcheck:
+            pop_wrg_1(' Section {} not found in file {} -- '.format( string, _in_file_))
+        else:
+            flag = True
+            
     except IOError:
         pop_wrg_1(' File {} not found -- '.format(_in_file_))
-        return False
+    return flag
 
 def check_file_list(files_list, extensions=['*']):
-    '''Check for input files integrity'''
+    '''Check for input files integrity and extension'''
     finam=''
     try:
         for x in range(len(files_list)):
@@ -34,7 +48,7 @@ def check_file_list(files_list, extensions=['*']):
             fi= open (files_list[x],'r')
             fi.close()
             ext= finam.split('.')[-1]
-            if extensions<>'*' and not ext in extensions:
+            if extensions<>['*'] and not ext in extensions:
                 print extensions
                 print wrg_3(' Invalid format: < '+ext+' >')
                 return False
