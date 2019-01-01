@@ -131,6 +131,8 @@ def write_lammps_data_all( _topodata_, data_name, _config_):
                                    )
     solv_bonds = []
     solv_angles = []
+    # asumption: all solvated structures are water??
+    # 
     if _solvated_f_ == 1:
         solv_at_v = range(n_atoms )[ base_atoms_n:]
         for i in solv_at_v:
@@ -143,6 +145,205 @@ def write_lammps_data_all( _topodata_, data_name, _config_):
                                         aty
                                        )
             if charge[aty] <0:
+                # better way to do this is trough coords ---------  <WFS>
+                # but anyway works perfectly
+                aty2 = conv_dict[_atype_[i+1]]
+                aty3 = conv_dict[_atype_[i+2]]
+                solv_bonds.append([aty+'-'+aty2, i+1, i+2])
+                solv_bonds.append([aty+'-'+aty3, i+1, i+3])
+                solv_angles.append([aty2+'-'+aty+'-'+aty3, i+2, i+1, i+3])
+    
+    
+    ####------BONDS------####
+    if _asty_d_[atomstyle]>=2:
+        known_bonds = _topodata_['bonds']
+        base_bonds_n = len (known_bonds)
+        _text_ +='\n Bonds\n\n'
+        bond_shape = ' {}'*4+'\n'
+        for i in range(base_bonds_n):
+            
+            at1 = int(known_bonds[i][0])
+            at2 = int(known_bonds[i][1])
+            
+            _bond_ty_ = dicts[1][known_atoms[at1-1][1]+'-'
+                                 +known_atoms[at2-1][1]]
+            _text_ += bond_shape.format( i+1, _bond_ty_, at1, at2)
+                        
+        if _solvated_f_ == 1:
+            # better way to do this is trough corrds ---------  <WFS>
+            for i in range(n_bonds-base_bonds_n):
+                _bond_ty_ = dicts[1][solv_bonds[i][0]]
+                _text_ += bond_shape.format(i+1+base_bonds_n,_bond_ty_,
+                                            solv_bonds[i][1],solv_bonds[i][2])
+    
+    
+    ####------ANGLES------#########
+    if _asty_d_[atomstyle]>=3:
+        known_angles = _topodata_['angles']
+        base_angles_n = len(known_angles)
+        _text_ +='\n Angles\n\n'
+        angle_shape = ' {}'*5+'\n'
+        for i in range(base_angles_n):
+            
+            at1 = int(known_angles[i][0])
+            at2 = int(known_angles[i][1])
+            at3 = int(known_angles[i][2])
+            
+            angle_t = (known_atoms[at1-1][1]+'-'+ known_atoms[at2-1][1]
+                       +'-'+known_atoms[at3-1][1])
+            _angle_ty_ = dicts[2][angle_t]
+            
+            #print angle_t, _angle_ty_
+            _text_ += angle_shape.format( i+1, _angle_ty_, at1, at2, at3)
+            
+        if _solvated_f_ == 1:
+            
+            for i in range(n_angles-base_angles_n):
+                _angle_ty_ = dicts[2][solv_angles[i][0]]
+                
+                _text_ += angle_shape.format(i+1+base_angles_n, _angle_ty_,
+                                             solv_angles[i][1],
+                                             solv_angles[i][2],
+                                             solv_angles[i][3]
+                                            )
+    
+    
+    ####------DIHEDRAL------####
+    if _asty_d_[atomstyle]==4:
+        known_dihedrals = _topodata_['dihedrals']
+        base_dihedrals_n = len(known_dihedrals)
+        _text_ +='\n Dihedrals\n\n'
+        dihedral_shape = ' {}'*6+'\n'
+        for i in range(base_dihedrals_n):
+            
+            at1 = int(known_dihedrals[i][0])
+            at2 = int(known_dihedrals[i][1])
+            at3 = int(known_dihedrals[i][2])
+            at4 = int(known_dihedrals[i][3])
+            
+            _dihe_ty_ = dicts[3][known_atoms[at1-1][1]+'-'
+                                 +known_atoms[at2-1][1]+'-'
+                                 +known_atoms[at3-1][1]+'-'
+                                 +known_atoms[at4-1][1]
+                                ]
+            _text_+= dihedral_shape.format( i+1, _dihe_ty_, at1, at2, at3, at4)
+    
+    
+    return _text_, _flag_
+
+def write_lammps_data_all_new( _topodata_, data_name, _config_):
+    
+    ''' Write a lammps data file'''
+    _flag_ = False
+    ####---------------  Unpacking data  ----------------####
+    _numbers_ = _topodata_['numbers']
+    n_atoms, n_bonds, n_angles, n_dihedrals = _numbers_['total']
+    n_atomtypes, n_bondtypes, n_angletypes, n_dihedraltypes= _numbers_['type']
+    _box_= _topodata_['box']
+    _mol_, _mtype_, _atype_, _xyz_ = _topodata_['atomsdata'] 
+    
+    atomstyle, _solvated_f_, _autoload_ = _config_ 
+    
+    _asty_d_ ={ 'atomic':1, 'charge':1, 'bond':2, 'angle':3,
+                'full':4, 'molecular':4}
+    ####--------------- TITLE ----------------####
+    _text_ = '#Lammps data file. Geometry for PEG\n\n'
+    ####---------------     NUMBERS      ----------------####
+    _aux_txt =[' {} atoms\n'.format(n_atoms)]
+    _aux_txt.append(' {} bonds\n'.format( n_bonds))
+    _aux_txt.append(' {} angles\n'.format( n_angles))
+    _aux_txt.append(' {} dihedrals\n'.format( n_dihedrals))
+    _text_+= ''.join(_aux_txt[:_asty_d_[atomstyle]])+'\n'
+    ####----------------    TYPES       -----------------####
+    _aux_txt =[' {} atom types\n'.format(n_atomtypes)]
+    _aux_txt.append(' {} bond types\n'.format(n_bondtypes))
+    _aux_txt.append(' {} angle types\n'.format(n_angletypes))
+    _aux_txt.append(' {} dihedral types\n\n'.format(n_dihedraltypes))
+    _text_+= ''.join(_aux_txt[:_asty_d_[atomstyle]])+'\n'
+    ####----------------    BOX     -----------------####
+    _text_ +=(' {:.4f} {:.4f} xlo xhi\n {:.4f} {:.4f} ylo yhi\n'
+              +' {:.4f} {:.4f} zlo zhi\n').format(*_box_)
+    #####------             MASSES              ------####
+    _text_ +='\n Masses\n\n'
+    atom_info = _topodata_['atomtypes']
+    for i in range( n_atomtypes):
+        _text_ +=' {} {} # {}\n'.format( i+1, atom_info[i][1], atom_info[i][0])
+        
+    #####------             Force field potentials               ------####
+    
+    aux_pot_txt, dicts, _flag_ = write_lammps_potentials( _topodata_,
+                                                          atomstyle)
+    _text_ += aux_pot_txt
+    
+    ####------ATOMS------####
+    known_atoms = _topodata_['atoms']
+    if _solvated_f_ == 1:
+        charge = _topodata_['S_charge']
+        conv_dict = _topodata_['S_translation'] # key s_tag : val l_tag
+    
+    
+    _text_ +='\n Atoms #{}\n\n'.format( atomstyle)
+    
+    if atomstyle in ['charge','full']:
+        atom_shape = ' {}'*3+' {:7.4f}'*4+' # {}\n'# idx mol atype charge x y z
+    elif atomstyle in ['bond','angle','molecular']:
+        atom_shape = ' {0} {1} {2} {4:7.4f} {5:7.4f} {6:7.4f} # {7}\n'
+    elif atomstyle =='atomic':
+        atom_shape = ' {0} {2} {4:7.4f} {5:7.4f} {6:7.4f} # {7}\n'
+        
+    base_atoms_n = len( known_atoms)
+    for i in range( base_atoms_n):
+        aty = known_atoms[i][1]
+        _text_ += atom_shape.format( i+1, _mol_[i],
+                                    dicts[0][ aty],
+                                    float(known_atoms[ i][6]),
+                                    float(_xyz_[i][0])*10,
+                                    float(_xyz_[i][1])*10,
+                                    float(_xyz_[i][2])*10,
+                                    aty
+                                   )
+    solv_bonds = []
+    solv_angles = []
+    # asumption: all solvated structures are water??
+    # 
+    if _solvated_f_ == 1:
+        solv_at_v = range(n_atoms )[ base_atoms_n:]
+        for i in solv_at_v:
+            aty = conv_dict[_atype_[i]]
+            _text_ += atom_shape.format(i+1, _mol_[i], dicts[0][aty],
+                                        charge[aty],
+                                        float(_xyz_[i][0])*10,
+                                        float(_xyz_[i][1])*10,
+                                        float(_xyz_[i][2])*10,
+                                        aty
+                                       )
+            if charge[aty] <0:
+                ''' next time better to reccon the structure, the repeating
+                unit, and then get the involved atoms, order, and then bonds,
+                angles.... get this with the coordinates is another option that
+                probably is going to take longer rt'''
+                
+                # consicering: _mol_ number of the molecule , _mtype_ sel exp 
+                # also there is available data about the atom number of each 
+                # type of addition molecule
+                
+                ''' TEST:
+                create: buffer_molnum_pevif = []
+                create: buffer_moltype_pevif = []
+                '''
+                # meaning new type
+                if _mtype_[aty] <> buffer_moltype_pevif:
+                    
+                    if count == declareratomnumberpermolkind:
+                        buffer_moltype_pevif = _mtype_[aty]
+                        
+                    if _mol_[aty] <> buffer_pevif:
+                    
+                        buffer_pevif = _mol_[aty]
+                
+                
+                
+                #'''
                 # better way to do this is trough coords ---------  <WFS>
                 # but anyway works perfectly
                 aty2 = conv_dict[_atype_[i+1]]
@@ -794,5 +995,4 @@ def get_style_info( lammps_datafile):
 
 if __name__ == '__main__':
     pass
-    
     
