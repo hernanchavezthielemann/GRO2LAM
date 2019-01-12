@@ -71,9 +71,10 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
         _char_str_ = startstrings[ti][ 2:-2]
         ''' here is possible to insert a selector in case pairs and 
         others can be ovbiated'''
-        data_container[_char_str_], ok_flag = get_gro_line( filename_top
-                                                           ,startstrings
-                                                           ,ti)
+        _data_, ok_flag, _define_ = get_gro_line( filename_top, startstrings,
+                                                  ti)
+        data_container[_char_str_] = _data_
+        data_container['define'] = _define_
         if not ok_flag:
             return {}, ok_flag
         
@@ -99,7 +100,7 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     #===============================================#
     startstrings = ['[ atomtypes ]', '[ nonbond_params ]']
     
-    data_container['atomtypes'], ok_flag = get_gro_line( filename_nb,
+    data_container['atomtypes'], ok_flag, _ = get_gro_line( filename_nb,
                                                          startstrings)
     if not ok_flag:
         return {}, ok_flag
@@ -117,7 +118,7 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     for bi in range(len(startstrings))[:-1]:
         _char_str_ = startstrings[bi][ 2:-2]
         
-        data_container[_char_str_], ok_flag = get_gro_line( filename_bon
+        data_container[_char_str_], ok_flag, _ = get_gro_line( filename_bon
                                                            ,startstrings
                                                            ,bi)
         #debugger_file(_char_str_, data_container[_char_str_])
@@ -414,7 +415,7 @@ def get_gro_line( _filename_, _startstrings_, _i_=0):
                     elif _line_[0] == '#define':
                         _define_[_line_[1]] = _line_[2:]
                     else:
-                        print wrg_3( _line_[1] + ' ??')
+                        print wrg_3( _line_[1] + '  ??')
                         
                 if _ss_[_i_+1]<>'' and j_line.startswith( _ss_[_i_+1]):
                     break
