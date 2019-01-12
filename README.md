@@ -9,8 +9,9 @@
    
    :new:New features : 
 <!--ts-->
-   * New option to autoload itp force field files.
+   * Option to autoload itp force field files, including side molecules.
    * Works with more than one side molecule (eg. water + ions +...). (:soon: WIP)
+   * Accepts impropers and Ryckaert-Bellemans dihedral. (:soon: WIP)
 <!--te-->
     
 ## Table of contents
