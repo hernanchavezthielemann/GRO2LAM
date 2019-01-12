@@ -231,9 +231,10 @@ def write_lammps_data_all( _topodata_, data_name, _config_):
     
     return _text_, _flag_
 
-def write_lammps_data_all_new( _topodata_, data_name, _config_):
-    
-    ''' Write a lammps data file'''
+def write_lammps_data_all_auto( _topodata_, data_name, _config_):
+    ''' Write a lammps data file
+        now with autoload 
+    '''
     _flag_ = False
     ####---------------  Unpacking data  ----------------####
     _numbers_ = _topodata_['numbers']
@@ -246,34 +247,50 @@ def write_lammps_data_all_new( _topodata_, data_name, _config_):
     
     _asty_d_ ={ 'atomic':1, 'charge':1, 'bond':2, 'angle':3,
                 'full':4, 'molecular':4}
-    ####--------------- TITLE ----------------####
+    
+    #########################################################
+    '''--------------      1st  Header      --------------'''
+    #=======================================================#
+    
+    ####---------------     TITLE        ----------------####
     _text_ = '#Lammps data file. Geometry for PEG\n\n'
     ####---------------     NUMBERS      ----------------####
-    _aux_txt =[' {} atoms\n'.format(n_atoms)]
+    _aux_txt = [' {} atoms\n'.format( n_atoms)]
     _aux_txt.append(' {} bonds\n'.format( n_bonds))
     _aux_txt.append(' {} angles\n'.format( n_angles))
     _aux_txt.append(' {} dihedrals\n'.format( n_dihedrals))
-    _text_+= ''.join(_aux_txt[:_asty_d_[atomstyle]])+'\n'
+    _text_ += ''.join( _aux_txt[:_asty_d_[atomstyle]])+'\n'
+    
     ####----------------    TYPES       -----------------####
-    _aux_txt =[' {} atom types\n'.format(n_atomtypes)]
-    _aux_txt.append(' {} bond types\n'.format(n_bondtypes))
-    _aux_txt.append(' {} angle types\n'.format(n_angletypes))
-    _aux_txt.append(' {} dihedral types\n\n'.format(n_dihedraltypes))
-    _text_+= ''.join(_aux_txt[:_asty_d_[atomstyle]])+'\n'
+    _aux_txt = [ ' {} atom types\n'.format( n_atomtypes)]
+    _aux_txt.append( ' {} bond types\n'.format( n_bondtypes))
+    _aux_txt.append( ' {} angle types\n'.format( n_angletypes))
+    _aux_txt.append( ' {} dihedral types\n\n'.format( n_dihedraltypes))
+    _text_ += ''.join( _aux_txt[ : _asty_d_[ atomstyle]]) + '\n'
+    
     ####----------------    BOX     -----------------####
     _text_ +=(' {:.4f} {:.4f} xlo xhi\n {:.4f} {:.4f} ylo yhi\n'
               +' {:.4f} {:.4f} zlo zhi\n').format(*_box_)
+    
+    #########################################################
+    '''-----------       2nd  Potentials      ------------'''
+    #=======================================================#
+    
     #####------             MASSES              ------####
     _text_ +='\n Masses\n\n'
     atom_info = _topodata_['atomtypes']
     for i in range( n_atomtypes):
         _text_ +=' {} {} # {}\n'.format( i+1, atom_info[i][1], atom_info[i][0])
-        
-    #####------             Force field potentials               ------####
+    
+    #####------             Force field                ------####
     
     aux_pot_txt, dicts, _flag_ = write_lammps_potentials( _topodata_,
                                                           atomstyle)
     _text_ += aux_pot_txt
+    
+    #########################################################
+    '''-----------       3rd  Potentials      ------------'''
+    #=======================================================#
     
     ####------ATOMS------####
     known_atoms = _topodata_['atoms']
@@ -323,7 +340,7 @@ def write_lammps_data_all_new( _topodata_, data_name, _config_):
                 angles.... get this with the coordinates is another option that
                 probably is going to take longer rt'''
                 
-                # consicering: _mol_ number of the molecule , _mtype_ sel exp 
+                # considering: _mol_ number of the molecule , _mtype_ sel exp 
                 # also there is available data about the atom number of each 
                 # type of addition molecule
                 
