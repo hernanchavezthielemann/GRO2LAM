@@ -28,7 +28,9 @@ def write_lammps_data( _topodata_, df_name, _config_):
         print_dec_g(style_str.format(nam))
         
         if _autoload_:
-            _content_, _flag_ = write_lammps_data_auto( _topodata_,
+            ## TODO change all --> auto
+            print ('Using normal "all" instead of "auto" ')
+            _content_, _flag_ = write_lammps_data_all( _topodata_,
                                                         df_name,
                                                         _config_
                                                       )
@@ -240,7 +242,7 @@ def write_lammps_data_all( _topodata_, data_name, _config_):
 def write_lammps_data_auto( _topodata_, data_name, _config_):
     ''' Write a lammps data file
         now with autoload,
-        including improper dihedrals (Aka Wop)
+        including impropers dihedrals (Aka Wop)
     '''
     
     _flag_ = False
@@ -248,7 +250,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     _numbers_ = _topodata_['numbers']
     n_atoms, n_bonds, n_angles, n_dihedrals, n_impropers = _numbers_['total']
     n_atomtypes, n_bondtypes, n_angletypes = _numbers_['type'][:3]
-    n_dihedraltypes, n_impropertypes = = _numbers_['type'][3:]
+    n_dihedraltypes, n_impropertypes = _numbers_['type'][3:]
     _box_= _topodata_['box']
     _mol_, _mtype_, _atype_, _xyz_ = _topodata_['atomsdata'] 
     
@@ -651,6 +653,12 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
         wr_str = 'Dihedral type {} not implemented yet!'
         pop_wrg_1( wr_str.format( dihedtypename))
     
+    
+    
+    
+    
+    
+    
     ########    ---------    Final selector section   ----------     ########
     #bad_sty = [ bondtypename, angletypename, dihedtypename]
     if atomstyle in ['full', 'molecular']:
@@ -991,4 +999,3 @@ def get_style_info( lammps_datafile):
 if __name__ == '__main__':
     pass
     
- 
