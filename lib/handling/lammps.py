@@ -757,24 +757,24 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     #for mt in range(len( _mtype_)):
         #group_lines += 'group {} id {}:{}\n'.format(*_mtype_[mt])
     _asty_d_ ={ 'atomic':1, 'charge':2, 'bond':3, 'angle':4,
-                'full':5, 'molecular':5}
+                'full':6, 'molecular':6}
     
     #===================================================
     ####------------      TOPO DATA         --------####
     
     print '\n'+data_file + '\n'
     if _topodata_ <> None:
-        atomstyle_o, _solvated_, _parametric_ = _topodata_['config'] 
-        buckorlj, comb_rule, _, f_LJ, _ = _topodata_['defaults']
+        atomstyle_o, _solvated_, _autoload_ = _topodata_['config'] 
+        _, comb_rule, _, f_LJ, _ = _topodata_['defaults']
         
     else:
         print 'non _topodata_'
         atomstyle_o = ''
         comb_rule = ''
-        buckorlj = 0
         
     ## -------------------------- getting styles
-    atomstyle, bondstyle, anglstyle, dihestyle = get_style_info( data_file)
+    _aux_here = get_style_info( data_file)
+    atomstyle, bondstyle, anglstyle, dihestyle, imprstyle = _aux_here
     if atomstyle_o <> '' and atomstyle_o <> atomstyle:
         pop_wrg_1('Incongruence between atom styles!')
     
@@ -813,6 +813,7 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     _dsc_txt.append( 'bond_style '+bondstyle+'\n')
     _dsc_txt.append( 'angle_style '+anglstyle+'\n')
     _dsc_txt.append( 'dihedral_style '+dihestyle+'\n')
+    _dsc_txt.append( 'imporper_style '+imprstyle+'\n')
     _dtxt_+= ''.join(_dsc_txt[:_asty_d_[atomstyle]])+'\n'
     
     
@@ -954,8 +955,8 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
 
 def get_style_info( lammps_datafile):
     
-    atom_sty, bond_sty, angl_sty, dihe_sty = '', '', '', ''
-    default_styles = [ 'full', 'harmonic', 'harmonic', 'charm']
+    atom_sty, bond_sty, angl_sty, dihe_sty, impr_sty = '', '', '', '', ''
+    default_styles = [ 'full', 'harmonic', 'harmonic', 'charm', 'harmonic']
     
     try:
         with open( lammps_datafile, 'r')  as indata:
@@ -969,6 +970,8 @@ def get_style_info( lammps_datafile):
                     angl_sty = aux_cont[1].strip(' ').strip('\n')
                 elif len(aux_cont)>1 and 'Dihedral Coeffs' in aux_cont[0]:
                     dihe_sty = aux_cont[1].strip(' ').strip('\n')
+                elif len(aux_cont)>1 and 'Improper Coeffs' in aux_cont[0]:
+                    impr_sty = aux_cont[1].strip(' ').strip('\n')
                 elif '' not in [atom_sty, bond_sty, angl_sty, dihe_sty]:
                     break
                     
@@ -988,13 +991,17 @@ def get_style_info( lammps_datafile):
             dihe_sty = default_styles[3]
             pop_wrg_1('Dihedral style info not found in data file!'
                       +'using default : '+ dihe_sty)
+        if impr_sty == '':
+            impr_sty = default_styles[4]
+            pop_wrg_1('Dihedral style info not found in data file!'
+                      +'using default : '+ impr_sty)
             
     except IOError:
         pop_wrg_1('Data file not found!')
         print ('Try performing a conversion first!')
         _flag_ = False
 
-    return atom_sty, bond_sty, angl_sty, dihe_sty
+    return atom_sty, bond_sty, angl_sty, dihe_sty, impr_sty
 
 if __name__ == '__main__':
     pass
