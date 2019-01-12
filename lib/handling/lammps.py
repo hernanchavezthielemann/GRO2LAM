@@ -1,5 +1,5 @@
 #!/usr/bin/python
-#    Ported to Python and barely optimized by Hernan Chavez Thielemann
+#    By Hernan Chavez Thielemann
 
 from lib.misc.file import write_file
 from lib.misc.warn import print_dec_g, pop_wrg_1, pop_err_1
