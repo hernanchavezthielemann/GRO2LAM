@@ -240,7 +240,7 @@ def write_lammps_data_all( _topodata_, data_name, _config_):
 def write_lammps_data_auto( _topodata_, data_name, _config_):
     ''' Write a lammps data file
         now with autoload,
-        including impropers dihedrals (Aka Wop)
+        including improper dihedrals (Aka Wop)
     '''
     
     _flag_ = False
