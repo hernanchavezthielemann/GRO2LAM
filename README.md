@@ -5,7 +5,7 @@
    Gromacs to Lammps simulation converter
 
 ## Version
-   GROTOLAM version 1.12 (20 Dec 2018)
+   GRO2LAM version 1.12 (20 Dec 2018)
    
    New features: 
 <!--ts-->
