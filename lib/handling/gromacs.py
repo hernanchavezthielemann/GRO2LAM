@@ -35,12 +35,72 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     
     print 'Solvation: {} | Autoload: {}\n'.format( *_ck_buttons_)
     
+    
+    
+    #################################################
+    '''----------------  FILE GRO  ---------------'''
+    #===============================================#
+    
+    ok_flag, gro_pack, b_xyzhi = get_gro_fixed_line( filename_gro)
+    if not ok_flag:
+        return {}, ok_flag
+    
+    _mol_, _mtype_, _type_, _xyz_ = gro_pack
+    data_container['atomsdata'] = [ _mol_, _mtype_, _type_, _xyz_]
+    
+    
+    #################    BOX DEF   ##################
+    xlo = 0
+    xhi = b_xyzhi[0]*10
+    ylo = 0
+    yhi = b_xyzhi[1]*10
+    zlo = 0
+    zhi = b_xyzhi[2]*10   
+    data_container['box']=[xlo,xhi, ylo,yhi, zlo,zhi]
+    
+    
+    #################################################
+    '''----------------  FILE TOP  ---------------'''
+    #===============================================#
+    
+    startstrings=['[ moleculetype ]', '[ atoms ]','[ bonds ]', '[ pairs ]',
+                  '[ angles ]', '[ dihedrals ]', '[ system ]',
+                  '[ molecules ]', '']
+    
+    for ti in range(len(startstrings))[:-1]:
+        _char_str_ = startstrings[ti][ 2:-2]
+        ''' here is possible to insert a selector in case pairs and 
+        others can be ovbiated'''
+        data_container[_char_str_], ok_flag = get_gro_line( filename_top
+                                                           ,startstrings
+                                                           ,ti)
+        if not ok_flag:
+            return {}, ok_flag
+        
+        #debugger_file( _char_str_, data_container[_char_str_])
+            
+    n_atoms     =   len( data_container['atoms'])
+    n_bonds     =   len( data_container['bonds'])
+    n_angles    =   len( data_container['angles'])
+    n_dihedrals =   len( data_container['dihedrals'])
+    
+    #################################################
+    '''----------  SIDE MOLE FILES   -------------'''
+    #===============================================#
+    #### research in topology for new molecules / side molecules
+    if _autoload_:
+        data_container, ok_flag = sidemol_data( filename_top, data_container)
+    if not ok_flag:
+        return {}, ok_flag
+    
+    
     #################################################
     '''-----------------  FILE NB  ---------------'''
     #===============================================#
     startstrings = ['[ atomtypes ]', '[ nonbond_params ]']
     
-    data_container['atomtypes'], ok_flag = get_gro_line( filename_nb, startstrings)
+    data_container['atomtypes'], ok_flag = get_gro_line( filename_nb,
+                                                         startstrings)
     if not ok_flag:
         return {}, ok_flag
     
@@ -68,57 +128,8 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     n_anglestypes   =   len( data_container['angletypes'])
     n_dihedraltypes =   len( data_container['dihedraltypes'])
     
-    
     #################################################
-    '''----------------  FILE TOP  ---------------'''
-    #===============================================#
-    
-    
-    startstrings=['[ moleculetype ]', '[ atoms ]','[ bonds ]', '[ pairs ]',
-                  '[ angles ]', '[ dihedrals ]', '[ system ]',
-                  '[ molecules ]', '']
-    
-    for ti in range(len(startstrings))[:-1]:
-        _char_str_ = startstrings[ti][ 2:-2]
-        ''' here is possible to insert a selector in case pairs and 
-        others can be ovbiated'''
-        data_container[_char_str_], ok_flag = get_gro_line( filename_top
-                                                           ,startstrings
-                                                           ,ti)
-        if not ok_flag:
-            return {}, ok_flag
-        
-        #debugger_file( _char_str_, data_container[_char_str_])
-            
-    n_atoms     =   len( data_container['atoms'])
-    n_bonds     =   len( data_container['bonds'])
-    n_angles    =   len( data_container['angles'])
-    n_dihedrals =   len( data_container['dihedrals'])
-    
-    #################################################
-    '''----------------  FILE GRO  ---------------'''
-    #===============================================#
-    
-    ok_flag, gro_pack, b_xyzhi = get_gro_fixed_line( filename_gro)
-    if not ok_flag:
-        return {}, ok_flag
-    
-    _mol_, _mtype_, _type_, _xyz_ = gro_pack
-    data_container['atomsdata'] = [ _mol_, _mtype_, _type_, _xyz_]
-    
-    
-    #################    BOX DEF   ##################
-    xlo = 0
-    xhi = b_xyzhi[0]*10
-    ylo = 0
-    yhi = b_xyzhi[1]*10
-    zlo = 0
-    zhi = b_xyzhi[2]*10   
-    data_container['box']=[xlo,xhi, ylo,yhi, zlo,zhi]
-    
-    
-    #################################################
-    '''--------------   Solvation   --------------'''
+    '''--------------  "Solvation"  --------------'''
     #===============================================#
     n_atomsnew = len( _type_)
     
@@ -128,7 +139,7 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
         if not ok_flag:
             return {}, ok_flag
         
-        # maths
+        # A_02 maths
         sidemol = data_container['sidemol']
         side_bonds_n = 0
         side_angles_n = 0
@@ -378,35 +389,41 @@ def top_groups(mtype, _buffer, g_names):
     return _buffer, g_names # hook
 
 def get_gro_line( _filename_, _startstrings_, _i_=0):
-    ''' reading gromacs content lines'''
+    ''' reading gromacs content lines
+        spliting by the space between info
+    '''
     content_line = []
+    _define_ = {}
     _ss_=_startstrings_
-    # \* TODO: aply a metod just in case that
-    #       some _startstrings_ are not there
+    # \* TODO: apply a method just in case that
+    #          some _startstrings_ are not there ??
     with open(_filename_, 'r')  as indata:
         read_flag = False
         #print _i_, _ss_[_i_], _ss_[_i_+1]
         for j_line in indata:
-            if j_line.startswith(';'):
-                pass
-            if j_line.startswith('#'):
-                if j_line.startswith('#include'):
-                    print wrg_3( j_line.rstrip('\n') + 
-                                ' not included this time')
-                else:
-                    pass
+            # I just whant to read once the flag is on
+            if read_flag and not j_line.startswith(';'):
                 
-            elif read_flag:
                 _line_ = j_line.split(';')[0].split()
-                
+                # getting out comments and empty lines
+                if len( _line_)<1: 
+                    pass
+                elif _line_[0] == '#':
+                    if _line_[0] == '#include':
+                        print wrg_3( _line_[1] + ' skipped this time')
+                    elif _line_[0] == '#define':
+                        _define_[_line_[1]] = _line_[2:]
+                    else:
+                        print wrg_3( _line_[1] + '¡?¡')
+                        
                 if _ss_[_i_+1]<>'' and j_line.startswith( _ss_[_i_+1]):
-                    #print _ss_[_i_+1] + ' -exit-'
                     break
+                    
                 elif len(_line_)>=2:
                     #if _i_==7: print _line_
                     content_line.append( _line_)
             
-            elif j_line.startswith( _ss_[_i_]):
+            elif j_line.split()[0]:
                 #print _ss_[_i_]
                 read_flag = True
                 
@@ -416,9 +433,7 @@ def get_gro_line( _filename_, _startstrings_, _i_=0):
         pop_err_1( 'The {} section is missing on {} file'.format( _ss_[_i_] ,
                                                                   _filename_)
                  )
-        return 0, read_flag
-    else:
-        return content_line, read_flag
+    return content_line, read_flag, _define_
 
 def get_ffldfiles( _topfile_):
     ''' 
