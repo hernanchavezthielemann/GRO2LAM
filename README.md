@@ -7,7 +7,7 @@
 ## Version
    GRO2LAM version 1.12 (20 Dec 2018)
    
-   New features: 
+   :new:New features : 
 <!--ts-->
    * New option to autoload itp force field files.
    * Works with more than one side molecule (eg. water + ions +...). (WIP)
