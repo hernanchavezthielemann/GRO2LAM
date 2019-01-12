@@ -65,7 +65,7 @@ def write_lammps_data_all( _topodata_, data_name, _config_):
     _asty_d_ ={ 'atomic':1, 'charge':1, 'bond':2, 'angle':3,
                 'full':4, 'molecular':4}
     ####--------------- TITLE ----------------####
-    _text_ = '#Lammps data file. Geometry for PEG\n\n'
+    _text_ = '#Lammps data file. Geometry for PEG. By GRO2LAM converter.\n\n'
     ####---------------     NUMBERS      ----------------####
     _aux_txt =[' {} atoms\n'.format(n_atoms)]
     _aux_txt.append(' {} bonds\n'.format( n_bonds))
@@ -239,13 +239,16 @@ def write_lammps_data_all( _topodata_, data_name, _config_):
 
 def write_lammps_data_auto( _topodata_, data_name, _config_):
     ''' Write a lammps data file
-        now with autoload 
+        now with autoload,
+        including impropers dihedrals (Aka Wop)
     '''
+    
     _flag_ = False
     ####---------------  Unpacking data  ----------------####
     _numbers_ = _topodata_['numbers']
-    n_atoms, n_bonds, n_angles, n_dihedrals = _numbers_['total']
-    n_atomtypes, n_bondtypes, n_angletypes, n_dihedraltypes= _numbers_['type']
+    n_atoms, n_bonds, n_angles, n_dihedrals, n_impropers = _numbers_['total']
+    n_atomtypes, n_bondtypes, n_angletypes = _numbers_['type'][:3]
+    n_dihedraltypes, n_impropertypes = = _numbers_['type'][3:]
     _box_= _topodata_['box']
     _mol_, _mtype_, _atype_, _xyz_ = _topodata_['atomsdata'] 
     
@@ -259,12 +262,13 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     #=======================================================#
     
     ####---------------     TITLE        ----------------####
-    _text_ = '#Lammps data file. Geometry for PEG\n\n'
+    _text_ = '#Lammps data file. Geometry for PEG. By GRO2LAM converter.\n\n'
     ####---------------     NUMBERS      ----------------####
     _aux_txt = [' {} atoms\n'.format( n_atoms)]
     _aux_txt.append(' {} bonds\n'.format( n_bonds))
     _aux_txt.append(' {} angles\n'.format( n_angles))
     _aux_txt.append(' {} dihedrals\n'.format( n_dihedrals))
+    _aux_txt.append(' {} impropers\n'.format( n_impropers))
     _text_ += ''.join( _aux_txt[:_asty_d_[atomstyle]])+'\n'
     
     ####----------------    TYPES       -----------------####
@@ -272,6 +276,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     _aux_txt.append( ' {} bond types\n'.format( n_bondtypes))
     _aux_txt.append( ' {} angle types\n'.format( n_angletypes))
     _aux_txt.append( ' {} dihedral types\n\n'.format( n_dihedraltypes))
+    _aux_txt.append( ' {} improper types\n\n'.format( n_impropertypes))
     _text_ += ''.join( _aux_txt[ : _asty_d_[ atomstyle]]) + '\n'
     
     ####----------------    BOX     -----------------####
@@ -986,4 +991,4 @@ def get_style_info( lammps_datafile):
 if __name__ == '__main__':
     pass
     
-    
+ 
