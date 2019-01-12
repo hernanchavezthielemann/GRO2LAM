@@ -996,3 +996,4 @@ def get_style_info( lammps_datafile):
 if __name__ == '__main__':
     pass
     
+    
