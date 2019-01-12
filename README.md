@@ -10,7 +10,7 @@
    New features: 
 <!--ts-->
    * New option to autoload itp force field files.
-   * Works with more than one side molecule (eg. water + ions +...).
+   * Works with more than one side molecule (eg. water + ions +...). (WIP)
 <!--te-->
     
 ## Table of contents
