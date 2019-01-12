@@ -36,7 +36,6 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     print 'Solvation: {} | Autoload: {}\n'.format( *_ck_buttons_)
     
     
-    
     #################################################
     '''----------------  FILE GRO  ---------------'''
     #===============================================#
@@ -74,8 +73,12 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
         _data_, ok_flag, _define_ = get_gro_line( filename_top, startstrings,
                                                   ti)
         data_container[_char_str_] = _data_
+        
         data_container['define'] = _define_
+        
         if not ok_flag:
+            print wrg_3( 'Not ok flag in <extract_gromacs_data> top file' +
+                         'section, in ' + _char_str_)
             return {}, ok_flag
         
         #debugger_file( _char_str_, data_container[_char_str_])
@@ -233,9 +236,9 @@ def sidemol_data( _file_top_, data_container):
     non_sm = data_container['moleculetype']
     non_sm = [non_sm[i][0] for i in range(len(non_sm))]
     # side molecules info
-    _aux_m_ = data_container['molecules']
+    _aux_m_ = data_container[ 'molecules']
     
-    for i in range(len(_aux_m_)) :
+    for i in range( len( _aux_m_)) :
         if _aux_m_[i][0] not in non_sm:
             sidemol['tag'].append( _aux_m_[i][0])
             sidemol['num'].append( int(_aux_m_[i][1]))
@@ -400,41 +403,47 @@ def get_gro_line( _filename_, _startstrings_, _i_=0):
     #          some _startstrings_ are not there ??
     with open(_filename_, 'r')  as indata:
         read_flag = False
+        ok_flag = True
+        tag_not_found = True
         #print _i_, _ss_[_i_], _ss_[_i_+1]
         for j_line in indata:
             # I just whant to read once the flag is on
-            if read_flag and not j_line.startswith(';'):
-                
+            if read_flag:
                 _line_ = j_line.split(';')[0].split()
                 # getting out comments and empty lines
                 if len( _line_)<1: 
                     pass
-                elif _line_[0] == '#':
+                    
+                elif _line_[0][0] == '#':
                     if _line_[0] == '#include':
                         print wrg_3( _line_[1] + ' skipped this time')
                     elif _line_[0] == '#define':
                         _define_[_line_[1]] = _line_[2:]
                     else:
-                        print wrg_3( _line_[1] + '  ??')
+                        print wrg_3( str(_line_) + '  ??')
                         
-                if _ss_[_i_+1]<>'' and j_line.startswith( _ss_[_i_+1]):
-                    break
+                elif ' '.join(_line_)  == _ss_[_i_+1]:
+                    #print 'exit here 424'
+                    read_flag = False
                     
-                elif len(_line_)>=2:
-                    #if _i_==7: print _line_
+                elif len( _line_) > 1:
+                    #if _i_==7:  print _line_
                     content_line.append( _line_)
-            
-            elif j_line.split()[0]:
+                else:
+                    print 'Ups... please raise an issue ;)'
+            elif j_line.lstrip().startswith( _ss_[_i_]):
                 #print _ss_[_i_]
                 read_flag = True
-                
-    if content_line == [] or not read_flag:
+                tag_not_found = False
+    
+    if content_line == [] or tag_not_found:
         if '/' in _filename_:
             _filename_ = _filename_.split('/')[-1]
         pop_err_1( 'The {} section is missing on {} file'.format( _ss_[_i_] ,
                                                                   _filename_)
                  )
-    return content_line, read_flag, _define_
+        ok_flag = False
+    return content_line, ok_flag, _define_
 
 def get_ffldfiles( _topfile_):
     ''' 
