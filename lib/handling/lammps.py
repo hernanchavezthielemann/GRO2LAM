@@ -18,7 +18,7 @@ def write_lammps_data( _topodata_, df_name, _config_):
     ''' Write a lammps data file'''
     print_dec_g ('Writing Lammps data file...')
     ####---------------  Unpacking data  ----------------####
-    atomstyle, _, _ = _config_
+    atomstyle, _, _autoload_ = _config_
     atsty = [ 'atomic', 'angle', 'full', 'charge', 'bond', 'molecular']
     style_str = '####-------  ATOM STYLE < {} >  --------####'
     _flag_ = False
@@ -27,10 +27,16 @@ def write_lammps_data( _topodata_, df_name, _config_):
         nam = ''.join([ chr( ord(l) - 32) for l in atomstyle])
         print_dec_g(style_str.format(nam))
         
-        _content_, _flag_ = write_lammps_data_all( _topodata_,
-                                                  df_name,
-                                                  _config_
-                                                 )
+        if _autoload_:
+            _content_, _flag_ = write_lammps_data_auto( _topodata_,
+                                                        df_name,
+                                                        _config_
+                                                      )
+        else:
+            _content_, _flag_ = write_lammps_data_all( _topodata_,
+                                                       df_name,
+                                                       _config_
+                                                     )
         if _flag_:
             write_file( df_name, _content_)
             print_dec_g ('Successful writing!!')
@@ -231,7 +237,7 @@ def write_lammps_data_all( _topodata_, data_name, _config_):
     
     return _text_, _flag_
 
-def write_lammps_data_all_auto( _topodata_, data_name, _config_):
+def write_lammps_data_auto( _topodata_, data_name, _config_):
     ''' Write a lammps data file
         now with autoload 
     '''
@@ -289,7 +295,7 @@ def write_lammps_data_all_auto( _topodata_, data_name, _config_):
     _text_ += aux_pot_txt
     
     #########################################################
-    '''-----------       3rd  Potentials      ------------'''
+    '''-----------       3rd  Atom Coords     ------------'''
     #=======================================================#
     
     ####------ATOMS------####
@@ -369,6 +375,9 @@ def write_lammps_data_all_auto( _topodata_, data_name, _config_):
                 solv_bonds.append([aty+'-'+aty3, i+1, i+3])
                 solv_angles.append([aty2+'-'+aty+'-'+aty3, i+2, i+1, i+3])
     
+    #########################################################
+    '''----------   3rd  Chemical topology    ------------'''
+    #=======================================================#
     
     ####------BONDS------####
     if _asty_d_[atomstyle]>=2:
@@ -423,9 +432,10 @@ def write_lammps_data_all_auto( _topodata_, data_name, _config_):
                                              solv_angles[i][3]
                                             )
     
+    impr_flag = False
     
     ####------DIHEDRAL------####
-    if _asty_d_[atomstyle]==4:
+    if _asty_d_[atomstyle]>=4:
         known_dihedrals = _topodata_['dihedrals']
         base_dihedrals_n = len(known_dihedrals)
         _text_ +='\n Dihedrals\n\n'
@@ -444,65 +454,28 @@ def write_lammps_data_all_auto( _topodata_, data_name, _config_):
                                 ]
             _text_+= dihedral_shape.format( i+1, _dihe_ty_, at1, at2, at3, at4)
     
-    
+    ####------ IMPROPERS  -----####
+    # TODO SECTION
+    if _asty_d_[atomstyle]==5 and impr_flag:
+        known_impropers = _topodata_['impropers']
+        base_impropers_n = len(known_impropers)
+        _text_ +='\n Impropers\n\n'
+        improper_shape = ' {}'*6+'\n'
+        for i in range(base_impropers_n):
+            
+            at1 = int(known_impropers[i][0])
+            at2 = int(known_impropers[i][1])
+            at3 = int(known_impropers[i][2])
+            at4 = int(known_impropers[i][3])
+            
+            _dihe_ty_ = dicts[3][known_atoms[at1-1][1]+'-'
+                                 +known_atoms[at2-1][1]+'-'
+                                 +known_atoms[at3-1][1]+'-'
+                                 +known_atoms[at4-1][1]
+                                ]
+            _text_+= improper_shape.format( i+1, _dihe_ty_, at1, at2, at3, at4)
+            
     return _text_, _flag_
-
-def write_lammps_data_atomic(_topodata_, data_name, _config_):
-    ''' Write a lammps data file
-    
-        Deprecated
-    '''
-    ####---------------  Unpacking data  ----------------####
-    _numbers_ = _topodata_['numbers']
-    n_atoms, _, _, _ = _numbers_['total']
-    n_atomtypes, _, _, _= _numbers_['type']
-    _box_= _topodata_['box']
-    _, _, _atype_, _xyz_ = _topodata_['atomsdata']
-    known_atoms = _topodata_['atoms']
-    atom_info = _topodata_['atomtypes']
-    atomstyle, _solvated_f_, _ = _config_ 
-    ####--------------- TITLE ----------------####
-    _text_ = '#Lammps data file created with Gro2lam\n\n'
-    ####---------------     NUMBERS      ----------------####
-    _text_ +=' {} atoms\n'.format(n_atoms)
-    ####----------------    TYPES       -----------------####
-    _text_ +=' {} atom types\n'.format(n_atomtypes)
-    ####----------------    BOX     -----------------####
-    _text_ +=(' {:.4f} {:.4f} xlo xhi\n {:.4f} {:.4f} ylo yhi\n'
-              +' {:.4f} {:.4f} zlo zhi\n').format(*_box_)
-    #####------             MASSES              ------####
-    _text_ +='\n Masses\n\n'
-    for i in range( n_atomtypes):
-        _text_ +=' {} {}\n'.format( i+1, atom_info[i][1])
-    #####------             Force field potentials               ------####
-    aux_pot_txt, adict = write_lammps_potentials( _topodata_, atomstyle)
-    _text_ += aux_pot_txt
-    ####------ATOMS------####
-    if _solvated_f_ == 1:
-        conv_dict = _topodata_['S_translation'] # key s_tag : val l_tag
-        
-    _text_ +='\n Atoms\n\n'
-    
-    atom_shape = ' {}'*2+' {:7.4f}'*3+'\n'# index mol atype charge x y z
-    base_atoms_n = len( known_atoms)
-    for i in range( base_atoms_n):
-        aty = known_atoms[i][1]
-        _text_ += atom_shape.format( i+1,
-                                    adict[aty],
-                                    float(_xyz_[i][0])*10,
-                                    float(_xyz_[i][1])*10,
-                                    float(_xyz_[i][2])*10
-                                   )
-    if _solvated_f_ == 1:
-        solv_at_v = range(n_atoms )[ base_atoms_n:]
-        for i in solv_at_v:
-            aty = conv_dict[_atype_[i]]
-            _text_ += atom_shape.format(i+1, adict[aty],
-                                        float(_xyz_[i][0])*10,
-                                        float(_xyz_[i][1])*10,
-                                        float(_xyz_[i][2])*10
-                                       )
-    return _text_
 
 def write_lammps_potentials( _topodata_, atomstyle = 'full'):
     ''' writes the potential part in the data file'''
