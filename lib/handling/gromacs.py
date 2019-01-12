@@ -414,7 +414,7 @@ def get_gro_line( _filename_, _startstrings_, _i_=0):
                     elif _line_[0] == '#define':
                         _define_[_line_[1]] = _line_[2:]
                     else:
-                        print wrg_3( _line_[1] + '¡?¡')
+                        print wrg_3( _line_[1] + ' ??')
                         
                 if _ss_[_i_+1]<>'' and j_line.startswith( _ss_[_i_+1]):
                     break
