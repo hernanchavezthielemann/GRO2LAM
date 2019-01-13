@@ -1,12 +1,11 @@
 #!/usr/bin/python
-#    Ported to Python and barely optimized by Hernan Chavez Thielemann
+#    By Hernan Chavez Thielemann
 
 from lib.misc.file import write_file
 from lib.misc.warn import print_dec_g, pop_wrg_1, pop_err_1
 
 from sys import exit
 
-__merged_files__ = ['main.m', 'Writing_input.m', ]
                     
 
 def extract_lammps_data(_data_file_,_ck_buttons_, _forcefield_):
@@ -293,7 +292,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
               +' {:.4f} {:.4f} zlo zhi\n').format(*_box_)
     
     #########################################################
-    '''-----------       2nd  Potentials      ------------'''
+    '''---------   2nd  Atom kind Properties   -----------'''
     #=======================================================#
     
     #####------             MASSES              ------####
@@ -631,45 +630,79 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
     
     
     ########    -----------     DIHEDRAL      ----------     ########
-    DihedralDataBase = [ 'charmm', 'improper', 'Ryckaert-Bellemans']
-    # Not implemented ,'periodic','opls','tabulated','charmm'] 
-                      
+    DihedralDataBase = [ 'charmm', 'improper', 'opls', # opls<RyckaertBellemans
+    # Not implemented ones:
+                         'periodic','tabulated'] 
+    # asuming that impropers can not be here, purged previously in gromacs.py
     dty = _topodata_['dihedraltypes']
-    dihedtypename = DihedralDataBase[ int( dty[0][4])- 1]
+    dihe_kind_names = _topodata_['dihe_kinds']
+    dihedtypename = []
+    if len( dihe_kind_names) > 1:
+        dihedtypename.append( 'hybrid')
+        _ddb_ = DihedralDataBase
+        for d in range( len(_ddb_)):
+            _ddb_[d] = ' '+ _ddb_[d]
+    else:
+        _ddb_  = ['',]*len( DihedralDataBase)
+    for di in dihe_kind_names:
+        dihedtypename.append( DihedralDataBase[ int( di)- 1])
+        
     
-    txt_p_d ='\n Dihedral Coeffs #{}\n\n'.format( dihedtypename)
+    txt_p_d ='\n Dihedral Coeffs #{}\n\n'.format( dihedtypename[0])
     
-    dlm = len( dty[0]) - 4 # bond length multiplier
+    dlm = len( dty[0]) - 4 # dihedral length multiplier
     dihed_string = ' {}'+ ' {:.4f}'*dlm + '\n'
     
-    
-                  
-    dihedraltypes_d = {}
-    i=0
-    for i in range(n_dihedraltypes):
-        _type_forward_ = dty[i][0]+'-'+dty[i][1]+'-'+dty[i][2]+'-'+dty[i][3]
-        _type_backward_ = dty[i][3]+'-'+dty[i][2]+'-'+dty[i][1]+'-'+dty[i][0]
-        dihedraltypes_d[ _type_forward_ ] = i+1
-        dihedraltypes_d[ _type_backward_] = i+1
-        if int(dty[i][4]) <> int(dty[i-1][4]):
-            wr_str = 'More than one dihedral type than {}'
-            pop_wrg_1( wr_str.format( dihedtypename)
-                     )
-            _flag_ = False
+    rb_warning = ' Ryckaert-Bellemans angle style conversion in Fourier form' +
+                 ' can only be used if LAMMPS was built with the MOLECULE' +
+                 ' package!!! quite a base, so this is not printed'
             
-        txt_p_d += ' {} {:.4f} {} {} {}\n'.format( i+1,
-                                                  float(dty[i][-2])/4.186/2,
-                                                  int(float(dty[i][-1])),
-                                                  int(float(dty[i][-3])),
-                                                  '0.0'
-                                                 )
-    if int(dty[0][4]) <> 1:
-        _flag_ = False
-        wr_str = 'Dihedral type {} not implemented yet!'
-        pop_wrg_1( wr_str.format( dihedtypename))
+    dihedraltypes_d = {}
     
-    
-    
+    i=0
+    for i in range( n_dihedraltypes):
+        # tag creation
+        _type_forward_ = dty[i][0]+'-'+dty[i][1]+'-'+dty[i][2]+'-'+dty[i][3]
+        # FIFO type number asigment
+        dihedraltypes_d[ _type_forward_ ] = i+1
+        
+        ##
+        #_type_backward_ = dty[i][3]+'-'+dty[i][2]+'-'+dty[i][1]+'-'+dty[i][0]
+        #dihedraltypes_d[ _type_backward_] = i+1
+        
+        _di_ = int(dty[i][4])
+        # Charmm
+        if _di_ == 1:
+            info_cont = ( i+1, _ddb_[ _di_ - 1],
+                         float(dty[i][6])/4.186/2,
+                         int(float(dty[i][7])),
+                         int(float(dty[i][5])),
+                         '1.0'
+                        )
+        # Ryckaert-Bellemans
+        elif _di_ == 3:
+            C0 = float(dty[i][5])
+            C1 = float(dty[i][6])
+            C2 = float(dty[i][7])
+            C3 = float(dty[i][8])
+            C4 = float(dty[i][9])
+            C5 = float(dty[i][10])
+            
+            info_cont = ( i+1, _ddb_[ _di_ - 1],
+                         ( -2*C1 - (3/2)*C3)/4.186,#K1
+                         '{:.4f}'.format( (-C2 - C4)/4.186),#K2
+                         '{:.4f}'.format( (-(1/2)*C3)/4.186),#K3
+                         '{:.4f}'.format( (-(1/4)*C4)/4.186) #K4
+                        )
+        else:
+            wr_str = 'Dihedral type {} not implemented yet!'
+            pop_wrg_1( wr_str.format( DihedralDataBase[ _di_- 1]))
+            _flag_ = False
+            break
+            
+        ### TODO optimize here
+        txt_p_d += ' {}{} {:.4f} {} {} {}\n'.format( *info_cont) 
+    # === for end
     
     
     
@@ -678,13 +711,13 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
     #bad_sty = [ bondtypename, angletypename, dihedtypename]
     if atomstyle in ['full', 'molecular']:
         dicts = [ atom_type_d, bondtypes_d, angletypes_d, dihedraltypes_d]
-        txt_p_ = txt_p_p+txt_p_b+txt_p_a+txt_p_d
+        txt_p_ = txt_p_p + txt_p_b + txt_p_a + txt_p_d
     elif atomstyle == 'angle':
         dicts = [ atom_type_d, bondtypes_d, angletypes_d]
-        txt_p_ = txt_p_p+txt_p_b+txt_p_a
+        txt_p_ = txt_p_p + txt_p_b + txt_p_a
     elif atomstyle == 'bond':
         dicts = [ atom_type_d, bondtypes_d]
-        txt_p_ = txt_p_p+txt_p_b
+        txt_p_ = txt_p_p + txt_p_b
     elif atomstyle == 'atomic' or atomstyle == 'charge':
         dicts = [atom_type_d]
         txt_p_ = txt_p_p
