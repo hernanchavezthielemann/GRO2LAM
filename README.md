@@ -11,9 +11,13 @@
 <!--ts-->
    * Option to autoload itp force field files, including side molecules.
    * Works with more than one side molecule (eg. water + ions +...). (:soon: WIP)
-   * Accepts impropers and Ryckaert-Bellemans dihedral. (:soon: WIP)
+   * Accepts Ryckaert-Bellemans dihedral, direct conversion to opls dihedral Lammps style. (:soon: WIP)
+   * #define tag reading in dihedrals.
 <!--te-->
-    
+    New (possible) features in next release: 
+<!--ts-->
+   * Accepts impropers dihedral. (An example to work with is needed)
+<!--te-->
 ## Table of contents
 
 <!--ts-->
