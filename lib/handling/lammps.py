@@ -1,5 +1,5 @@
 #!/usr/bin/python
-#    By Hernan Chavez Thielemann
+#    Ported to Python and barely optimized by Hernan Chavez Thielemann
 
 from lib.misc.file import write_file
 from lib.misc.warn import print_dec_g, pop_wrg_1, pop_err_1
@@ -29,21 +29,25 @@ def write_lammps_data( _topodata_, df_name, _config_):
         
         if _autoload_:
             ## TODO change all --> auto
-            print ('Using normal "all" instead of "auto" ')
-            _content_, _flag_ = write_lammps_data_all( _topodata_,
+            #print ('Using normal "all" instead of "auto" ')
+            _content_, _flag_ = write_lammps_data_auto( _topodata_,
                                                         df_name,
                                                         _config_
                                                       )
+            
         else:
             _content_, _flag_ = write_lammps_data_all( _topodata_,
                                                        df_name,
                                                        _config_
                                                      )
+        errmsg = 'Error writing lammps data file'
         if _flag_:
             write_file( df_name, _content_)
             print_dec_g ('Successful writing!!')
+        elif _autoload_:
+            pop_err_1(errmsg + '\nAutoload failed!')
         else:
-            pop_err_1('Error writing lammps data file')
+            pop_err_1(errmsg)
     else: #if atomstyle == 'Angle':
         print '\n\nExit'
         exit(('Error 037!!  -  Atom style {} '
@@ -57,8 +61,11 @@ def write_lammps_data_all( _topodata_, data_name, _config_):
     _flag_ = False
     ####---------------  Unpacking data  ----------------####
     _numbers_ = _topodata_['numbers']
-    n_atoms, n_bonds, n_angles, n_dihedrals = _numbers_['total']
-    n_atomtypes, n_bondtypes, n_angletypes, n_dihedraltypes= _numbers_['type']
+    
+    n_atoms, n_bonds, n_angles, n_dihedrals, _ = _numbers_['total']
+    n_atomtypes, n_bondtypes, n_angletypes = _numbers_['type'][:3]
+    n_dihedraltypes, n_impropertypes = _numbers_['type'][3:]
+    
     _box_= _topodata_['box']
     _mol_, _mtype_, _atype_, _xyz_ = _topodata_['atomsdata'] 
     
@@ -383,7 +390,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                 solv_angles.append([aty2+'-'+aty+'-'+aty3, i+2, i+1, i+3])
     
     #########################################################
-    '''----------   3rd  Chemical topology    ------------'''
+    '''----------   4th - Chemical topology   ------------'''
     #=======================================================#
     
     ####------BONDS------####
@@ -488,8 +495,11 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
     ''' writes the potential part in the data file'''
     _flag_ = True
     atom_info = _topodata_['atomtypes'] # index 1: mass ; index 4 -5 : eps-sig
+    # unpacking
     _numbers_ = _topodata_['numbers']
-    n_atomtypes, n_bondtypes, n_angletypes, n_dihedraltypes= _numbers_['type']
+    n_atomtypes, n_bondtypes, n_angletypes = _numbers_['type'][:3]
+    n_dihedraltypes, n_impropertypes = _numbers_['type'][3:]
+    
     #n_bondstypes = len(data_container['bondtypes'])
     
     buckorlj = int( _topodata_[ 'defaults'][0]) # 1 -2 lj/buc
@@ -519,7 +529,7 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
         epsilon.append(_eps_ / 4.186)
         
         if buckorlj == 2:#------------------------------------------  <WFS>
-            _C_ = loat(atom_info[x][6])
+            _C_ = float(atom_info[x][6])
             buck3.append(' '+ str(f_C_/ 4.186 / (10** 6)))
             sigma.append( 10 / _sig_)
             
@@ -576,6 +586,9 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
             pop_wrg_1( wr_str.format( bondtypename)
                      )
             _flag_ = False
+    
+    
+    
     ########    -----------     ANGLE      ----------     ########
     AngleDataBase = ['harmonic','G96','cross bond-bond','cross bond-angle',
                      'charmm','quartic angle','','tabulated'] 
@@ -614,10 +627,12 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
             pop_wrg_1( wr_str.format( angletypename)
                      )
             _flag_ = False
-            
+    
+    
+    
     ########    -----------     DIHEDRAL      ----------     ########
-    DihedralDataBase=['charmm','improper','Ryckaert-Bellemans','periodic',
-                      'opls','tabulated','charmm'] 
+    DihedralDataBase = [ 'charmm', 'improper', 'Ryckaert-Bellemans']
+    # Not implemented ,'periodic','opls','tabulated','charmm'] 
                       
     dty = _topodata_['dihedraltypes']
     dihedtypename = DihedralDataBase[ int( dty[0][4])- 1]
