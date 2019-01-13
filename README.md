@@ -14,7 +14,8 @@
    * Accepts Ryckaert-Bellemans dihedral, direct conversion to opls dihedral Lammps style. (:soon: WIP)
    * #define tag reading in dihedrals.
 <!--te-->
-    New (possible) features in next release: 
+
+   New (possible) features in next release: 
 <!--ts-->
    * Accepts impropers dihedral. (An example to work with is needed)
 <!--te-->
