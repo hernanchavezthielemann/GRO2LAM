@@ -653,9 +653,9 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
     dlm = len( dty[0]) - 4 # dihedral length multiplier
     dihed_string = ' {}'+ ' {:.4f}'*dlm + '\n'
     
-    rb_warning = ' Ryckaert-Bellemans angle style conversion in Fourier form' +
-                 ' can only be used if LAMMPS was built with the MOLECULE' +
-                 ' package!!! quite a base, so this is not printed'
+    rb_warning = (' Ryckaert-Bellemans angle style conversion in Fourier form' +
+                  ' can only be used if LAMMPS was built with the MOLECULE' +
+                  ' package!!! quite a base, so this is not printed')
             
     dihedraltypes_d = {}
     
