@@ -22,7 +22,7 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     filename_bon    =   _data_files_[4]
     
     data_container  =   {}
-    
+    data_container['define'] = {}
     _solvated_f_, _autoload_= _ck_buttons_
     if not _autoload_:
         print filename_ff # or not
@@ -44,8 +44,8 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     if not ok_flag:
         return {}, ok_flag
     
-    _mol_, _mtype_, _type_, _xyz_ = gro_pack
-    data_container['atomsdata'] = [ _mol_, _mtype_, _type_, _xyz_]
+    _mol_, _mtype_, _type_, _xyz_, _mtypes_ = gro_pack
+    data_container['atomsdata'] = [ _mol_, _mtypes_, _type_, _xyz_, _mtype_]
     
     
     #################    BOX DEF   ##################
@@ -70,11 +70,9 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
         _char_str_ = startstrings[ti][ 2:-2]
         ''' here is possible to insert a selector in case pairs and 
         others can be ovbiated'''
-        _data_, ok_flag, _define_ = get_gro_line( filename_top, startstrings,
-                                                  ti)
-        data_container[_char_str_] = _data_
-        
-        data_container['define'] = _define_
+        data_container[_char_str_] , ok_flag, _ = get_gro_line( filename_top,
+                                                                startstrings,
+                                                               ti)
         
         if not ok_flag:
             print wrg_3( 'Not ok flag in <extract_gromacs_data> top file' +
@@ -86,7 +84,7 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     n_atoms     =   len( data_container['atoms'])
     n_bonds     =   len( data_container['bonds'])
     n_angles    =   len( data_container['angles'])
-    n_dihedrals =   len( data_container['dihedrals'])
+    
     
     #################################################
     '''----------  SIDE MOLE FILES   -------------'''
@@ -121,16 +119,28 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     for bi in range(len(startstrings))[:-1]:
         _char_str_ = startstrings[bi][ 2:-2]
         
-        data_container[_char_str_], ok_flag, _ = get_gro_line( filename_bon
-                                                           ,startstrings
-                                                           ,bi)
+        _aux_here_ = get_gro_line( filename_bon, startstrings, bi)
+        data_container[ _char_str_], ok_flag, _data_define_ = _aux_here_
+        data_container['define'][_char_str_[:-5]] = _data_define_
         #debugger_file(_char_str_, data_container[_char_str_])
+                
         if not ok_flag:
             return {}, ok_flag
         
     n_bondstypes    =   len( data_container['bondtypes'])
     n_anglestypes   =   len( data_container['angletypes'])
+    
+    
+    #################################################
+    '''----------------  Impropers ---------------'''
+    #===============================================#
+    # Search for impropers in TOP and BON, using crossreference if needed
+    data_container = split_dihedral_improper( data_container)
+    
+    n_dihedrals     =   len( data_container['dihedrals'])
     n_dihedraltypes =   len( data_container['dihedraltypes'])
+    n_impropers     =   len( data_container['impropers'])
+    n_impropertypes =   len( data_container['impropertypes'])
     
     #################################################
     '''--------------  "Solvation"  --------------'''
@@ -220,9 +230,11 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
         
     data_container['numbers']={}
     data_container['numbers']['total'] = [n_atomsnew, n_bondsnew,
-                                          n_anglesnew, n_dihedrals]
+                                          n_anglesnew, n_dihedrals, n_impropers
+                                         ]
     data_container['numbers']['type'] = [n_atomtypes, n_bondstypes,
-                                         n_anglestypes, n_dihedraltypes]
+                                         n_anglestypes, n_dihedraltypes,
+                                         n_impropertypes]
     
 
     return data_container, ok_flag
@@ -328,11 +340,130 @@ def sidemol_data_gatherer( _sm_files_, sm):
         # todo add a new check in case of empty container
     return _sm_data_c_, _flag_
 
+def split_dihedral_improper( _data_container_):
+    ''' Seems that in GROMACS, impropers are present as a kind of 
+        dihedral type, so this function is meant to pick the dihedral
+        data and split it resizing the original container and creating
+        a new improper-container.
+        
+        Creates #define data in dihedrals
+        
+        Also creates the data regarding kinds of functions. Useful when
+        '1' and '3' are used in the same file
+        
+    '''
+    
+    DihedralKind = '1'
+    ImproperKind = '2'
+    RyckBellKind = '3'
+    
+    _dihedrals_data_ = _data_container_['dihedrals']
+    #====================================================
+    ''' ============  Dihedral TOP data   =========== ''' 
+    im_data_ = []
+    dh_data_ = []
+    
+    def_dihe_extra = [] # ---------------------------------CanBDel?
+    def_impr_extra = []
+    
+    def_dihe_type_set = set()
+    def_impr_type_set = set()
+    dihe_kind_name = set() 
+    for i in range( len ( _dihedrals_data_)):
+        #  Dihedral line format in :
+        #  ai  aj  ak  al  funct   c0  c1  c2  c3  c4  c5
+        if _dihedrals_data_[i][4] in [ DihedralKind, RyckBellKind]:
+            dh_data_.append( _dihedrals_data_[i])
+            dihe_kind_name.add( _dihedrals_data_[i][4])
+            
+            if len (_dihedrals_data_[i])>5:
+                def_dihe_extra.append( _dihedrals_data_[i])
+                def_dihe_type_set.add( _dihedrals_data_[i][5:])
+                
+                
+        elif _dihedrals_data_[i][4] == ImproperKind:
+            im_data_.append( _dihedrals_data_[i])
+            if len (_dihedrals_data_[i])>5:
+                def_impr_extra.append( _dihedrals_data_[i])
+                def_impr_type_set.add( _dihedrals_data_[i][5:])
+        else:
+            print 'Problem #008 here'
+    
+    # Save/overwriting point
+    _data_container_['dihe_kinds'] = dihe_kind_name
+    _data_container_['impropers'] = im_data_
+    _data_container_['dihedrals'] = dh_data_
+    #====================================================
+    ''' ======== "Type" Dihedral BONDED data  ======= '''
+    _dihe_type_data_ = _data_container_['dihedraltypes']
+    im_type_ = []
+    dh_type_ = []
+    for i in range( len ( _dihe_type_data_)):
+        #  Dihedral line format:
+        #  ai  aj  ak  al  funct   c0  c1  c2  c3  c4  c5
+        if _dihe_type_data_[i][4] == ImproperKind:
+            im_type_.append( _dihe_type_data_[i])
+        else:
+            dh_type_.append( _dihe_type_data_[i])
+    # Save/overwriting point
+    _data_container_['impropertypes'] = im_type_
+    _data_container_['dihedraltypes'] = dh_type_
+    #====================================================
+    ''' ========  Dihedral "#define" data  ========== ''' 
+    def_dihe_dic = {}
+    def_impr_dic = {}
+    # If there are define potentials, I have to process... by types and kind
+    '''    Make it homogeneous - New kind creations   '''
+    # first_clause = ( maybe should be an inner clause
+    '''     Now supposing that just #define exist with a tag in the c0
+            position...'''
+    new_dihedraltypes = set()
+    define_dic = _data_container_['define']['dihedral']
+    if define_dic <> {}:
+        
+        known_atoms = _data_container_['atoms']
+        for dh in range( len( def_dihe_extra)):
+            _dhi_ = def_dihe_extra[ dh]
+            
+            a_tag = ['',]*4
+            for at1 in range( 4): # at1 0 1 2 3
+                atnum = int( _dhi_[at1])
+                if ( known_atoms[ atnum - 1][0] == _dhi_[ at1]):
+                    a_tag[at1] = known_atoms[ atnum - 1][4]
+                # Si no esta ordenado nos vamos casi a la...
+                else:
+                    # Brute force, til should be found
+                    for at2 in range( len( known_atoms)):
+                        if known_atoms[at2][0] == _dhi_[at1]:
+                            a_tag[at1] = known_atoms[at2][4]
+                            break
+                            
+                if '' == a_tag[at1]:
+                    _string_ = 'Error!! atom number {} not found in .top -- '
+                    pop_err_1( _string_.format( atnum))
+            #### TODO Flag
+            ## First case with coefs in the top file... c0  c1  c2  c3  c4  c5
+            if len( _dhi_) > 6:
+                print'Coefficients in the top file not supported yet'
+                new_dihedraltypes.add(a_tag + _dhi_[4:])
+            ## Second case with #define
+            elif len( _dhi_) == ( 4 + 1 + 1):
+                dh_kind_, dihedral_tag = _dhi_[4:]
+                _coefs_ = define_dic[ dihedral_tag]
+                new_dihedraltypes.add(a_tag + [dh_kind_] + _coefs_)
+                
+        for ndh in new_dihedraltypes:
+                dh_type_.append( ndh)
+        _data_container_['dihedraltypes'] = dh_type_
+    
+    
+    return _data_container_
+
 def get_gro_fixed_line(_filename_):
     ''' reading gromacs gro fixed lines'''
     _content_ = []
     _mol_=[]
-    #_mtype_=[]
+    _mtype_=[]
     g_names =[]
     _type_=[]
     _xyz_=[]
@@ -346,21 +477,20 @@ def get_gro_fixed_line(_filename_):
         for j_line in indata:
             if read_flag:
                 at+=1
-                
                 mtype = j_line[5:10].strip(' ')
                 
                 _mol_.append( j_line[:5].lstrip(' '))
-                #_mtype_.append(mtype)
+                _mtype_.append(mtype)
                 _type_.append(j_line[10:15].lstrip(' '))
                 _xyz_.append([j_line[20:28], j_line[28:36], j_line[36:44]])
                 
                 if _buffer==[]:
                     _buffer = [ mtype, at]
-                    
+                ## TODO : Analyze if it is possible to improve here using sets
                 elif mtype<>_buffer[0]:
                     
                     _buffer += [at-1]
-                    g_names.append(_buffer)
+                    g_names.append( _buffer)
                     _buffer = [ mtype, at]
                 
                 
@@ -386,7 +516,7 @@ def get_gro_fixed_line(_filename_):
         pop_err_1('Corrupt .gro file')
         return False, 0,0
     else:
-        return  True, [_mol_, g_names, _type_, _xyz_], box_xyz_hi
+        return  True, [_mol_, _mtype_, _type_, _xyz_, g_names], box_xyz_hi
 
 def top_groups(mtype, _buffer, g_names):
     
