@@ -27,8 +27,7 @@ def write_lammps_data( _topodata_, df_name, _config_):
         print_dec_g(style_str.format(nam))
         
         if _autoload_:
-            ## TODO change all --> auto
-            #print ('Using normal "all" instead of "auto" ')
+            print '\n'+'='*10+' Still in BETA here '+'='*10+'\n'
             _content_, _flag_ = write_lammps_data_auto( _topodata_,
                                                         df_name,
                                                         _config_
@@ -258,7 +257,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     n_atomtypes, n_bondtypes, n_angletypes = _numbers_['type'][:3]
     n_dihedraltypes, n_impropertypes = _numbers_['type'][3:]
     _box_= _topodata_['box']
-    _mol_, _mtype_, _atype_, _xyz_ = _topodata_['atomsdata'] 
+    _mol_, _mtype_g_, _atype_, _xyz_, _mtype_ = _topodata_['atomsdata'] 
     
     atomstyle, _solvated_f_, _autoload_ = _config_ 
     
@@ -342,10 +341,31 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     solv_angles = []
     # asumption: all solvated structures are water??
     # 
+    # =============== Solvated topogoly generation ================= #
+    TRASHCAN =  ''' next time better to reccon the structure, the repeating
+                unit, and then get the involved atoms, order, and then bonds,
+                angles.... get this with the coordinates is another option that
+                probably is going to take longer rt
+                
+                # considering: _mol_ number of the molecule , _mtype_ sel exp 
+                # also there is available data about the atom number of each 
+                # type of addition molecule
+                
+                TEST:
+                create: 
+                create: 
+                
+                
+                
+                '''
+    buffer_molnum_pevif = '00000000'
+    buffer_moltype_pevif = 'none_type'
     if _solvated_f_ == 1:
-        solv_at_v = range(n_atoms )[ base_atoms_n:]
+        solv_at_v = range( n_atoms)[ base_atoms_n:]
+        print n_atoms, base_atoms_n, len( _mtype_)
         for i in solv_at_v:
-            aty = conv_dict[_atype_[i]]
+            aty = conv_dict[_atype_[i]] # _atype_ is the atag in TOP
+            
             _text_ += atom_shape.format(i+1, _mol_[i], dicts[0][aty],
                                         charge[aty],
                                         float(_xyz_[i][0])*10,
@@ -353,41 +373,33 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                                         float(_xyz_[i][2])*10,
                                         aty
                                        )
-            if charge[aty] <0:
-                ''' next time better to reccon the structure, the repeating
-                unit, and then get the involved atoms, order, and then bonds,
-                angles.... get this with the coordinates is another option that
-                probably is going to take longer rt'''
-                
-                # considering: _mol_ number of the molecule , _mtype_ sel exp 
-                # also there is available data about the atom number of each 
-                # type of addition molecule
-                
-                ''' TEST:
-                create: buffer_molnum_pevif = []
-                create: buffer_moltype_pevif = []
-                '''
-                # meaning new type
-                if _mtype_[aty] <> buffer_moltype_pevif:
-                    
-                    if count == declareratomnumberpermolkind:
-                        buffer_moltype_pevif = _mtype_[aty]
+            # meaning new type of molecule
+            write_flag = False
+            if _mtype_[i] <> buffer_moltype_pevif:
+                buffer_moltype_pevif = _mtype_[i]
+                buffer_molnum_pevif = _mol_[i]
+                print 'New molecule : '+ _mtype_[i] + ' 1st atom : '+aty
+                #declareratomnumberpermolkind:
                         
-                    if _mol_[aty] <> buffer_pevif:
-                    
-                        buffer_pevif = _mol_[aty]
-                
-                
-                
+                write_flag = True
+            # meaning new molecule // same type
+            elif _mol_[i] <> buffer_molnum_pevif:
+                buffer_molnum_pevif = _mol_[i]
+                write_flag = True
                 #'''
                 # better way to do this is trough coords ---------  <WFS>
                 # but anyway works perfectly
-                aty2 = conv_dict[_atype_[i+1]]
-                aty3 = conv_dict[_atype_[i+2]]
-                solv_bonds.append([aty+'-'+aty2, i+1, i+2])
-                solv_bonds.append([aty+'-'+aty3, i+1, i+3])
-                solv_angles.append([aty2+'-'+aty+'-'+aty3, i+2, i+1, i+3])
-    
+            if write_flag:
+                # here is needed something that changes acording to the
+                # molecule kind
+                try:
+                    aty2 = conv_dict[_atype_[i+1]]
+                    aty3 = conv_dict[_atype_[i+2]]
+                    solv_bonds.append([aty+'-'+aty2, i+1, i+2])
+                    solv_bonds.append([aty+'-'+aty3, i+1, i+3])
+                    solv_angles.append([aty2+'-'+aty+'-'+aty3, i+2, i+1, i+3])
+                except:
+                    print aty, _mol_[i], buffer_molnum_pevif, i+2, len(_atype_)
     #########################################################
     '''----------   4th - Chemical topology   ------------'''
     #=======================================================#
@@ -628,7 +640,7 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
             _flag_ = False
     
     
-    
+    # >===========================================================< #
     ########    -----------     DIHEDRAL      ----------     ########
     DihedralDataBase = [ 'charmm', 'improper', 'opls', # opls<RyckaertBellemans
     # Not implemented ones:
@@ -657,15 +669,13 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
                   ' can only be used if LAMMPS was built with the MOLECULE' +
                   ' package!!! quite a base, so this is not printed')
             
-    dihedraltypes_d = {}
-    
+    dihedraltypes_d = {} # types dictionary
     i=0
     for i in range( n_dihedraltypes):
         # tag creation
         _type_forward_ = dty[i][0]+'-'+dty[i][1]+'-'+dty[i][2]+'-'+dty[i][3]
         # FIFO type number asigment
         dihedraltypes_d[ _type_forward_ ] = i+1
-        
         ##
         #_type_backward_ = dty[i][3]+'-'+dty[i][2]+'-'+dty[i][1]+'-'+dty[i][0]
         #dihedraltypes_d[ _type_backward_] = i+1
@@ -700,12 +710,13 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
             _flag_ = False
             break
             
-        ### TODO optimize here
-        txt_p_d += ' {}{} {:.4f} {} {} {}\n'.format( *info_cont) 
-    # === for end
-    
-    
-    
+        ### TODO :
+        #       Optimize here and there, special care with the string handling.
+        #       Create a ordered type list if there is more than one kind_
+        #       of dihedral.
+        txt_p_d += ' {}{} {:.4f} {} {} {}\n'.format( *info_cont)
+        
+    # === for cycle end
     
     ########    ---------    Final selector section   ----------     ########
     #bad_sty = [ bondtypename, angletypename, dihedtypename]
@@ -734,9 +745,9 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
         _topodata_ comes from the converted gromacs file
         in_name is intended as name for the input'''
     
-    #===================================================
-    '''====   Gathering and ordering the data   ====='''
-    #===================================================
+    #================================================================
+    '''===========   Gathering and ordering the data   ==========='''
+    #================================================================
     
     #===================================================
     ####-----------    SIM RAW CONFIG       --------####
@@ -826,6 +837,7 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     if atomstyle_o <> '' and atomstyle_o <> atomstyle:
         pop_wrg_1('Incongruence between atom styles!')
     
+    ## ---------------- MIXING RULE
     if f_comb_rule in mix_value.values():
         mix_value_s=' mix '+f_comb_rule
     elif f_comb_rule=='from_gromacs' and _topodata_<>None:
@@ -835,9 +847,9 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
         mix_value_s = ''
         
 
-    #===================================================
-    '''====   Writing Lammps input command file  ===='''
-    #===================================================
+    #================================================================
+    '''===========   Writing Lammps input command file  =========='''
+    #================================================================
     _dtxt_= '# Generated with Gro2lam\n\n'+'units real\nboundary p p p\n'
     # as I understand lammps default is 3
     #_dtxt_+= '%s %d\n'.format('dimension',dimension)
