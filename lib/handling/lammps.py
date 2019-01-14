@@ -65,7 +65,7 @@ def write_lammps_data_all( _topodata_, data_name, _config_):
     n_dihedraltypes, n_impropertypes = _numbers_['type'][3:]
     
     _box_= _topodata_['box']
-    _mol_, _mtype_, _atype_, _xyz_ = _topodata_['atomsdata'] 
+    _mol_, _mtype_, _atype_, _xyz_, _ = _topodata_['atomsdata'] 
     
     atomstyle, _solvated_f_, _ = _config_ 
     
