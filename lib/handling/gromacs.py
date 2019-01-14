@@ -1,5 +1,5 @@
 #!/usr/bin/python
-#    Ported to Python and barely optimized by Hernan Chavez Thielemann
+#    By Hernan Chavez Thielemann
 
 __merged_files__ = ['main.m', 'Reading_top.m', 'Reading_bon.m',
                     'Reading_nb.m','Counting_lines.m', 'Reading_xyz.m']
