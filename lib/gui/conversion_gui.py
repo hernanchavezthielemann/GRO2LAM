@@ -309,7 +309,7 @@ class Conversion(Frame):
         elif self.get_entriesvalues():
             
             data_cont = self.master._convert_['setup']
-            config = data_cont[-2:]+[_autoload_]
+            config = data_cont[-2:]+[ _autoload_]
             
             sim_data, flag_done_ = extract_gromacs_data(data_cont[1:-2],
                                                         _solvatedinfo_,
@@ -318,8 +318,14 @@ class Conversion(Frame):
                 try:
                     flag_done_ = write_lammps_data( sim_data, 'data.gro2lam',
                                                    config )
-                except:
-                    pop_err_1('There are inconsistencies in your input files')
+                except KeyError as Err:
+                    pop_err_1('There are missing or incomplete coefficients in'
+                              + ' your input files related to: ' + Err.args[0])
+                    flag_done_ = False
+                except :# as Err:
+                    pop_err_1('There are inconsistencies in your input files'
+                             #+ Err.args[0]
+                             )
                     flag_done_ = False
                     
             if flag_done_:
