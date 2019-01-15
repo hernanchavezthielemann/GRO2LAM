@@ -148,10 +148,6 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     n_atomsnew = len( _type_)
     
     if _autoload_:
-        # research in topology for new molecules / side molecules
-        data_container, ok_flag = sidemol_data( filename_top, data_container)
-        if not ok_flag:
-            return {}, ok_flag
         
         # A_02 maths
         sidemol = data_container['sidemol']
@@ -161,8 +157,8 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
             bonds_x_mol = len( sidemol['data'][sb]['bonds'])
             angles_x_mol = len( sidemol['data'][sb]['angles'])
             
-            side_bonds_n += sidemol['num'][sb]*bonds_x_mol
-            side_angles_n += sidemol['num'][sb]*angles_x_mol
+            side_bonds_n += sidemol['num'][sb] * bonds_x_mol
+            side_angles_n += sidemol['num'][sb] * angles_x_mol
         
         n_bondsnew = n_bonds + side_bonds_n
         n_anglesnew = n_angles + side_angles_n
@@ -183,7 +179,7 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
                 a_charge = float( sidemol['data'][sb]['atoms'][at][6])
                 _charge_[a_opls_tag] = a_charge
                 _conv_dict_[ a_elem_tag] = a_opls_tag
-        print 'Charges found: '
+        print '='*45+'\nCharges found: '
         print _charge_
         print _conv_dict_
         
@@ -256,7 +252,7 @@ def sidemol_data( _file_top_, data_container):
             sidemol['num'].append( int(_aux_m_[i][1]))
             
     #////////========= Side molecule >>> file <<< search   ============////////
-    print ('Loading side molecule files: ' )
+    print ('\nLoading side molecule files: ' )
     _sm_files_ = []
     root_folder = '/'.join( _file_top_.split('/')[:-1]+[''])
     with open( _file_top_, 'r')  as topdata:
@@ -338,6 +334,7 @@ def sidemol_data_gatherer( _sm_files_, sm):
                     _sm_data_c_[cd_tag].append( j_line.rstrip().split())
                     
         # todo add a new check in case of empty container
+        #print _sm_data_c_
     return _sm_data_c_, _flag_
 
 def split_dihedral_improper( _data_container_):
