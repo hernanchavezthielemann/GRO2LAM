@@ -342,22 +342,11 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     # asumption: all solvated structures are water??
     # 
     # =============== Solvated topogoly generation ================= #
-    TRASHCAN =  ''' next time better to reccon the structure, the repeating
-                unit, and then get the involved atoms, order, and then bonds,
-                angles.... get this with the coordinates is another option that
-                probably is going to take longer rt
-                
-                # considering: _mol_ number of the molecule , _mtype_ sel exp 
-                # also there is available data about the atom number of each 
-                # type of addition molecule
-                
-                TEST:
-                create: 
-                create: 
-                
-                
-                
-                '''
+    TRASH_CAN =  ''' next time better to reccon the structure, the repeating
+                    unit, and then get the involved atoms, order, and then 
+                    bonds, angles.... get this with the coordinates is another
+                    option that probably is going to take longer rt
+                 '''
     buffer_molnum_pevif = '00000000'
     buffer_moltype_pevif = 'none_type'
     if _solvated_f_ == 1:
@@ -373,32 +362,35 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                                         float(_xyz_[i][2])*10,
                                         aty
                                        )
-            # meaning new type of molecule
-            write_flag = False
-            if _mtype_[i] <> buffer_moltype_pevif:
-                buffer_moltype_pevif = _mtype_[i]
-                buffer_molnum_pevif = _mol_[i]
-                print 'New molecule : '+ _mtype_[i] + ' 1st atom : '+aty
-                #declareratomnumberpermolkind:
-                        
-                write_flag = True
+            
+            #write_flag = False
             # meaning new molecule // same type
-            elif _mol_[i] <> buffer_molnum_pevif:
+            if _mol_[i] <> buffer_molnum_pevif:
                 buffer_molnum_pevif = _mol_[i]
-                write_flag = True
-                #'''
-                # better way to do this is trough coords ---------  <WFS>
-                # but anyway works perfectly
-            if write_flag:
+                # meaning also a new type of molecule
+                if _mtype_[i] <> buffer_moltype_pevif:
+                    buffer_moltype_pevif = _mtype_[i]
+                    new_smol_str = 'New side molecule : {} 1st atom : {}'
+                    print new_smol_str.format( _mtype_[i], aty)
+                    
+                    sidemol = _topodata_['sidemol']
+                    for sb in range( len( sidemol['tag'])):
+                        if sidemol['tag']:
+                            nm_atn = len( sidemol['data'][sb]['atoms'])
+                            #bonds_x_mol = len( sidemol['data'][sb]['bonds'])
+                            #angles_x_mol = len( sidemol['data'][sb]['angles'])
+                #if write_flag:
                 # here is needed something that changes acording to the
                 # molecule kind
-                try:
+                
+                if nm_atn >= 2:
                     aty2 = conv_dict[_atype_[i+1]]
-                    aty3 = conv_dict[_atype_[i+2]]
                     solv_bonds.append([aty+'-'+aty2, i+1, i+2])
+                if nm_atn == 3:
+                    aty3 = conv_dict[_atype_[i+2]]
                     solv_bonds.append([aty+'-'+aty3, i+1, i+3])
                     solv_angles.append([aty2+'-'+aty+'-'+aty3, i+2, i+1, i+3])
-                except:
+                else:
                     print aty, _mol_[i], buffer_molnum_pevif, i+2, len(_atype_)
     #########################################################
     '''----------   4th - Chemical topology   ------------'''
@@ -428,7 +420,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     
     
     ####------ANGLES------#########
-    if _asty_d_[atomstyle]>=3:
+    if _asty_d_[ atomstyle]>=3:
         known_angles = _topodata_['angles']
         base_angles_n = len(known_angles)
         _text_ +='\n Angles\n\n'
@@ -448,10 +440,11 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
             
         if _solvated_f_ == 1:
             
-            for i in range(n_angles-base_angles_n):
-                _angle_ty_ = dicts[2][solv_angles[i][0]]
+            for i in range( n_angles - base_angles_n):
+                _angle_ty_ = dicts[2][ solv_angles[i][0]]
                 
-                _text_ += angle_shape.format(i+1+base_angles_n, _angle_ty_,
+                _text_ += angle_shape.format( i+1 + base_angles_n,
+                                             _angle_ty_,
                                              solv_angles[i][1],
                                              solv_angles[i][2],
                                              solv_angles[i][3]
@@ -558,13 +551,47 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
     
     
     ####----------- DEFINING BONDED INTERACTIONS     ----------####
+    # load the side molecules data if exist
+    sidemol = _topodata_['sidemol']
+    sidemol_extra_bondtypes = []
+    smol_extra_angletypes = []
+    for sb in range( len( sidemol['tag'])):
+        _smat_ = sidemol['data'][sb]['atoms']
+        nm_atn = len( _smat_)
+        _at_dic_here = {}
+        for at in range( nm_atn):
+            _at_dic_here[ _smat_[at][0]] = _smat_[at][1]
+        
+        if nm_atn > 1:
+            _smbn_ = sidemol['data'][sb]['bonds'][0]
+            aux_here = [_at_dic_here[_smbn_[0]], _at_dic_here[_smbn_[1]]]
+            sidemol_extra_bondtypes.append( aux_here + _smbn_[2:])
+            
+        if nm_atn > 2:
+            for bn in range( len( sidemol['data'][sb]['bonds']))[1:]:
+                _smbn_ = sidemol['data'][sb]['bonds'][bn]
+                aux_here = [_at_dic_here[_smbn_[0]], _at_dic_here[_smbn_[1]]]
+                sidemol_extra_bondtypes.append( aux_here + _smbn_[2:])
+            _sman_ = sidemol['data'][sb]['angles'][0]
+            aux_here = [_at_dic_here[_sman_[0]], _at_dic_here[_sman_[1]],
+                        _at_dic_here[_sman_[2]] ]
+            smol_extra_angletypes.append( aux_here + _sman_[3:])
+            
+        print sidemol_extra_bondtypes, '\n',smol_extra_angletypes
+        if nm_atn > 3:
+            print 'Uuupa!! dihedrals still not implemented as side mol part'
     ########    -----------     BOND        ----------     ########
     BondDataBase = ['harmonic','G96','morse','cubic','connection','harmonic',
                     'fene','tabulated','tabulated','restraint']
     Bonds_structures = {'harmonic': {},
                        'morse': {}}
     
-    bty = _topodata_['bondtypes']
+    # ---------   !!!!    Update the info    !!!!
+    _topodata_['bondtypes'] = sidemol_extra_bondtypes + _topodata_['bondtypes']
+    n_bondtypes = len( _topodata_['bondtypes'])
+    _topodata_['numbers']['type'][1] = n_bondtypes
+    bty =  _topodata_['bondtypes']
+    
     bondtypename = BondDataBase[ int(bty[0][2])-1]
     
     txt_p_b ='\n Bond Coeffs #{}\n\n'.format( bondtypename) # bond_style hybrid
@@ -574,71 +601,75 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
     
     bondtypes_d = {}
     
-    for i in range(n_bondtypes):
+    for i in range( n_bondtypes):
+        extra_end_str = '\n'
         bondtypes_d[bty[i][0]+'-'+bty[i][1]]= i+1
         bondtypes_d[bty[i][1]+'-'+bty[i][0]]= i+1
+        
         if int(bty[i][2]) <> int(bty[i-1][2]):
             wr_str = 'More than one bond type than {}'
-            pop_wrg_1( wr_str.format( bondtypename)
-                     )
+            pop_wrg_1( wr_str.format( bondtypename) )
             _flag_ = False
             
         elif int(bty[i][2]) == 1:
-            txt_p_b += bond_string.format(i+1,
-                                          float(bty[i][4])/ 100/ 4.186/2,
-                                          float(bty[i][3])*10)
+            info_cont = [ i+1,
+                          float(bty[i][4])/ 100/ 4.186/2,
+                          float(bty[i][3])*10 ]
         elif int(bty[i][2]) == 3:
-            txt_p_b += bond_string.format(i+1,
-                                          float(bty[i][4])/ 100/ 4.186/2,
-                                          float(bty[i][5])/10,
-                                          float(bty[i][3])*10)
+            extra_end_str = ' {:.4f}\n'
+            info_cont = [ i+1,
+                         float(bty[i][4])/ 100/ 4.186/2,
+                         float(bty[i][5])/10,
+                         float(bty[i][3])*10 ]
         else:
             wr_str = 'Bond type {} not implemented yet!'
-            pop_wrg_1( wr_str.format( bondtypename)
-                     )
+            pop_wrg_1( wr_str.format( bondtypename) )
+            info_cont = [ i+1, 0, 0 ]
             _flag_ = False
-    
+        txt_p_b += ( ' {} {:.4f} {:.4f}' + extra_end_str).format( *info_cont)
     
     
     ########    -----------     ANGLE      ----------     ########
     AngleDataBase = ['harmonic','G96','cross bond-bond','cross bond-angle',
                      'charmm','quartic angle','','tabulated'] 
-        
+    
+    _topodata_['angletypes'] = smol_extra_angletypes + _topodata_['angletypes']
+    n_angletypes = len( _topodata_['angletypes'])
+    _topodata_['numbers']['type'][2] = n_angletypes
     aty = _topodata_['angletypes']
     angletypename = AngleDataBase[ int(aty[0][3])- 1]
     
     txt_p_a ='\n Angle Coeffs #{}\n\n'.format( angletypename)
     
-    alm = len(aty[0]) - 4 # bond length multiplier
-    angle_string = ' {}'+ ' {:.4f}'*alm + '\n'
-    
     angletypes_d = {}
     i=0
-    for i in range(n_angletypes):
+    info_cont = []
+    for i in range( n_angletypes):
+        extra_end_str = '\n'
         angletypes_d[aty[i][0]+'-'+aty[i][1]+'-'+aty[i][2]]= i+1
         angletypes_d[aty[i][2]+'-'+aty[i][1]+'-'+aty[i][0]]= i+1
         if int(aty[i][3]) <> int(aty[i-1][3]):
             wr_str = 'More than one angle type than {}'
-            pop_wrg_1( wr_str.format( angletypename)
-                     )
+            pop_wrg_1( wr_str.format( angletypename) )
             _flag_ = False
             
         elif int(aty[i][3]) == 1:
-            txt_p_a += angle_string.format( i+1,
-                                           float(aty[i][-1])/ 4.186/2,
-                                           float(aty[i][-2]))
+            info_cont = [ i+1,
+                         float(aty[i][5])/ 4.186/2,
+                         float(aty[i][4]) ]
         elif int(aty[i][3]) == 5:
-            txt_p_a += angle_string.format( i+1,
-                                           float(aty[i][5])/ 4.186/2,
-                                           float(aty[i][4]),
-                                           float(aty[i][7])/ 4.186/2,
-                                           float(aty[i][6])*10)
+            extra_end_str = ' {:.4f} {:.4f}\n'
+            info_cont = [ i+1,
+                         float(aty[i][5])/ 4.186/2,
+                         float(aty[i][4]),
+                         float(aty[i][7])/ 4.186/2,
+                         float(aty[i][6])*10 ]
         else:
             wr_str = 'Angle type {} not implemented yet!'
-            pop_wrg_1( wr_str.format( angletypename)
-                     )
+            pop_wrg_1( wr_str.format( angletypename) )
+            info_cont = [ i+1, 0, 0 ]
             _flag_ = False
-    
+        txt_p_a += ( ' {} {:.4f} {:.4f}' + extra_end_str).format( *info_cont)
     
     # >===========================================================< #
     ########    -----------     DIHEDRAL      ----------     ########
@@ -658,12 +689,8 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
         _ddb_  = ['',]*len( DihedralDataBase)
     for di in dihe_kind_names:
         dihedtypename.append( DihedralDataBase[ int( di)- 1])
-        
     
     txt_p_d ='\n Dihedral Coeffs #{}\n\n'.format( dihedtypename[0])
-    
-    dlm = len( dty[0]) - 4 # dihedral length multiplier
-    dihed_string = ' {}'+ ' {:.4f}'*dlm + '\n'
     
     rb_warning = (' Ryckaert-Bellemans angle style conversion in Fourier form' +
                   ' can only be used if LAMMPS was built with the MOLECULE' +
@@ -671,6 +698,7 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
             
     dihedraltypes_d = {} # types dictionary
     i=0
+    info_cont = ''
     for i in range( n_dihedraltypes):
         # tag creation
         _type_forward_ = dty[i][0]+'-'+dty[i][1]+'-'+dty[i][2]+'-'+dty[i][3]
@@ -707,6 +735,7 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
         else:
             wr_str = 'Dihedral type {} not implemented yet!'
             pop_wrg_1( wr_str.format( DihedralDataBase[ _di_- 1]))
+            info_cont = ( i+1, _ddb_[ _di_ - 1],0,0,0,0)
             _flag_ = False
             break
             
