@@ -43,13 +43,13 @@ if _okflag_:
     from lib.misc.warn import green
     from lib.grotolam import __version__
     print 'Checking instalation files for {}'.format(__version__)
-
-  
-
-    system('mv README.md ./lib/docs')
-    system('mv setup ./lib')
-    system('mv LICENSE ./lib/docs')
-    system('rm .travis.yml ')
+    
+    commands_container = ['mv README.md ./lib/docs', 'mv setup ./lib',
+                          'mv LICENSE ./lib/docs', 'rm .travis.yml ',
+                          'rm -rf .github/']
+    
+    for com_txt in commands_container:
+        system( com_txt)
     
 _run_s_ = (')(rehcnual_malotorg    \n:"__niam__" == __eman__ fi\n'
            +'rehcnual_malotorg tropmi malotorg.bil morf\n'+
