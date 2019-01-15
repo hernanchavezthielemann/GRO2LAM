@@ -369,22 +369,23 @@ def split_dihedral_improper( _data_container_):
     for i in range( len ( _dihedrals_data_)):
         #  Dihedral line format in :
         #  ai  aj  ak  al  funct   c0  c1  c2  c3  c4  c5
+        print _dihedrals_data_[i]
         if _dihedrals_data_[i][4] in [ DihedralKind, RyckBellKind]:
             dh_data_.append( _dihedrals_data_[i])
             dihe_kind_name.add( _dihedrals_data_[i][4])
             
             if len (_dihedrals_data_[i])>5:
                 def_dihe_extra.append( _dihedrals_data_[i])
-                def_dihe_type_set.add( _dihedrals_data_[i][5:])
+                def_dihe_type_set.add( str(_dihedrals_data_[i][5:]))
                 
                 
         elif _dihedrals_data_[i][4] == ImproperKind:
             im_data_.append( _dihedrals_data_[i])
             if len (_dihedrals_data_[i])>5:
                 def_impr_extra.append( _dihedrals_data_[i])
-                def_impr_type_set.add( _dihedrals_data_[i][5:])
+                def_impr_type_set.add( str(_dihedrals_data_[i][5:]))
         else:
-            print 'Problem #008 here'
+            print 'Problem #008 here\n #split_dihedral_improper'
     
     # Save/overwriting point
     _data_container_['dihe_kinds'] = dihe_kind_name
@@ -414,7 +415,7 @@ def split_dihedral_improper( _data_container_):
     # first_clause = ( maybe should be an inner clause
     '''     Now supposing that just #define exist with a tag in the c0
             position...'''
-    new_dihedraltypes = set()
+    new_dihedraltypes = {}
     define_dic = _data_container_['define']['dihedral']
     if define_dic <> {}:
         
@@ -441,16 +442,16 @@ def split_dihedral_improper( _data_container_):
             #### TODO Flag
             ## First case with coefs in the top file... c0  c1  c2  c3  c4  c5
             if len( _dhi_) > 6:
-                print'Coefficients in the top file not supported yet'
-                new_dihedraltypes.add(a_tag + _dhi_[4:])
+                print'Coefficients in the top file not supported yet... or yes'
+                new_dihedraltypes['-'.join(a_tag)] = (a_tag + _dhi_[4:])
             ## Second case with #define
             elif len( _dhi_) == ( 4 + 1 + 1):
                 dh_kind_, dihedral_tag = _dhi_[4:]
-                _coefs_ = define_dic[ dihedral_tag]
-                new_dihedraltypes.add(a_tag + [dh_kind_] + _coefs_)
+                _content_ = a_tag + [dh_kind_] + define_dic[ dihedral_tag]
+                new_dihedraltypes[ '-'.join( a_tag)] = _content_
                 
-        for ndh in new_dihedraltypes:
-                dh_type_.append( ndh)
+        for key in new_dihedraltypes.keys():
+                dh_type_.append( new_dihedraltypes[key])
         _data_container_['dihedraltypes'] = dh_type_
     
     
@@ -549,9 +550,12 @@ def get_gro_line( _filename_, _startstrings_, _i_=0):
                     else:
                         print wrg_3( str(_line_) + '  ??')
                         
-                elif ' '.join(_line_)  == _ss_[_i_+1]:
+                elif _line_[0][0] == '[':
+                    if ' '.join(_line_)  == _ss_[_i_+1]:
+                        read_flag = False
+                    elif ' '.join(_line_)  <> _ss_[_i_+1]:
+                        read_flag = False
                     #print 'exit here 424'
-                    read_flag = False
                     
                 elif len( _line_) > 1:
                     #if _i_==7:  print _line_
