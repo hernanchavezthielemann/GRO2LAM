@@ -322,9 +322,9 @@ class Conversion(Frame):
                     pop_err_1('There are missing or incomplete coefficients in'
                               + ' your input files related to: ' + Err.args[0])
                     flag_done_ = False
-                except :# as Err:
-                    pop_err_1('There are inconsistencies in your input files'
-                             #+ Err.args[0]
+                except Exception as Exc:
+                    pop_err_1('There are inconsistencies in your input files\n'
+                             + Exc.args[0]
                              )
                     flag_done_ = False
                     
