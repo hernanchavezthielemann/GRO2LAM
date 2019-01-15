@@ -297,8 +297,12 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     #####------             MASSES              ------####
     _text_ +='\n Masses\n\n'
     atom_info = _topodata_['atomtypes']
+    minr = 1 - int( _topodata_[ 'defaults'][0]) # 0 lj and -1 buck
+    
     for i in range( n_atomtypes):
-        _text_ +=' {} {} # {}\n'.format( i+1, atom_info[i][1], atom_info[i][0])
+        _text_ +=' {} {} # {}\n'.format( i+1,
+                                        atom_info[i][ -5 + minr], # mass
+                                        atom_info[i][0])
     
     #####------             Force field                ------####
     
@@ -331,7 +335,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
         aty = known_atoms[i][1]
         _text_ += atom_shape.format( i+1, _mol_[i],
                                     dicts[0][ aty],
-                                    float(known_atoms[ i][6]),
+                                    float(known_atoms[ i][6]), # charge?? WF
                                     float(_xyz_[i][0])*10,
                                     float(_xyz_[i][1])*10,
                                     float(_xyz_[i][2])*10,
@@ -403,7 +407,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
         _text_ +='\n Bonds\n\n'
         bond_shape = ' {}'*4+'\n'
         for i in range(base_bonds_n):
-            
+            print known_bonds[i][0], known_bonds[i][1]
             at1 = int(known_bonds[i][0])
             at2 = int(known_bonds[i][1])
             
@@ -513,12 +517,19 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
     epsilon = []
     buck3 = []
     atom_type_d = {}
-        
+    # find ptype index, since len can change and the user could put some garbage
+    # in between the previous commented line. Eg:
+    # ; name  mass charge ptype  V(sigma)  (epsilon) if the comb-rule "2"
+    #ptypei = atom_info[0].index('A')
+    # Second options second the combination rule, and count from behind:
+    minr = 1 - buckorlj # 0 lj and -1 buck
+    
     for x in range( n_atomtypes):
+        print atom_info[x]
         atom_type_d[atom_info[x][0]] = x+1
         
-        _A_ = float(atom_info[x][5])
-        _B_ = float(atom_info[x][4])
+        _A_ = float( atom_info[x][ -1 + minr])
+        _B_ = float( atom_info[x][ -2 + minr])
         
         
         if comb_rule==1:
@@ -533,7 +544,7 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
         epsilon.append(_eps_ / 4.186)
         
         if buckorlj == 2:#------------------------------------------  <WFS>
-            _C_ = float(atom_info[x][6])
+            _C_ = float( atom_info[x][ -1])
             buck3.append(' '+ str(f_C_/ 4.186 / (10** 6)))
             sigma.append( 10 / _sig_)
             
@@ -603,8 +614,8 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
     
     for i in range( n_bondtypes):
         extra_end_str = '\n'
-        bondtypes_d[bty[i][0]+'-'+bty[i][1]]= i+1
-        bondtypes_d[bty[i][1]+'-'+bty[i][0]]= i+1
+        bondtypes_d[ bty[i][0] + '-' + bty[i][1]] = i+1
+        bondtypes_d[ bty[i][1] + '-' + bty[i][0]] = i+1
         
         if int(bty[i][2]) <> int(bty[i-1][2]):
             wr_str = 'More than one bond type than {}'
@@ -613,14 +624,14 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
             
         elif int(bty[i][2]) == 1:
             info_cont = [ i+1,
-                          float(bty[i][4])/ 100/ 4.186/2,
-                          float(bty[i][3])*10 ]
+                          float( bty[i][4])/ 100/ 4.186/2,
+                          float( bty[i][3])*10 ]
         elif int(bty[i][2]) == 3:
             extra_end_str = ' {:.4f}\n'
             info_cont = [ i+1,
-                         float(bty[i][4])/ 100/ 4.186/2,
-                         float(bty[i][5])/10,
-                         float(bty[i][3])*10 ]
+                         float( bty[i][4])/ 100/ 4.186/2,
+                         float( bty[i][5])/10,
+                         float( bty[i][3])*10 ]
         else:
             wr_str = 'Bond type {} not implemented yet!'
             pop_wrg_1( wr_str.format( bondtypename) )
