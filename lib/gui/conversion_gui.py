@@ -319,8 +319,11 @@ class Conversion(Frame):
                     flag_done_ = write_lammps_data( sim_data, 'data.gro2lam',
                                                    config )
                 except KeyError as Err:
+                    err_str = ''
+                    for er in Err.args:
+                        err_str += er + ' '
                     pop_err_1('There are missing or incomplete coefficients in'
-                              + ' your input files related to: ' + Err.args[0])
+                              + ' your input files related to: ' + err_str)
                     flag_done_ = False
                 except Exception as Exc:
                     pop_err_1('There are inconsistencies in your input files\n'
