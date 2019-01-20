@@ -1,5 +1,6 @@
 #!/usr/bin/python
 #    By Hernan Chavez Thielemann
+__author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
 from lib.misc.file import write_file
 from lib.misc.warn import print_dec_g, pop_wrg_1, pop_err_1
@@ -355,7 +356,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     buffer_moltype_pevif = 'none_type'
     if _solvated_f_ == 1:
         solv_at_v = range( n_atoms)[ base_atoms_n:]
-        print n_atoms, base_atoms_n, len( _mtype_)
+        #print n_atoms, base_atoms_n, len( _mtype_)
         for i in solv_at_v:
             aty = conv_dict[_atype_[i]] # _atype_ is the atag in TOP
             
@@ -374,31 +375,46 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                 # meaning also a new type of molecule
                 if _mtype_[i] <> buffer_moltype_pevif:
                     buffer_moltype_pevif = _mtype_[i]
-                    new_smol_str = 'New side molecule : {} 1st atom : {}'
-                    print new_smol_str.format( _mtype_[i], aty)
+                    new_smol_str = '** New side molecule : {} 1st atom : {} **'
+                    print '\n' + new_smol_str.format( _mtype_[i], aty)
                     
                     sidemol = _topodata_['sidemol']
                     for sb in range( len( sidemol['tag'])):
-                        if sidemol['tag']:
+                        if _mtype_[i] == sidemol['tag'][sb]:
                             nm_atn = len( sidemol['data'][sb]['atoms'])
+                            print( _mtype_[i]+ '=='+ sidemol['tag'][sb] +'  '+
+                                   str(_mtype_[i] == sidemol['tag'][sb]) +'\n'+
+                                   str(nm_atn) )
                             #bonds_x_mol = len( sidemol['data'][sb]['bonds'])
                             #angles_x_mol = len( sidemol['data'][sb]['angles'])
                 #if write_flag:
                 # here is needed something that changes acording to the
-                # molecule kind
-                
-                if nm_atn >= 2:
+                # molecule kind topology
+                if nm_atn == 1:
+                    pass
+                elif nm_atn >= 2:
+                    
+                    
                     aty2 = conv_dict[_atype_[i+1]]
                     solv_bonds.append([aty+'-'+aty2, i+1, i+2])
-                if nm_atn == 3:
-                    aty3 = conv_dict[_atype_[i+2]]
-                    solv_bonds.append([aty+'-'+aty3, i+1, i+3])
-                    solv_angles.append([aty2+'-'+aty+'-'+aty3, i+2, i+1, i+3])
+                    
+                    
+                    if nm_atn == 3:
+                        aty3 = conv_dict[_atype_[i+2]]
+                        solv_bonds.append([ aty + '-' + aty3, i+1, i+3])
+                        solv_angles.append([aty2 + '-' + aty + '-' + aty3,
+                                            i+2, i+1, i+3])
                 else:
                     print aty, _mol_[i], buffer_molnum_pevif, i+2, len(_atype_)
+                    exit('')
     #########################################################
     '''----------   4th - Chemical topology   ------------'''
     #=======================================================#
+    # BULDING AUXILIAR ATOM TAG_ DATA DICTIONARY
+    aat_ddic = {}
+    if len(atom_info[0]) - minr > 7:
+        for i in range( n_atomtypes):
+            aat_ddic[ atom_info[i][0]] = atom_info[i][1]
     
     ####------BONDS------####
     if _asty_d_[atomstyle]>=2:
@@ -406,24 +422,77 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
         base_bonds_n = len (known_bonds)
         _text_ +='\n Bonds\n\n'
         bond_shape = ' {}'*4+'\n'
+        xf = 1
+        a_g_d = {} #aux_goofy_dic
         for i in range(base_bonds_n):
-            print known_bonds[i][0], known_bonds[i][1]
+            # print known_bonds[i][0], known_bonds[i][1]
             at1 = int(known_bonds[i][0])
             at2 = int(known_bonds[i][1])
+            #print at1, at2
+            to_print = known_bonds[i][0] +' '+ known_bonds[i][1] +'\n'
+            try:
+                at1_tag = known_atoms[at1-1][xf]
+                at2_tag = known_atoms[at2-1][xf]
+                _bond_ty_ = dicts[1][ at1_tag + '-'+ at2_tag]
+                
+            except KeyError:
+                # meaning that is trying with the big name
+                try:
+                    at1_tag = aat_ddic[ at1_tag]
+                    at2_tag = aat_ddic[ at2_tag]
+                    _bond_ty_ = dicts[1][ at1_tag + '-'+ at2_tag]
+                except KeyError:
+                    
+                    ###########################################################
+                    ####################### TODEL START
+                    if xf-1: # xf = 4
+                        # so first load the small name?... wrong
+                        # justa as something super stupid
+                        atn1 = known_atoms[at1-1][4]
+                        atn2 = known_atoms[at2-1][4]                
+                        to_print += atn1 +' ' + atn2 +'\n'
+                        if atn2[0] in ['H','C','N','O','S']:
+                            #print atn2,
+                            known_atoms[at2-1][4], a_g_d = goofy_tags_1( atn2,
+                                                                         a_g_d)
+                            #print known_atoms[at2-1][4]
+                        if atn1[0] in ['H','C','N','O','S']:
+                            #print atn1,
+                            known_atoms[at1-1][4], a_g_d = goofy_tags_1( atn1,
+                                                                         a_g_d)
+                            #print known_atoms[at1-1][4]
+                        to_print += ( known_atoms[at1-1][4] + ' ' + 
+                                     known_atoms[at2-1][4])
+                        if known_atoms[at2-1][4] == atn2:
+                            if known_atoms[at1-1][4] == atn1:
+                                xf = 1
+                    else:
+                        xf = 4
+                    try:
+                        _bond_ty_ = dicts[1][ known_atoms[at1-1][xf] + '-'
+                                            + known_atoms[at2-1][xf]]
+                    ###########################################################
+                    ####################### TODEL END
+                    except KeyError:
+                        print to_print
+                        print 'Exception {}-{}\n'.format( known_atoms[at1-1][4], 
+                                                   known_atoms[at2-1][4])
+                
             
-            _bond_ty_ = dicts[1][known_atoms[at1-1][1]+'-'
-                                 +known_atoms[at2-1][1]]
             _text_ += bond_shape.format( i+1, _bond_ty_, at1, at2)
                         
         if _solvated_f_ == 1:
             # better way to do this is trough corrds ---------  <WFS>
-            for i in range(n_bonds-base_bonds_n):
-                _bond_ty_ = dicts[1][solv_bonds[i][0]]
-                _text_ += bond_shape.format(i+1+base_bonds_n,_bond_ty_,
-                                            solv_bonds[i][1],solv_bonds[i][2])
+            for i in range( n_bonds - base_bonds_n):
+                _bond_ty_ = dicts[1][ solv_bonds[i][0]]
+                _text_ += bond_shape.format(i+1 + base_bonds_n,
+                                            _bond_ty_,
+                                            solv_bonds[i][1],
+                                            solv_bonds[i][2])
     
     
     ####------ANGLES------#########
+    xf = 1
     if _asty_d_[ atomstyle]>=3:
         known_angles = _topodata_['angles']
         base_angles_n = len(known_angles)
@@ -431,14 +500,24 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
         angle_shape = ' {}'*5+'\n'
         for i in range(base_angles_n):
             
-            at1 = int(known_angles[i][0])
-            at2 = int(known_angles[i][1])
-            at3 = int(known_angles[i][2])
+            at1 = int( known_angles[i][0])
+            at2 = int( known_angles[i][1])
+            at3 = int( known_angles[i][2])
             
-            angle_t = (known_atoms[at1-1][1]+'-'+ known_atoms[at2-1][1]
-                       +'-'+known_atoms[at3-1][1])
-            _angle_ty_ = dicts[2][angle_t]
-            
+            try:
+                at1_tag = known_atoms[at1-1][xf]
+                at2_tag = known_atoms[at2-1][xf]
+                at3_tag = known_atoms[at3-1][xf]
+                _angle_ty_ = dicts[2][at1_tag + '-'+ at2_tag+ '-'+ at3_tag]
+            except KeyError:
+                try:
+                    at1_tag = aat_ddic[ at1_tag]
+                    at2_tag = aat_ddic[ at2_tag]
+                    at3_tag = aat_ddic[ at3_tag]
+                    _angle_ty_ = dicts[2][at1_tag + '-'+ at2_tag+ '-'+ at3_tag]
+                except KeyError as Er_here:
+                    print 'Error ----- '+Er_here.args[0]
+                    
             #print angle_t, _angle_ty_
             _text_ += angle_shape.format( i+1, _angle_ty_, at1, at2, at3)
             
@@ -463,17 +542,49 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
         _text_ +='\n Dihedrals\n\n'
         dihedral_shape = ' {}'*6+'\n'
         for i in range(base_dihedrals_n):
-            
+            err_str = ''
             at1 = int(known_dihedrals[i][0])
             at2 = int(known_dihedrals[i][1])
             at3 = int(known_dihedrals[i][2])
             at4 = int(known_dihedrals[i][3])
             
-            _dihe_ty_ = dicts[3][known_atoms[at1-1][1]+'-'
-                                 +known_atoms[at2-1][1]+'-'
-                                 +known_atoms[at3-1][1]+'-'
-                                 +known_atoms[at4-1][1]
-                                ]
+            try:
+                at1_tag = known_atoms[at1-1][xf]
+                at2_tag = known_atoms[at2-1][xf]
+                at3_tag = known_atoms[at3-1][xf]
+                at4_tag = known_atoms[at4-1][xf]
+                _dihe_ty_ = dicts[3][at1_tag + '-'+ at2_tag+ '-'+
+                                     at3_tag + '-'+ at4_tag]
+            except KeyError:
+                try:
+                    at1_tag = aat_ddic[ at1_tag]
+                    at2_tag = aat_ddic[ at2_tag]
+                    at3_tag = aat_ddic[ at3_tag]
+                    at4_tag = aat_ddic[ at4_tag]
+                    _dihe_ty_ = dicts[3][at1_tag + '-'+ at2_tag+ '-'+
+                                     at3_tag + '-'+ at4_tag]
+                except KeyError:
+                    options = ['X-'+at2_tag+'-'+at3_tag +'-'+at4_tag,
+                              at1_tag+'-'+at2_tag+'-'+at3_tag +'-X',
+                              'X-' + at2_tag + '-' + at3_tag + '-X',
+                              ]
+                    for _opt_ in options:
+                        try:
+                            _dihe_ty_ = dicts[3][ _opt_]
+                            break
+                        except KeyError:
+                            if _opt_ == options[-1]:
+                                try:
+                                    _dihe_ty_ = dicts[3][ 'X-' + at2_tag[0] +
+                                                         'X-'+ at3_tag[0] +
+                                                         'X-X']
+                                except KeyError as Er_here:
+                                    err_str = Er_here.args[0]
+            if err_str <> '':
+                print 'Atoms {}-{}-{}-{} : '.format( at1, at2, at3, at4),
+                print (at1_tag +'-'+ at2_tag+'-'+ at3_tag+'-'+ at4_tag)
+                print ( 'Error dihedral ----- '+ err_str +' not found!')
+            
             _text_+= dihedral_shape.format( i+1, _dihe_ty_, at1, at2, at3, at4)
     
     ####------ IMPROPERS  -----####
@@ -499,6 +610,64 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
             
     return _text_, _flag_
 
+def goofy_tags_1( atom_tag, goofy_dic = {}):
+    
+    exeptions = set(['C_3', 'O_3', 'O_2', 'CT_4', 'H3', 'C_2', 'CT_2', 'CT_3',
+                     'SY2', 'C9', 'C8', 'H4', 'H5', 'C3', 'C2', 'N2', 'N3',
+                     'C7', 'O2', 'C4'])
+    goofy_dic.update({'H1':'H','H2':'H','H3':'H','HE':'H',
+                      #'HB1':'HC', 'HB2':'HC', 'HG1':'HC', 'HG2':'HC',
+                      #'HD1':'HC', 'HD2':'HC', 'HE1':'HC', 'HE2':'HC',
+                      #'HB':'HC', 'HG11':'HC', 'HG12':'HC',
+                      #'HG13':'HC','HG21':'HC', 'HG22':'HC', 'HG23':'HC',
+                      #'HZ1':'H', 'HZ2':'H', 'HZ3':'H',v'HZ':'HC'
+                      #'CB':'C*','CD':'CT', 'CG':'CT','CG1':'CT','CG2':'CT',
+                      #'CD1':'CT','CD2':'CT','CE1':'CT', 'CE2':'CT','CZ':'CT',
+                      #'C*':'CT', 'CE':'CT',
+                      #'NZ':'N','NH':'N', 'NE':'N',
+                      'SD':'S','SG':'S',
+                      #'OE':'O',
+                     })
+    # 
+    #goofy_elemt = ['H','C', 'N', 'O'] _tag_[0] in goofy_elemt and
+    goofy_index = {'1','2','3'}
+    #for at in range( len( atom_tags)):
+    _tag_ = atom_tag#s[at]
+    try:
+        atom_tag = goofy_dic[ _tag_]
+    except KeyError:
+        if _tag_ in exeptions:
+            pass
+        elif atom_tag[0] == 'H':
+            if atom_tag[1] in ['H','Z','E']:
+                atom_tag = 'HC'
+            elif atom_tag[1] in ['G']:
+                atom_tag = 'HO'
+            else: 
+                atom_tag = 'HC'
+            goofy_dic[ _tag_] = atom_tag
+        elif atom_tag[0] == 'C':
+            if len(atom_tag)>1 and atom_tag[1] in ['T']:
+                atom_tag = 'C'
+            else:
+                atom_tag = 'CT'
+            goofy_dic[ _tag_] = atom_tag
+        elif atom_tag[0] == 'N':
+            if len(atom_tag)>1 and atom_tag[1] in ['T']:
+                atom_tag = 'N'
+            else:
+                atom_tag = 'NT'
+            goofy_dic[ _tag_] = atom_tag
+        elif atom_tag[0] == 'O':
+            atom_tag = 'OS'
+            goofy_dic[ _tag_] = atom_tag
+        elif atom_tag[0] == 'S':
+            while atom_tag[-1] in goofy_index:
+                atom_tag = atom_tag[:-1]
+            goofy_dic[ _tag_] = atom_tag
+        
+    return atom_tag, goofy_dic
+    
 def write_lammps_potentials( _topodata_, atomstyle = 'full'):
     ''' writes the potential part in the data file'''
     _flag_ = True
@@ -525,7 +694,7 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
     minr = 1 - buckorlj # 0 lj and -1 buck
     
     for x in range( n_atomtypes):
-        print atom_info[x]
+        #print atom_info[x]
         atom_type_d[atom_info[x][0]] = x+1
         
         _A_ = float( atom_info[x][ -1 + minr])
@@ -560,7 +729,7 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
     for i in range( n_atomtypes):
         txt_p_p +=' {} {} {}{}\n'.format( i+1, epsilon[i], sigma[i], buck3[i])
     
-    
+    '''
     ####----------- DEFINING BONDED INTERACTIONS     ----------####
     # load the side molecules data if exist
     sidemol = _topodata_['sidemol']
@@ -591,16 +760,25 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
         print sidemol_extra_bondtypes, '\n',smol_extra_angletypes
         if nm_atn > 3:
             print 'Uuupa!! dihedrals still not implemented as side mol part'
+            
+        # ---------   !!!!    Update the info    !!!!
+    _topodata_['bondtypes'] = sidemol_extra_bondtypes + _topodata_['bondtypes']
+    n_bondtypes = len( _topodata_['bondtypes'])
+    
+    _topodata_['numbers']['type'][1] = n_bondtypes
+    
+        _topodata_['angletypes'] = smol_extra_angletypes + _topodata_['angletypes']
+    n_angletypes = len( _topodata_['angletypes'])
+    
+    _topodata_['numbers']['type'][2] = n_angletypes
+            
+        '''
     ########    -----------     BOND        ----------     ########
     BondDataBase = ['harmonic','G96','morse','cubic','connection','harmonic',
                     'fene','tabulated','tabulated','restraint']
     Bonds_structures = {'harmonic': {},
                        'morse': {}}
     
-    # ---------   !!!!    Update the info    !!!!
-    _topodata_['bondtypes'] = sidemol_extra_bondtypes + _topodata_['bondtypes']
-    n_bondtypes = len( _topodata_['bondtypes'])
-    _topodata_['numbers']['type'][1] = n_bondtypes
     bty =  _topodata_['bondtypes']
     
     bondtypename = BondDataBase[ int(bty[0][2])-1]
@@ -644,9 +822,6 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
     AngleDataBase = ['harmonic','G96','cross bond-bond','cross bond-angle',
                      'charmm','quartic angle','','tabulated'] 
     
-    _topodata_['angletypes'] = smol_extra_angletypes + _topodata_['angletypes']
-    n_angletypes = len( _topodata_['angletypes'])
-    _topodata_['numbers']['type'][2] = n_angletypes
     aty = _topodata_['angletypes']
     angletypename = AngleDataBase[ int(aty[0][3])- 1]
     
@@ -689,11 +864,12 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
                          'periodic','tabulated'] 
     # asuming that impropers can not be here, purged previously in gromacs.py
     dty = _topodata_['dihedraltypes']
-    dihe_kind_names = _topodata_['dihe_kinds']
+    dihe_kind_names = _topodata_['dihe_kinds'] # set with numbers as string
+    
     dihedtypename = []
     if len( dihe_kind_names) > 1:
         dihedtypename.append( 'hybrid')
-        _ddb_ = DihedralDataBase
+        _ddb_ = DihedralDataBase[:]
         for d in range( len(_ddb_)):
             _ddb_[d] = ' '+ _ddb_[d]
     else:
@@ -715,9 +891,9 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
         _type_forward_ = dty[i][0]+'-'+dty[i][1]+'-'+dty[i][2]+'-'+dty[i][3]
         # FIFO type number asigment
         dihedraltypes_d[ _type_forward_ ] = i+1
-        ##
-        #_type_backward_ = dty[i][3]+'-'+dty[i][2]+'-'+dty[i][1]+'-'+dty[i][0]
-        #dihedraltypes_d[ _type_backward_] = i+1
+        ##  need also in backward direction in the lysozyme case
+        _type_backward_ = dty[i][3]+'-'+dty[i][2]+'-'+dty[i][1]+'-'+dty[i][0]
+        dihedraltypes_d[ _type_backward_] = i+1
         
         _di_ = int(dty[i][4])
         # Charmm
@@ -783,7 +959,7 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
 def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     ''' _simconfig_ contains the data gathered from the gui
         _topodata_ comes from the converted gromacs file
-        in_name is intended as name for the input'''
+        in_name is intended as name for the input to create'''
     
     #================================================================
     '''===========   Gathering and ordering the data   ==========='''
@@ -826,11 +1002,11 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
             ##              este es uno de esos casos donde no es posible 
             ##              utilizar += a pesar de desligar con [:] ... 
             
-            aux1,aux2,aux3,aux4,aux5 = _simconfig_[2][1][:] 
+            aux1, aux2, aux3, aux4, aux5 = _simconfig_[2][1][:] 
             g_names = g_names + aux1
-            g_aids =  g_aids  + aux2
+            g_aids  = g_aids  + aux2
             k_xyz_c = k_xyz_c + aux3
-            runs_c =  runs_c  + aux4
+            runs_c  = runs_c  + aux4
             ch_init = ch_init + aux5
         print'\n'
         for re in range(len(g_names)):
@@ -873,9 +1049,10 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
         
     ## -------------------------- getting styles
     _aux_here = get_style_info( data_file)
+    
     atomstyle, bondstyle, anglstyle, dihestyle, imprstyle = _aux_here
     if atomstyle_o <> '' and atomstyle_o <> atomstyle:
-        pop_wrg_1('Incongruence between atom styles!')
+        pop_wrg_1( 'Incongruence between atom styles!')
     
     ## ---------------- MIXING RULE
     if f_comb_rule in mix_value.values():
@@ -893,8 +1070,8 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     _dtxt_= '# Generated with Gro2lam\n\n'+'units real\nboundary p p p\n'
     # as I understand lammps default is 3
     #_dtxt_+= '%s %d\n'.format('dimension',dimension)
-    _dtxt_+= 'atom_style '+atomstyle+'\n'
-    if atomstyle not in ['full', 'charge]']: # no charges
+    _dtxt_+= 'atom_style '+atomstyle[0]+'\n'
+    if atomstyle[0] not in ['full', 'charge]']: # no charges
         if 'coul' in pairwiseint:
             pairwiseint = pairwiseint.split('/coul')[0]
         c_rcutoff = ''
@@ -908,13 +1085,19 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     #===================================================
     ####------------  SYSTEM CONFIGURATION  --------####
     
+    ###############    TODO_WF this for sure can be improved
+    # options like full and non bonded interactions could be asked by the user
     _dsc_txt=['pair_style {} {}'.format( pairwiseint, lj_rcutoff)]
     _dsc_txt.append(' {}\n'.format( c_rcutoff))
-    _dsc_txt.append( 'bond_style '+bondstyle+'\n')
-    _dsc_txt.append( 'angle_style '+anglstyle+'\n')
-    _dsc_txt.append( 'dihedral_style '+dihestyle+'\n')
-    _dsc_txt.append( 'imporper_style '+imprstyle+'\n')
-    _dtxt_+= ''.join(_dsc_txt[:_asty_d_[atomstyle]])+'\n'
+    if bondstyle[0] <> '':
+        _dsc_txt.append( 'bond_style '+' '.join( bondstyle)+'\n')
+    if anglstyle[0] <> '':
+        _dsc_txt.append( 'angle_style '+' '.join( anglstyle)+'\n')
+    if dihestyle[0] <> '':
+        _dsc_txt.append( 'dihedral_style '+' '.join( dihestyle)+'\n')
+    if imprstyle[0] <> '':
+        _dsc_txt.append( 'improper_style '+' '.join( imprstyle)+'\n')
+    _dtxt_+= ''.join(_dsc_txt[:_asty_d_[atomstyle[0]]])+'\n'
     
     
     if 'data' in data_file:
@@ -926,7 +1109,7 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     ####--------------   NEIGHBOR LIST   -----------####
     _dtxt_+= '\nneighbor {} bin\n'.format( neighbordistance)
     
-    if lrsolver <> '' and atomstyle in ['full','charge']:
+    if lrsolver <> '' and atomstyle[0] in ['full','charge']:
         if '/coul/long' in pairwiseint:
             _dtxt_+= 'kspace_style {} {}\n'.format( lrsolver, lrerror)
     _dtxt_+= 'pair_modify shift no tail yes'+mix_value_s+'\n'
@@ -1055,52 +1238,78 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
 
 def get_style_info( lammps_datafile):
     
-    atom_sty, bond_sty, angl_sty, dihe_sty, impr_sty = '', '', '', '', ''
+    #atom_sty, bond_sty, angl_sty, dihe_sty, impr_sty = '', '', '', '', ''
+    styles = ['Atoms', 'Bond', 'Angle', 'Dihedral', 'Improper' ]
+    sty_qty = [0,]*len( styles)
     default_styles = [ 'full', 'harmonic', 'harmonic', 'charm', 'harmonic']
+    sty_container = [ [], [], [], [], []]
     
+    def_wrg_str = ( '{} style info not found or missing in the data file!'
+                       + 'Using default : {}')
     try:
+        
         with open( lammps_datafile, 'r')  as indata:
+            
+            # types collection
             for k_line in indata:
-                aux_cont = k_line.split('#')
-                if len(aux_cont)>1 and 'Atoms' in aux_cont[0]:
-                    atom_sty = aux_cont[1].strip(' ').strip('\n')
-                elif len(aux_cont)>1 and 'Bond Coeffs' in aux_cont[0]:
-                    bond_sty = aux_cont[1].strip(' ').strip('\n')
-                elif len(aux_cont)>1 and 'Angle Coeffs' in aux_cont[0]:
-                    angl_sty = aux_cont[1].strip(' ').strip('\n')
-                elif len(aux_cont)>1 and 'Dihedral Coeffs' in aux_cont[0]:
-                    dihe_sty = aux_cont[1].strip(' ').strip('\n')
-                elif len(aux_cont)>1 and 'Improper Coeffs' in aux_cont[0]:
-                    impr_sty = aux_cont[1].strip(' ').strip('\n')
-                elif '' not in [atom_sty, bond_sty, angl_sty, dihe_sty]:
+                line_c =  k_line.split()
+                if len (line_c) == 3 and line_c[2] == 'types':
+                    for st in range( len( styles)):
+                        if line_c[0][1:] in styles[st]:
+                            sty_qty[st] = int( line_c[0])
+                            break
+                elif len (line_c) > 3 and  line_c[2] == 'xlo':
                     break
                     
-        if atom_sty == '':
-            atom_sty = default_styles[0]
-            pop_wrg_1('Atom style info not found in data file!'
-                      +'using default : '+ atom_sty)
-        if bond_sty == '':
-            bond_sty = default_styles[1]
-            pop_wrg_1('Bond style info not found in data file!'
-                      +'using default : '+ bond_sty)
-        if angl_sty == '':
-            angl_sty = default_styles[2]
-            pop_wrg_1('Angle style info not found in data file!'
-                      +'using default : '+ angl_sty)
-        if dihe_sty == '':
-            dihe_sty = default_styles[3]
-            pop_wrg_1('Dihedral style info not found in data file!'
-                      +'using default : '+ dihe_sty)
-        if impr_sty == '':
-            impr_sty = default_styles[4]
-            pop_wrg_1('Dihedral style info not found in data file!'
-                      +'using default : '+ impr_sty)
+            read_flag = False
+            reading_flag = False
+            index = 0
+            for k_line in indata:
+                line_c =  k_line.split()
+                
+                # in cases with hybrid type, it should read from the second 
+                # position in the data line of bond, angle, dihedral and impr
+                if read_flag:
+                    if len( line_c) < 1 and reading_flag:
+                        read_flag = False
+                        reading_flag = False
+                        index += 1
+                    elif len( line_c) < 1 or line_c[0][0] == '#':
+                        pass
+                    else:
+                        reading_flag = True
+                        new_sty = line_c[1]
+                        if new_sty not in sty_container[ index]:
+                            sty_container[ index].append( new_sty)
+                # cutting out the crap, normal empty and commented lines
+                elif len( line_c) < 1 or line_c[0][0] == '#':
+                    pass
+                
+                elif not sty_qty[ index]:
+                    sty_container[ index].append( '')
+                    index += 1
+                    
+                elif ( styles[ index] == line_c[0] and 
+                      ( index == 0 or 'Coeffs' == line_c[1]) ):
+                    aux_cont = k_line.split('#')
+                    
+                    if len( aux_cont) > 1:
+                        sty_container[ index].append( aux_cont[1].strip())
+                        if sty_container[ index][0] == 'hybrid':
+                            read_flag = True
+                            index -= 1
+                    else:
+                        sty_container[ index].append( default_styles[ index])
+                        pop_wrg_1( def_wrg_str.format( styles[ index], 
+                                                       sty_container[ index]))
+                    index += 1
+                
             
     except IOError:
         pop_wrg_1('Data file not found!')
-        print ('Try performing a conversion first!')
+        print ('Maybe try performing a conversion first! ;)')
         _flag_ = False
-
+    
     return atom_sty, bond_sty, angl_sty, dihe_sty, impr_sty
 
 if __name__ == '__main__':
