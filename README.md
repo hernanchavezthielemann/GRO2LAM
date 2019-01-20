@@ -10,7 +10,7 @@
    :new:New features : 
 <!--ts-->
    * Option to autoload 'itp' force field files, including side molecules.
-   * Works with more than one side molecule (eg. water + ions +...). (:soon: WIP)
+   * Works with more than one side molecule (eg. water + ions +...).
    * Accepts Ryckaert-Bellemans dihedral, direct conversion to opls dihedral Lammps style.
    * Accepts #define tag in dihedrals in the 'top' file.
 <!--te-->
