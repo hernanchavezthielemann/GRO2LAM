@@ -402,7 +402,7 @@ class Script_GUI(Frame):
         if self._convertdata_<> None:
             _numbers_ = self._convertdata_['numbers']
             max_at_index = _numbers_['total'][0]
-            _, bond_types, angle_types, _ = _numbers_['type']
+            _, bond_types, angle_types, _, _ = _numbers_['type']
         else: 
             _filename_ = self.s_entry_c[0].get()
             try:
@@ -426,5 +426,5 @@ class Script_GUI(Frame):
         if _bflag_<>None:
             return _flag_
         return max_at_index, bond_types, angle_types
-        
+    
 # vim:tw=80
