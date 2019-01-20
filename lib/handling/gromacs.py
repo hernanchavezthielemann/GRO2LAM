@@ -1,8 +1,6 @@
 #!/usr/bin/python
 #    By Hernan Chavez Thielemann
-
-__merged_files__ = ['main.m', 'Reading_top.m', 'Reading_bon.m',
-                    'Reading_nb.m','Counting_lines.m', 'Reading_xyz.m']
+__author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
 
 from lib.misc.warn import wrg_1, wrg_3, pop_err_1, pop_wrg_1
@@ -27,18 +25,12 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     if not _autoload_:
         print filename_ff # or not
         
-    data_container['defaults'], ok_flag = ck_forcefield( filename_ff)
-    if not ok_flag:
-        return {}, ok_flag
-    
-    buckorlj = int(data_container['defaults'][0])
-    
     print 'Solvation: {} | Autoload: {}\n'.format( *_ck_buttons_)
     
-    
-    #################################################
-    '''----------------  FILE GRO  ---------------'''
-    #===============================================#
+    ###########################################################################
+    ###########################################################################
+    '''--------------------------    FILE GRO      -------------------------'''
+    #=========================================================================#
     
     ok_flag, gro_pack, b_xyzhi = get_gro_fixed_line( filename_gro)
     if not ok_flag:
@@ -57,38 +49,47 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     zhi = b_xyzhi[2]*10   
     data_container['box']=[xlo,xhi, ylo,yhi, zlo,zhi]
     
-    
-    #################################################
+    ###########################################################################
+    ###########################################################################
     '''----------------  FILE TOP  ---------------'''
-    #===============================================#
+    #=========================================================================#
     
+    #################   Defaults   ##################
+    
+    data_container['defaults'], ok_flag = ck_forcefield( filename_ff)
+    if not ok_flag:
+        return {}, ok_flag
+    
+    buckorlj = int(data_container['defaults'][0])
+    
+    ############
     startstrings=['[ moleculetype ]', '[ atoms ]','[ bonds ]', '[ pairs ]',
                   '[ angles ]', '[ dihedrals ]', '[ system ]',
                   '[ molecules ]', '']
     
     for ti in range(len(startstrings))[:-1]:
-        _char_str_ = startstrings[ti][ 2:-2]
+        s_str_ = startstrings[ti][ 2:-2]
         ''' here is possible to insert a selector in case pairs and 
-        others can be ovbiated'''
-        data_container[_char_str_] , ok_flag, _ = get_gro_line( filename_top,
-                                                                startstrings,
-                                                               ti)
+        others can be obviated'''
+        data_container[ s_str_], ok_flag, _ = get_topitp_line( filename_top,
+                                                               startstrings[ti]
+                                                             )
         
         if not ok_flag:
             print wrg_3( 'Not ok flag in <extract_gromacs_data> top file' +
-                         'section, in ' + _char_str_)
+                         'section, in ' + s_str_)
             return {}, ok_flag
         
-        #debugger_file( _char_str_, data_container[_char_str_])
+        #debugger_file( s_str_, data_container[s_str_])
             
     n_atoms     =   len( data_container['atoms'])
     n_bonds     =   len( data_container['bonds'])
     n_angles    =   len( data_container['angles'])
     
     
-    #################################################
+    ###########################################################################
     '''----------  SIDE MOLE FILES   -------------'''
-    #===============================================#
+    #=========================================================================#
     #### research in topology for new molecules / side molecules
     if _autoload_:
         data_container, ok_flag = sidemol_data( filename_top, data_container)
@@ -96,33 +97,33 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
         return {}, ok_flag
     
     
-    #################################################
+    ###########################################################################
     '''-----------------  FILE NB  ---------------'''
-    #===============================================#
+    #=========================================================================#
     startstrings = ['[ atomtypes ]', '[ nonbond_params ]']
     
-    data_container['atomtypes'], ok_flag, _ = get_gro_line( filename_nb,
-                                                         startstrings)
+    data_container['atomtypes'], ok_flag, _ = get_topitp_line( filename_nb,
+                                                               '[ atomtypes ]')
     if not ok_flag:
         return {}, ok_flag
     
     n_atomtypes     =   len( data_container['atomtypes'])
     
     #debugger_file( 'atomtypes',data_container['atomtypes'])
-    #################################################
+    ###########################################################################
     '''----------------  FILE BON  ---------------'''
-    #===============================================#
+    #=========================================================================#
     
     
     startstrings=['[ bondtypes ]', '[ angletypes ]', '[ dihedraltypes ]', '']
     
-    for bi in range(len(startstrings))[:-1]:
-        _char_str_ = startstrings[bi][ 2:-2]
+    for bi in range( len( startstrings))[:-1]:
+        s_str_ = startstrings[bi][ 2:-2]
         
-        _aux_here_ = get_gro_line( filename_bon, startstrings, bi)
-        data_container[ _char_str_], ok_flag, _data_define_ = _aux_here_
-        data_container['define'][_char_str_[:-5]] = _data_define_
-        #debugger_file(_char_str_, data_container[_char_str_])
+        _aux_here_ = get_topitp_line( filename_bon, startstrings[ bi])
+        data_container[ s_str_], ok_flag, _data_define_ = _aux_here_
+        data_container['define'][s_str_[:-5]] = _data_define_
+        #debugger_file(s_str_, data_container[s_str_])
                 
         if not ok_flag:
             return {}, ok_flag
@@ -131,9 +132,9 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     n_anglestypes   =   len( data_container['angletypes'])
     
     
-    #################################################
-    '''----------------  Impropers ---------------'''
-    #===============================================#
+    ###########################################################################
+    '''----------------        #define &  Impropers          ---------------'''
+    #=========================================================================#
     # Search for impropers in TOP and BON, using crossreference if needed
     data_container = split_dihedral_improper( data_container)
     
@@ -142,9 +143,9 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     n_impropers     =   len( data_container['impropers'])
     n_impropertypes =   len( data_container['impropertypes'])
     
-    #################################################
-    '''--------------  "Solvation"  --------------'''
-    #===============================================#
+    ###########################################################################
+    '''--------------              "Solvation"                --------------'''
+    #=========================================================================#
     n_atomsnew = len( _type_)
     
     if _autoload_:
@@ -185,6 +186,50 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
         
         data_container['S_charge'] =_charge_
         data_container['S_translation'] =_conv_dict_
+        #######################################################################
+        ############               Esoteric part ;)             ###############
+        ####----------- DEFINING BONDED INTERACTIONS     ----------####
+        # load the side molecules data if exist
+        #sidemol = _topodata_['sidemol']
+        sidemol_extra_bondtypes = []
+        smol_extra_angletypes = []
+        for sb in range( len( sidemol['tag'])):
+            _smat_ = sidemol['data'][sb]['atoms']
+            nm_atn = len( _smat_)
+            _at_dic_here = {}
+            for at in range( nm_atn):
+                _at_dic_here[ _smat_[at][0]] = _smat_[at][1]
+            
+            if nm_atn > 1:
+                _smbn_ = sidemol['data'][sb]['bonds'][0]
+                aux_here = [_at_dic_here[_smbn_[0]], _at_dic_here[_smbn_[1]]]
+                sidemol_extra_bondtypes.append( aux_here + _smbn_[2:])
+                
+            if nm_atn > 2:
+                for bn in range( len( sidemol['data'][sb]['bonds']))[1:]:
+                    _smbn_ = sidemol['data'][sb]['bonds'][bn]
+                    aux_here = [_at_dic_here[_smbn_[0]], _at_dic_here[_smbn_[1]]]
+                    sidemol_extra_bondtypes.append( aux_here + _smbn_[2:])
+                _sman_ = sidemol['data'][sb]['angles'][0]
+                aux_here = [_at_dic_here[_sman_[0]], _at_dic_here[_sman_[1]],
+                            _at_dic_here[_sman_[2]] ]
+                smol_extra_angletypes.append( aux_here + _sman_[3:])
+                
+            #print sidemol_extra_bondtypes, '\n',smol_extra_angletypes
+            if nm_atn > 3:
+                print 'Uuupa!! dihedrals still not implemented as side mol part'
+                
+            # ---------   !!!!    Update the info    !!!!
+        data_container['bondtypes'] = ( sidemol_extra_bondtypes +
+                                       data_container['bondtypes'] )
+        n_bondstypes = len( data_container['bondtypes'])
+        
+
+        
+        data_container['angletypes'] = ( smol_extra_angletypes + 
+                                        data_container['angletypes'])
+        n_anglestypes = len( data_container['angletypes'])
+        
         
     ##======= OLD TIMES :-)
     elif _solvated_f_:
@@ -354,7 +399,7 @@ def split_dihedral_improper( _data_container_):
     ImproperKind = '2'
     RyckBellKind = '3'
     
-    _dihedrals_data_ = _data_container_['dihedrals']
+    _dihedrals_data_ = _data_container_[ 'dihedrals']
     #====================================================
     ''' ============  Dihedral TOP data   =========== ''' 
     im_data_ = []
@@ -369,7 +414,7 @@ def split_dihedral_improper( _data_container_):
     for i in range( len ( _dihedrals_data_)):
         #  Dihedral line format in :
         #  ai  aj  ak  al  funct   c0  c1  c2  c3  c4  c5
-        print _dihedrals_data_[i]
+        #print _dihedrals_data_[i]
         if _dihedrals_data_[i][4] in [ DihedralKind, RyckBellKind]:
             dh_data_.append( _dihedrals_data_[i])
             dihe_kind_name.add( _dihedrals_data_[i][4])
@@ -520,23 +565,27 @@ def top_groups(mtype, _buffer, g_names):
     
     return _buffer, g_names # hook
 
-def get_gro_line( _filename_, _startstrings_, _i_=0):
+def get_topitp_line( _filename_, _ss_):
     ''' reading gromacs content lines
         spliting by the space between info
     '''
+    _verbose_ = True
     content_line = []
     _define_ = {}
-    _ss_=_startstrings_
+    
     # \* TODO: apply a method just in case that
     #          some _startstrings_ are not there ??
     with open(_filename_, 'r')  as indata:
         read_flag = False
         ok_flag = True
         tag_not_found = True
-        #print _i_, _ss_[_i_], _ss_[_i_+1]
+        if _verbose_:
+            print  _ss_
         for j_line in indata:
             # I just whant to read once the flag is on
             if read_flag:
+                if _ss_ == '[ dihedrals ]':
+                    print j_line.rstrip()
                 _line_ = j_line.split(';')[0].split()
                 # getting out comments and empty lines
                 if len( _line_)<1: 
@@ -551,26 +600,25 @@ def get_gro_line( _filename_, _startstrings_, _i_=0):
                         print wrg_3( str(_line_) + '  ??')
                         
                 elif _line_[0][0] == '[':
-                    if ' '.join(_line_)  == _ss_[_i_+1]:
-                        read_flag = False
-                    elif ' '.join(_line_)  <> _ss_[_i_+1]:
+                    print ' '.join(_line_) + 'Checked!'
+                    if  ' '.join(_line_)  <> _ss_ :
                         read_flag = False
                     #print 'exit here 424'
                     
                 elif len( _line_) > 1:
-                    #if _i_==7:  print _line_
                     content_line.append( _line_)
                 else:
-                    print 'Ups... please raise an issue ;)'
-            elif j_line.lstrip().startswith( _ss_[_i_]):
-                #print _ss_[_i_]
+                    print 'Ups... please raise an issue at GitHub ;)'
+            elif j_line.lstrip().startswith( _ss_):
+                if _verbose_:
+                    print _ss_+' found!'
                 read_flag = True
                 tag_not_found = False
     
     if content_line == [] or tag_not_found:
         if '/' in _filename_:
             _filename_ = _filename_.split('/')[-1]
-        pop_err_1( 'The {} section is missing on {} file'.format( _ss_[_i_] ,
+        pop_err_1( 'The {} section is missing on {} file'.format( _ss_ ,
                                                                   _filename_)
                  )
         ok_flag = False
