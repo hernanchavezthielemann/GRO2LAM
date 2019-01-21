@@ -400,8 +400,8 @@ def split_dihedral_improper( _data_container_):
     RyckBellKind = '3'
     
     _dihedrals_data_ = _data_container_[ 'dihedrals']
-    #====================================================
-    ''' ============  Dihedral TOP data   =========== ''' 
+    ###              =========================================              ###
+    ''' =============             Dihedral TOP data           ============= ''' 
     im_data_ = []
     dh_data_ = []
     
@@ -450,7 +450,7 @@ def split_dihedral_improper( _data_container_):
             dh_type_.append( _dihe_type_data_[i])
     # Save/overwriting point
     _data_container_['impropertypes'] = im_type_
-    _data_container_['dihedraltypes'] = dh_type_
+    #_data_container_['dihedraltypes'] = dh_type_
     #====================================================
     ''' ========  Dihedral "#define" data  ========== ''' 
     def_dihe_dic = {}
@@ -472,13 +472,13 @@ def split_dihedral_improper( _data_container_):
             for at1 in range( 4): # at1 0 1 2 3
                 atnum = int( _dhi_[at1])
                 if ( known_atoms[ atnum - 1][0] == _dhi_[ at1]):
-                    a_tag[at1] = known_atoms[ atnum - 1][4]
+                    a_tag[at1] = known_atoms[ atnum - 1][1]
                 # Si no esta ordenado nos vamos casi a la...
                 else:
-                    # Brute force, til should be found
+                    # Brute force, till should be found
                     for at2 in range( len( known_atoms)):
                         if known_atoms[at2][0] == _dhi_[at1]:
-                            a_tag[at1] = known_atoms[at2][4]
+                            a_tag[at1] = known_atoms[at2][1]
                             break
                             
                 if '' == a_tag[at1]:
@@ -487,12 +487,16 @@ def split_dihedral_improper( _data_container_):
             #### TODO Flag
             ## First case with coefs in the top file... c0  c1  c2  c3  c4  c5
             if len( _dhi_) > 6:
-                print'Coefficients in the top file not supported yet... or yes'
+                print ('Coefficients in the top file are not supported yet' +
+                        '... or maybe they are '+ u'\u00AC'*2)
+                
                 new_dihedraltypes['-'.join(a_tag)] = (a_tag + _dhi_[4:])
             ## Second case with #define
             elif len( _dhi_) == ( 4 + 1 + 1):
                 dh_kind_, dihedral_tag = _dhi_[4:]
                 _content_ = a_tag + [dh_kind_] + define_dic[ dihedral_tag]
+                # with a dictionary instead a set because, sets does not allow
+                # unhashable lists as items
                 new_dihedraltypes[ '-'.join( a_tag)] = _content_
                 
         for key in new_dihedraltypes.keys():
@@ -584,8 +588,9 @@ def get_topitp_line( _filename_, _ss_):
         for j_line in indata:
             # I just whant to read once the flag is on
             if read_flag:
-                if _ss_ == '[ dihedrals ]':
-                    print j_line.rstrip()
+                # if _verbose_: ### is beter to store and print outside the
+                # cycle with just one if 
+                #    print j_line.rstrip()
                 _line_ = j_line.split(';')[0].split()
                 # getting out comments and empty lines
                 if len( _line_)<1: 
