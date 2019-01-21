@@ -120,13 +120,13 @@ class Script_GUI(Frame):
         
         if self._container_['advanced'] == []: # advanced _init_
             
-            _pair_style_ = 'lj/cut/coul/long'
+            _pair_style_ = 'lj/cut/coul/cut'
             _comb_rl_ = 'No'
             lj_12_13_14_ = '0.0:0.0:0.0'
             if self._convertdata_ <> None:
                 _aux_here_ = self._convertdata_['defaults']
                 buckorlj, comb_rule, _flg_, f14_LJ, _ = _aux_here_
-                if int(buckorlj) == 2:
+                if int( buckorlj) == 2:
                     _pair_style_ = 'buck/coul/long'
                     
                 mix_val = {'1':'geometric', '2':'arithmetic', '3':'geometric'}
@@ -231,6 +231,7 @@ class Script_GUI(Frame):
                  ]
                         
         _pair_style_ = ['lj/cut/coul/long','lj/cut/coul/cut', 'lj/cut',
+                        'lj/charmm/coul/long',
                         'buck/coul/long', 'buck', 'buck/coul/cut',
                         #'lj/cut/tip4p/cut', 'lj/cut/tip4p/long',
                         #'lj/gromacs', 'lj/gromacs/coul/gromacs',
@@ -426,5 +427,5 @@ class Script_GUI(Frame):
         if _bflag_<>None:
             return _flag_
         return max_at_index, bond_types, angle_types
-    
+          
 # vim:tw=80
