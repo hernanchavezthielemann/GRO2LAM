@@ -123,9 +123,10 @@ class Script_GUI(Frame):
             _pair_style_ = 'lj/cut/coul/cut'
             _comb_rl_ = 'No'
             lj_12_13_14_ = '0.0:0.0:0.0'
+            co_12_13_14_ = '0.0:0.0:0.0'
             if self._convertdata_ <> None:
                 _aux_here_ = self._convertdata_['defaults']
-                buckorlj, comb_rule, _flg_, f14_LJ, _ = _aux_here_
+                buckorlj, comb_rule, _flg_, f14_LJ, f14_Co = _aux_here_
                 if int( buckorlj) == 2:
                     _pair_style_ = 'buck/coul/long'
                     
@@ -133,7 +134,7 @@ class Script_GUI(Frame):
                 _comb_rl_ = mix_val[comb_rule]
                 if _flg_ == 'yes':
                     lj_12_13_14_ = '0.0:0.0:'+f14_LJ
-                    
+                    co_12_13_14_ = '0.0:0.0:'+f14_Co
                     
             self._container_['advanced'] = [[],[]]
             self._container_['advanced'][0] = [ '10', 
@@ -142,7 +143,8 @@ class Script_GUI(Frame):
                                                '8.5','10','1.9', 
                                                'pppm',
                                                '1e-4',
-                                               lj_12_13_14_,'1','1',
+                                               lj_12_13_14_, co_12_13_14_,
+                                               '1','1',
                                                'aniso',
                                                _comb_rl_,
                                                
@@ -202,7 +204,11 @@ class Script_GUI(Frame):
                 self.master.swapbody(3)
     
     def further_config_script( self ):
+        ''' Section for advaced settings
         
+        '''
+        pop_wrg_1('Advanced settings!\nChanging these parameters could result'
+                  +' in a different simulation than the base one')
         defvals = []
         title_txt = ' '*3+'+ Simulation Parameters'
         instructions = 'Input further simulation parameters'
@@ -214,13 +220,15 @@ class Script_GUI(Frame):
                   "Neighbor skin distance  ["+u'\u00c5'+"]",
                   'Long-range solver',
                   'Long-range relative error',
-                  'Interaction 1-2:1-3:1-4',
+                  'L-J interaction 1-2:1-3:1-4',
+                  'Coul interaction 1-2:1-3:1-4',
                   'Neighbor delay  [#ts]', 
                   'Neighbor update  [#ts]',
                   'Pressure control',
                   'Force mixing rule',
                   
                   'Velocity creation Temp  [K]',
+                  
                   'Energy minimization tolerance',
                   'Simulation order',
                   '---',
@@ -255,7 +263,7 @@ class Script_GUI(Frame):
         self._container_['advanced'][1] = [ '', ['array', 'hash'], 
                                             _pair_style_,
                                            '','','', _kspace_,
-                                           '', '', '', '',
+                                           '', '', '', '', '',
                                            ['aniso', 'iso', 'tri'],
                                             _comb_rule_, '','','',
                                            '', '', ''
@@ -290,7 +298,7 @@ class Script_GUI(Frame):
             
             _entries_ = [ 'int', '', '', 'float', 'float', 'float', '',
                          'float', 
-                         ['<float::<', 0.0, 1.0],
+                         ['<float::<', 0.0, 1.0],['<float::<', 0.0, 1.0],
                          'int', 'int', '', '',
                          'float', 'float',[list, '-','NVE','NVT','NPT','R','M']
                          ,'float',
