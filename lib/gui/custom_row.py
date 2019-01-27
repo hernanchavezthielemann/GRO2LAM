@@ -2,7 +2,7 @@
 #    By Hernan Chavez Thielemann
 __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
-from Tkinter import Entry, Button, Frame
+from Tkinter import Entry, Button, Frame, StringVar
 from tk_lib import format_dec
 from popup import FilePopUp
 
@@ -44,6 +44,7 @@ class File_Entry(Frame):
         # inner class object container
         self._entry = []
         self._button = []
+        self._strvar = StringVar()
         
         self.createWidgets()
     
@@ -62,7 +63,7 @@ class File_Entry(Frame):
         # Building
         _f_labels = format_dec([file_row, fi_text], _pack_=False)
 
-        self._entry = Entry(file_row, width=13)
+        self._entry = Entry(file_row, width=13, textvariable = self._strvar)
         self._entry.insert('end', _def_file_)
         
         self._entry.bind("<Key>", lambda e: "break") # Magic
@@ -125,5 +126,5 @@ def createfileentry(frame, label_txt, entry_val, extension, ex_descrptn, flag):
     FE.setter( flag )
     FE.pack(fill='x')
     return FE._entry
-
+        
 # vim:tw=80
