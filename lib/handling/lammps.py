@@ -855,11 +855,12 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     #npt_ystart, npt_yend)
     
     i = 5
-    thermo, atommap, pairwiseint, lj_rcutoff, c_rcutoff = _simconfig_[1][:i]
-    neighbordistance, lrsolver, lrerror, in12_13_14 = _simconfig_[1][i:i+4]
-    neighbordelay, neighborupdate, npt_kind = _simconfig_[1][i+4:i+7]
-    f_comb_rule, T_init_vel, f_min_tol, _order_ = _simconfig_[1][i+7:i+11]
-    shake_tol, shake_bn, shake_an = _simconfig_[1][i+11:]
+    thermo, atommap, pairwiseint, lj_rcutoff, c_rcutoff = _simconfig_[1][ :i]
+    neighbordistance, lrsolver, lrerror = _simconfig_[1][ i:i+3]
+    lj12_13_14, co12_13_14 = _simconfig_[1][ i+3: i+5]
+    neighbordelay, neighborupdate, npt_kind = _simconfig_[1][ i+5:i+8]
+    f_comb_rule, T_init_vel, f_min_tol, _order_ = _simconfig_[1][ i+8:i+12]
+    shake_tol, shake_bn, shake_an = _simconfig_[1][ i+12:]
     
     #===================================================
     ####------------    RESTRAIN DATA       --------####
@@ -913,7 +914,7 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     print '\n'+data_file + '\n'
     if _topodata_ <> None:
         atomstyle_o, _solvated_, _autoload_ = _topodata_['config'] 
-        _, comb_rule, _, f_LJ, _ = _topodata_['defaults']
+        _, comb_rule, _, _, _ = _topodata_['defaults']
         
     else:
         print '**** Without _topodata_ !!'
@@ -981,14 +982,30 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     
     #===================================================
     ####--------------   NEIGHBOR LIST   -----------####
+    
     _dtxt_+= '\nneighbor {} bin\n'.format( neighbordistance)
     
     if lrsolver <> '' and atomstyle[0] in ['full','charge']:
         if '/coul/long' in pairwiseint:
             _dtxt_+= 'kspace_style {} {}\n'.format( lrsolver, lrerror)
-    _dtxt_+= 'pair_modify shift no tail yes'+mix_value_s+'\n'
+        
+        aux_here1 = lj12_13_14.split(':')
+        if lj12_13_14 == co12_13_14:
+            sp_bon_3 = ['/coul {}'.format( aux_here1[0])] + aux_here1[1:]
+        else:
+            aux_here2 = co12_13_14.split(':')
+            aux_here1 += [ aux_here2[0]]
+            aux_txt = ' {} {} {} coul {}'.format( *aux_here1)
+            sp_bon_3 = [ aux_txt] + aux_here2[1:]
+                            
+    elif lrsolver <> '':
+        sp_bon_3 = lj12_13_14.split(':')
+        
     
-    _dtxt_+= 'special_bonds lj/coul {} {} {}\n'.format( *in12_13_14.split(':'))
+    if lrsolver <> '':
+        _dtxt_+= 'special_bonds lj{} {} {}\n'.format( *sp_bon_3)
+        
+    _dtxt_+= 'pair_modify shift no tail yes'+mix_value_s+'\n'
     
     _aux_s_ = 'neigh_modify every {} delay {} check yes\n\n'
     _dtxt_+= _aux_s_.format( neighborupdate, neighbordelay)
@@ -1198,3 +1215,4 @@ def get_style_info( lammps_datafile):
 if __name__ == '__main__':
     pass
     
+# vim:tw=80
