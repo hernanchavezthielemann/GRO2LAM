@@ -89,15 +89,20 @@ class Conversion(Frame):
         # appends file entries capturing button also 
         self.objt_c.append( _autoload_) # allocating space for autoload in [0]
         for fi in range( len( eg_files)):
+            
             self.file_e.append( File_Entry( self,
-                                           e_txt = fi_txt[fi],
-                                           e_val = eg_files[fi])
+                                            e_txt = fi_txt[fi],
+                                            e_val = eg_files[fi])
                               )
             self.file_e[-1].setter( enabled[fi])
             self.objt_c.append( self.file_e[-1]._entry)
             self.file_e[-1].pack(fill='x')
             
             if fi == 1:
+                self.file_e[-1]._strvar.trace( 'w', self.load_top_file)
+                #sv = self.file_e[-1]._strvar
+                #sv.trace('w', lambda name, index, mode, sv=sv: self.load_top_file(sv) )
+                #"w"
                 bottom_hline_deco( self)
                 ## CS   autoload                   ------------------------- :@
                 # self.objt_c.append inside 
@@ -211,7 +216,20 @@ class Conversion(Frame):
             self.autol_b.configure( state = 'disabled')
             for i in [2, 3, 4]:
                     self.file_e[i].setter( 1)
-
+    
+    def load_top_file( self, *args ):#event=None, 
+        ''' function to capture the change in the top load button.
+        in order to avoid the the waving experienced with a first "''"
+        in the entry an if is inside 
+        '''
+        #print args
+        if self.objt_c[2].get() <> '':
+            #print ( self.objt_c[2].get())
+            
+            self.autol_b.configure( state = 'normal')
+            for i in [2, 3, 4]:
+                    self.file_e[i].setter( 1)
+        
     def build_finalbuttons(self):
         
         _ypadhere_ = 1
@@ -297,3 +315,4 @@ class Conversion(Frame):
         ''' unified name hook'''
         self.create_conversion_gui()
 
+# vim:tw=80
