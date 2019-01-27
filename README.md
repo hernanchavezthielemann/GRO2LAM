@@ -1,11 +1,11 @@
  
-[![Build Status](https://travis-ci.org/hernanchavezthielemann/GRO2LAM.svg?branch=20dec18)](https://travis-ci.org/hernanchavezthielemann/GRO2LAM)
+[![Build Status](https://travis-ci.org/hernanchavezthielemann/GRO2LAM.svg?branch=27ene19)](https://travis-ci.org/hernanchavezthielemann/GRO2LAM)
 
 # GRO2LAM
    Gromacs to Lammps simulation converter
 
 ## Version
-   GRO2LAM version 1.12 (20 Dec 2018) - BETA
+   GRO2LAM version 1.2 (27 Jan 2019) - BETA
    
    :new:New features : 
 <!--ts-->
@@ -80,30 +80,30 @@
 ### Quick start
    Download the compressed package of GRO2LAM:
    
-     wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/20dec18.zip
+     wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/27ene19.zip
   
    Decompress it:
    
-     unzip 20dec18.zip
+     unzip 27ene19.zip
    
-   Make sure that terminal is in the GROTOLAM folder, then:
+   Make sure that terminal is in the GRO2LAM folder, then:
    
      cd GRO2LAM-*
    
    Execute the setup file through the terminal as follows:
    
-     ~/Desktop/GRO2LAM-20dec18$python setup
+     ~/Desktop/GRO2LAM-27ene19$python setup
    
    Then, without changing the folder, execute the run script:
    
-     ~/Desktop/GRO2LAM-20dec18$./run
+     ~/Desktop/GRO2LAM-27ene19$./run
   
    After that, an intuitive graphical user interface should appear.
 
 ### Step by step
    The download page of GRO2LAM can be found at the following link:
 
-     https://github.com/hernanchavezthielemann/GRO2LAM/archive/20dec18.zip
+     https://github.com/hernanchavezthielemann/GRO2LAM/archive/27ene19.zip
 
    The installation package can be downloaded through the bash console as:
 
@@ -111,11 +111,11 @@
     
    This will download a zipped file, that you can uncompress with right click or with the command:
 
-    ~$ unzip 20dec18.zip
+    ~$ unzip 27ene19.zip
     
    Then, make sure that terminal is in the GROTOLAM folder. For example:
     
-    user@system:~/Downloads/GRO2LAM-20dec18$
+    user@system:~/Downloads/GRO2LAM-27ene19$
     
    Once there, execute the setup file through the terminal as:
     
