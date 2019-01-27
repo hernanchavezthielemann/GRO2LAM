@@ -8,11 +8,11 @@ from lib.misc.file import check_file, debugger_file
 from sys import exit
 
 
-def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
+def extract_gromacs_data( _data_files_, _autoload_):
     
     ''' data files ---> ['gro file', 'top file', 'forcefield',
         'non bonded file', 'bonded file']'''
-    
+    # _water_names_
     filename_gro    =   _data_files_[0]
     filename_top    =   _data_files_[1]
     filename_ff     =   _data_files_[2]
@@ -21,11 +21,13 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
     
     data_container  =   {}
     data_container['define'] = {}
-    _solvated_f_, _autoload_= _ck_buttons_
+    #_solvated_f_, _autoload_= _ck_buttons_
+    print 'Autoload: {}\n'.format( _autoload_)
+    
     if not _autoload_:
         print filename_ff # or not
         
-    print 'Solvation: {} | Autoload: {}\n'.format( *_ck_buttons_)
+    
     
     ###########################################################################
     ###########################################################################
@@ -231,36 +233,6 @@ def extract_gromacs_data( _data_files_, _water_names_, _ck_buttons_):
         n_anglestypes = len( data_container['angletypes'])
         
         
-    ##======= OLD TIMES :-)
-    elif _solvated_f_:
-        n_molwater=0
-        _aux_m_ = data_container['molecules']
-        for i in range(len(_aux_m_)) :
-            if _aux_m_[i][0]=='SOL':
-                n_molwater = int(_aux_m_[i][1])
-                break
-        
-        n_bondsnew = n_bonds + 2*n_molwater
-        n_anglesnew = n_angles + n_molwater
-        
-        _ch_H_ = float(_water_names_[4])
-        _ch_O_= float(_water_names_[4])*-2
-        _charge_ = {_water_names_[0]: _ch_O_, _water_names_[1]: _ch_H_}
-        
-        oxy_gf = _water_names_[2].split(',')
-        hyd_gf = _water_names_[3].split(',')
-        _conv_dict_ = {}
-        for Ox in oxy_gf:
-            _conv_dict_[Ox.strip(' ')] = _water_names_[0]
-            #_charge_[Ox] = _ch_O_
-        for Hy in hyd_gf:
-            _conv_dict_[Hy.strip(' ')] = _water_names_[1]
-            #_charge_[Hy] = _ch_H_
-            
-        data_container['S_charge'] =_charge_
-        data_container['S_translation'] =_conv_dict_
-        
-    
     else:
         n_bondsnew = n_bonds
         n_anglesnew = n_angles
@@ -635,7 +607,7 @@ def get_ffldfiles( _topfile_):
     if they are stated in the top file.
     '''
     ff_file = ''
-    
+    nonerr_flag = True
     with open( _topfile_, 'r')  as indata:
         for j_line in indata:
             if j_line.startswith('#include'):
@@ -664,12 +636,13 @@ def get_ffldfiles( _topfile_):
                         break
     else:
         pop_wrg_1(' itp file not found')
+        nonerr_flag *= False
         
     if '' in file_cont:
         return ['', '', '']
     else:
         # a file integrity check should be done outside
-        return file_cont
+        return file_cont, nonerr_flag
 
 def ck_forcefield(_ff_file_):
     '''
