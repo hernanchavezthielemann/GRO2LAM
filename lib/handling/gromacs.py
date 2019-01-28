@@ -319,9 +319,11 @@ def sidemol_data( _file_top_, data_container):
                     
                     new_filename = k_line.split('"')[1].lstrip('.').lstrip('/')
                     new_filename = new_filename.split('/')[-1]
-                    _sm_files_.append( fileseeker( root_dir, new_filename)[0])
-                    print _sm_files_[-1]
-                    sm_flag *= check_file( _sm_files_[-1], content='[ atoms ]')
+                    po_file = fileseeker( root_dir, new_filename)
+                    if po_file <> []:
+                        _sm_files_.append( po_file[0])
+                        print _sm_files_[-1]
+                        sm_flag *= check_file( po_file[0], content='[ atoms ]')
                 else:
                     _buffer_ = k_line
     # do it in the same loop or not that is the thing... maybe is better
