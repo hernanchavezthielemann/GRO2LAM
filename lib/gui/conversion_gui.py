@@ -191,7 +191,6 @@ class Conversion(Frame):
         if self.autoload_buffer <> main_top_file:
         #    self.autoload_buffer = _autoload_
             self.autoload_buffer = main_top_file
-            
             aux_cont, nonerr_flag = get_ffldfiles( main_top_file )
             if nonerr_flag:
                 for i in [2, 3, 4]:
