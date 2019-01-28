@@ -4,7 +4,7 @@ __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
 
 from lib.misc.warn import wrg_1, wrg_3, pop_err_1, pop_wrg_1
-from lib.misc.file import check_file, debugger_file
+from lib.misc.file import check_file, debugger_file, fileseeker
 from sys import exit
 
 
@@ -73,10 +73,12 @@ def extract_gromacs_data( _data_files_, _autoload_):
     if filename_nb == filename_ff and filename_nb == filename_bon:
         startstrings = startstrings[-3:]
         print wrg_3( 'Using pure side molecule scheme')
-        n_atoms     =   0
-        n_bonds     =   0
-        n_angles    =   0
-        
+        #n_atoms     =   0
+        #n_bonds     =   0
+        #n_angles    =   0
+        data_container['atoms']     =   []
+        data_container['bonds']     =   []
+        data_container['angles']    =   []
         
     for ti in range(len(startstrings))[:-1]:
         s_str_ = startstrings[ti][ 2:-2]
@@ -92,10 +94,10 @@ def extract_gromacs_data( _data_files_, _autoload_):
             return {}, ok_flag
         
         #debugger_file( s_str_, data_container[s_str_])
-    if len( startstrings) >3:
-        n_atoms     =   len( data_container['atoms'])
-        n_bonds     =   len( data_container['bonds'])
-        n_angles    =   len( data_container['angles'])
+    
+    n_atoms     =   len( data_container['atoms'])
+    n_bonds     =   len( data_container['bonds'])
+    n_angles    =   len( data_container['angles'])
     
     ###########################################################################
     '''----------  SIDE MOLE FILES   -------------'''
@@ -128,12 +130,19 @@ def extract_gromacs_data( _data_files_, _autoload_):
     startstrings=['[ bondtypes ]', '[ angletypes ]', '[ dihedraltypes ]', '']
     if filename_nb == filename_ff and filename_nb == filename_bon:
         startstrings = startstrings[-1]
-        n_bondstypes    =   0
-        n_anglestypes   =   0
-        n_dihedrals     =   0
-        n_dihedraltypes =   0
-        n_impropers     =   0
-        n_impropertypes =   0
+        #n_bondstypes    =   0
+        #n_anglestypes   =   0
+        #n_dihedrals     =   0
+        #n_dihedraltypes =   0
+        #n_impropers     =   0
+        #n_impropertypes =   0
+        data_container['bondtypes']     =   []
+        data_container['angletypes']    =   []
+        data_container['dihedrals']     =   []
+        data_container['dihedraltypes'] =   []
+        data_container['impropers']     =   []
+        data_container['impropertypes'] =   []
+        
 
     for bi in range( len( startstrings))[:-1]:
         s_str_ = startstrings[bi][ 2:-2]
@@ -146,21 +155,21 @@ def extract_gromacs_data( _data_files_, _autoload_):
         if not ok_flag:
             return {}, ok_flag
         
-    if len( startstrings) > 3:
-        n_bondstypes    =   len( data_container['bondtypes'])
-        n_anglestypes   =   len( data_container['angletypes'])
+    
+    n_bondstypes    =   len( data_container['bondtypes'])
+    n_anglestypes   =   len( data_container['angletypes'])
     
     
-        #######################################################################
-        '''----------------      #define &  Impropers        ---------------'''
-        #=====================================================================#
-        # Search for impropers in TOP and BON, using crossreference if needed
-        data_container = split_dihedral_improper( data_container)
+    ###########################################################################
+    '''----------------        #define &  Impropers          ---------------'''
+    #=========================================================================#
+    # Search for impropers in TOP and BON, using crossreference if needed
+    data_container = split_dihedral_improper( data_container)
     
-        n_dihedrals     =   len( data_container['dihedrals'])
-        n_dihedraltypes =   len( data_container['dihedraltypes'])
-        n_impropers     =   len( data_container['impropers'])
-        n_impropertypes =   len( data_container['impropertypes'])
+    n_dihedrals     =   len( data_container['dihedrals'])
+    n_dihedraltypes =   len( data_container['dihedraltypes'])
+    n_impropers     =   len( data_container['impropers'])
+    n_impropertypes =   len( data_container['impropertypes'])
     
     ###########################################################################
     '''--------------              "Side Mol"                 --------------'''
@@ -281,6 +290,7 @@ def sidemol_data( _file_top_, data_container):
         non_sm = [non_sm[i][0] for i in range(len(non_sm))]
         _buffer_ = ''
     else:
+        # non conventional case
         non_sm = ['']
         _buffer_ = '0'
         
@@ -295,7 +305,7 @@ def sidemol_data( _file_top_, data_container):
     #////////========= Side molecule >>> file <<< search   ============////////
     print ('\nLoading side molecule files: ' )
     _sm_files_ = []
-    root_folder = '/'.join( _file_top_.split('/')[:-1]+[''])
+    root_dir = '/'.join( _file_top_.split('/')[:-1]+[''])
     with open( _file_top_, 'r')  as topdata:
         
         for k_line in topdata:
@@ -308,7 +318,8 @@ def sidemol_data( _file_top_, data_container):
                         sm_flag = True
                     
                     new_filename = k_line.split('"')[1].lstrip('.').lstrip('/')
-                    _sm_files_.append( root_folder + new_filename)
+                    new_filename = new_filename.split('/')[-1]
+                    _sm_files_.append( fileseeker( root_dir, new_filename)[0])
                     print _sm_files_[-1]
                     sm_flag *= check_file( _sm_files_[-1], content='[ atoms ]')
                 else:
@@ -341,15 +352,22 @@ def sidemol_data_gatherer( _sm_files_, sm):
             i = 0
             for j_line in sm_data:
                 j_line = j_line.split(';')[0].strip()
-                if read_flag and j_line.startswith(sm):
+                print j_line, read_flag, j_line.startswith(sm)
+                if j_line.startswith('['):
+                    if j_line.startswith('[ moleculetype ]'):
+                        read_flag = True
+                        i = 0
+                    else:
+                        read_flag = False
+                        
+                elif read_flag and j_line.startswith(sm):
                     _file_ = smfile
                     break
                 elif read_flag:
                     i +=1
                     if i > 3:
                         read_flag = False
-                elif j_line.startswith('[ moleculetype ]'):
-                    read_flag = True
+                
                         
     if _file_=='':
         pop_err_1('Error!! side molecule {} not found in itp -- '.format( sm))
@@ -515,7 +533,7 @@ def split_dihedral_improper( _data_container_):
     
     return _data_container_
 
-def get_gro_fixed_line(_filename_):
+def get_gro_fixed_line( _filename_):
     ''' reading gromacs gro fixed lines'''
     _content_ = []
     _mol_=[]
@@ -574,7 +592,7 @@ def get_gro_fixed_line(_filename_):
     else:
         return  True, [_mol_, _mtype_, _type_, _xyz_, g_names], box_xyz_hi
 
-def top_groups(mtype, _buffer, g_names):
+def top_groups( mtype, _buffer, g_names):
     
     return _buffer, g_names # hook
 
@@ -686,7 +704,7 @@ def get_ffldfiles( _topfile_):
     # a file integrity check should be done outside
     return file_cont, nonerr_flag
 
-def ck_forcefield(_ff_file_, _secondoption_ = None):
+def ck_forcefield( _ff_file_, _secondoption_ = None):
     '''
     podria pedirse solo este archivo y 
     de aqui sacar la iformacion de los otros dos....
@@ -712,7 +730,7 @@ def ck_forcefield(_ff_file_, _secondoption_ = None):
     
     return comb_rule, _flag_
 
-def get_top_groups(_mtype_container_, _group_):
+def get_top_groups( _mtype_container_, _group_):
     
     _mtype_ = _mtype_container_
     _buffer = []
