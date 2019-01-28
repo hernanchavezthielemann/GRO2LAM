@@ -58,17 +58,26 @@ def extract_gromacs_data( _data_files_, _autoload_):
     
     #################   Defaults   ##################
     
-    data_container['defaults'], ok_flag = ck_forcefield( filename_ff)
+    data_container['defaults'], ok_flag = ck_forcefield( filename_ff, 
+                                                         filename_top)
     if not ok_flag:
         return {}, ok_flag
     
     buckorlj = int(data_container['defaults'][0])
     
     ############
-    startstrings=['[ moleculetype ]', '[ atoms ]','[ bonds ]', '[ pairs ]',
-                  '[ angles ]', '[ dihedrals ]', '[ system ]',
-                  '[ molecules ]', '']
+    startstrings = ['[ moleculetype ]', '[ atoms ]', '[ bonds ]', '[ pairs ]',
+                    '[ angles ]', '[ dihedrals ]', '[ system ]',
+                    '[ molecules ]', '']
     
+    if filename_nb == filename_ff and filename_nb == filename_bon:
+        startstrings = startstrings[-3:]
+        print wrg_3( 'Using pure side molecule scheme')
+        n_atoms     =   0
+        n_bonds     =   0
+        n_angles    =   0
+        
+        
     for ti in range(len(startstrings))[:-1]:
         s_str_ = startstrings[ti][ 2:-2]
         ''' here is possible to insert a selector in case pairs and 
@@ -83,11 +92,10 @@ def extract_gromacs_data( _data_files_, _autoload_):
             return {}, ok_flag
         
         #debugger_file( s_str_, data_container[s_str_])
-            
-    n_atoms     =   len( data_container['atoms'])
-    n_bonds     =   len( data_container['bonds'])
-    n_angles    =   len( data_container['angles'])
-    
+    if len( startstrings) >3:
+        n_atoms     =   len( data_container['atoms'])
+        n_bonds     =   len( data_container['bonds'])
+        n_angles    =   len( data_container['angles'])
     
     ###########################################################################
     '''----------  SIDE MOLE FILES   -------------'''
@@ -118,7 +126,15 @@ def extract_gromacs_data( _data_files_, _autoload_):
     
     
     startstrings=['[ bondtypes ]', '[ angletypes ]', '[ dihedraltypes ]', '']
-    
+    if filename_nb == filename_ff and filename_nb == filename_bon:
+        startstrings = startstrings[-1]
+        n_bondstypes    =   0
+        n_anglestypes   =   0
+        n_dihedrals     =   0
+        n_dihedraltypes =   0
+        n_impropers     =   0
+        n_impropertypes =   0
+
     for bi in range( len( startstrings))[:-1]:
         s_str_ = startstrings[bi][ 2:-2]
         
@@ -130,23 +146,24 @@ def extract_gromacs_data( _data_files_, _autoload_):
         if not ok_flag:
             return {}, ok_flag
         
-    n_bondstypes    =   len( data_container['bondtypes'])
-    n_anglestypes   =   len( data_container['angletypes'])
+    if len( startstrings) > 3:
+        n_bondstypes    =   len( data_container['bondtypes'])
+        n_anglestypes   =   len( data_container['angletypes'])
     
+    
+        #######################################################################
+        '''----------------      #define &  Impropers        ---------------'''
+        #=====================================================================#
+        # Search for impropers in TOP and BON, using crossreference if needed
+        data_container = split_dihedral_improper( data_container)
+    
+        n_dihedrals     =   len( data_container['dihedrals'])
+        n_dihedraltypes =   len( data_container['dihedraltypes'])
+        n_impropers     =   len( data_container['impropers'])
+        n_impropertypes =   len( data_container['impropertypes'])
     
     ###########################################################################
-    '''----------------        #define &  Impropers          ---------------'''
-    #=========================================================================#
-    # Search for impropers in TOP and BON, using crossreference if needed
-    data_container = split_dihedral_improper( data_container)
-    
-    n_dihedrals     =   len( data_container['dihedrals'])
-    n_dihedraltypes =   len( data_container['dihedraltypes'])
-    n_impropers     =   len( data_container['impropers'])
-    n_impropertypes =   len( data_container['impropertypes'])
-    
-    ###########################################################################
-    '''--------------              "Solvation"                --------------'''
+    '''--------------              "Side Mol"                 --------------'''
     #=========================================================================#
     n_atomsnew = len( _type_)
     
@@ -256,10 +273,17 @@ def sidemol_data( _file_top_, data_container):
     ''' getter of the side molecules data'''
     
     sidemol = {'tag': [],'num':[], 'data':[] }# Tag # mol_number
-    sm_flag = True
+    sm_flag = False
     # names of non side molecules
-    non_sm = data_container['moleculetype']
-    non_sm = [non_sm[i][0] for i in range(len(non_sm))]
+    
+    if 'moleculetype' in data_container.keys():
+        non_sm = data_container['moleculetype']
+        non_sm = [non_sm[i][0] for i in range(len(non_sm))]
+        _buffer_ = ''
+    else:
+        non_sm = ['']
+        _buffer_ = '0'
+        
     # side molecules info
     _aux_m_ = data_container[ 'molecules']
     
@@ -273,11 +297,16 @@ def sidemol_data( _file_top_, data_container):
     _sm_files_ = []
     root_folder = '/'.join( _file_top_.split('/')[:-1]+[''])
     with open( _file_top_, 'r')  as topdata:
-        _buffer_ = ''
+        
         for k_line in topdata:
             if k_line.startswith('#'):
+                
                 logic_test = ('#if' not in _buffer_ and _buffer_ <> '')
+                
                 if k_line.startswith('#include') and logic_test:
+                    if _sm_files_ == []:
+                        sm_flag = True
+                    
                     new_filename = k_line.split('"')[1].lstrip('.').lstrip('/')
                     _sm_files_.append( root_folder + new_filename)
                     print _sm_files_[-1]
@@ -301,19 +330,27 @@ def sidemol_data_gatherer( _sm_files_, sm):
     ''' collects all the data related with one kind of side molecule
         the data types are specified in startstrings
     '''
+    print _sm_files_, sm
     _flag_ = True
     _file_ = ''
     _sm_data_c_ = {}
     # is sm in sm_file?? in cases with more than one file
     for smfile in _sm_files_:
         with open( smfile, 'r')  as sm_data:
+            read_flag = False
+            i = 0
             for j_line in sm_data:
-                if j_line.startswith('[ moleculetype ]'):
-                    j_line = sm_data.next()
-                    j_line = sm_data.next()
-                    if j_line.startswith(sm):
-                        _file_ = smfile
-                        break
+                j_line = j_line.split(';')[0].strip()
+                if read_flag and j_line.startswith(sm):
+                    _file_ = smfile
+                    break
+                elif read_flag:
+                    i +=1
+                    if i > 3:
+                        read_flag = False
+                elif j_line.startswith('[ moleculetype ]'):
+                    read_flag = True
+                        
     if _file_=='':
         pop_err_1('Error!! side molecule {} not found in itp -- '.format( sm))
         _flag_ = False
@@ -559,13 +596,14 @@ def get_topitp_line( _filename_, _ss_):
             print  _ss_
         for j_line in indata:
             # I just whant to read once the flag is on
-            if read_flag:
-                # if _verbose_: ### is beter to store and print outside the
-                # cycle with just one if 
-                #    print j_line.rstrip()
-                _line_ = j_line.split(';')[0].split()
+            j_line_s0 = j_line.split(';')[0].split()
+            if read_flag and j_line_s0:
+                if _verbose_: ### is beter to store and print outside the
+                    # cycle with just one if 
+                    print j_line_s0
+                _line_ = j_line_s0
                 # getting out comments and empty lines
-                if len( _line_)<1: 
+                if len( _line_) <0: 
                     pass
                     
                 elif _line_[0][0] == '#':
@@ -582,7 +620,7 @@ def get_topitp_line( _filename_, _ss_):
                         read_flag = False
                     #print 'exit here 424'
                     
-                elif len( _line_) > 1:
+                elif len( _line_) > 0:
                     content_line.append( _line_)
                 else:
                     print 'Ups... please raise an issue at GitHub ;)'
@@ -605,6 +643,7 @@ def get_ffldfiles( _topfile_):
     ''' 
     self explanatory... sub routine to get the force field files
     if they are stated in the top file.
+    starts from the top file
     '''
     ff_file = ''
     nonerr_flag = True
@@ -620,7 +659,7 @@ def get_ffldfiles( _topfile_):
     ff_file = ff_file.lstrip('.').lstrip('/')
     
     if ff_file <> '':
-        file_cont = ['', '', '']
+        file_cont = ['']
         print '----- Loading :'
         file_cont[0] =  root_folder + ff_file
         print file_cont[0]
@@ -630,21 +669,24 @@ def get_ffldfiles( _topfile_):
             for k_line in indata2:
                 if k_line.startswith('#include'):
                     i+=1
-                    file_cont[i] = ( root_folder + k_line.split('"')[1])
+                    file_cont.append( root_folder + k_line.split('"')[1])
                     print file_cont[i]
                     if i==2:
                         break
     else:
-        pop_wrg_1(' itp file not found')
+        pop_err_1('itp file not found!')
         nonerr_flag *= False
         
-    if '' in file_cont:
-        return ['', '', '']
-    else:
-        # a file integrity check should be done outside
-        return file_cont, nonerr_flag
+    if nonerr_flag and len(file_cont) < 3 :
+        pop_wrg_1('Your structure seems unfamiliar, just ' +
+                  '{} itp found.'.format( len(file_cont)) +
+                  '\nthe conversion could fail!')
+        while len(file_cont) < 3:
+            file_cont.append( file_cont[-1])
+    # a file integrity check should be done outside
+    return file_cont, nonerr_flag
 
-def ck_forcefield(_ff_file_):
+def ck_forcefield(_ff_file_, _secondoption_ = None):
     '''
     podria pedirse solo este archivo y 
     de aqui sacar la iformacion de los otros dos....
@@ -661,12 +703,14 @@ def ck_forcefield(_ff_file_):
                 comb_rule= j_line.split()
                 print('---> comb_rule {}'.format(comb_rule[1]))
                 
-            
-    if comb_rule<0 or not _flag_:
+    if not _flag_ and _secondoption_ <> None:
+        comb_rule, _flag_ = ck_forcefield( _secondoption_)
+        
+    if comb_rule < 0 or not _flag_:
         pop_err_1('forcefield.itp file is missing or incomplete')
-        return 0, 0
-    else:
-        return comb_rule, _flag_
+        comb_rule, _flag_ = [ 0, 0]
+    
+    return comb_rule, _flag_
 
 def get_top_groups(_mtype_container_, _group_):
     
