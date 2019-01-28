@@ -149,29 +149,31 @@ def run_command(__command__):
     system(__command__)
     #return Popen(__command__,stdout=PIPE,stdin=PIPE, shell=True )
 
-def fileseeker(path=getcwd(),word='data',notw = None):
+def fileseeker( path = getcwd(), word = 'data', notw = None):
     '''seek data & destroy, returns a list of posible files,
-    filtered by "word" criterion'''
-    list_of_files=[]
-    if path==getcwd():
-        DIR='.'
+    filtered by "word" criterion
+    '''
+    list_of_files = []
+    if path == getcwd():
+        DIR = '.'
     else:
-        DIR=path
-    for (root, folder, filenames) in walk(DIR, topdown=True):
+        DIR = path 
+    for (root, folder, filenames) in walk( DIR, topdown = True):
         for name in filenames:
-            list_of_files.append(join(root, name))
-    files=[]
-    for fs in range(len(list_of_files)):
+            list_of_files.append( join( root, name))
+    files = []
+    for fs in range( len( list_of_files)):
         # Could implement "while not" and use the same list_of_files
         # with remove(list_of_files[fs])
-        _file_=list_of_files[fs]
+        _file_ = list_of_files[fs]
         if '/' in _file_ and word in _file_.split('/')[-1]:
-            if notw<>None and notw in _file_.split('/')[-1]:
+            if notw <> None and notw in _file_.split('/')[-1]:
                 pass
             else:
-                files.append(_file_)
-    if files==[]:
-        print wrg_3(" No file(s) found with "+word+" criterion---")
-    return files;
+                files.append( _file_)
+    if files == []:
+        print wrg_3( " No file(s) found with " + word + " criterion---")
+        
+    return files
  
-
+# vim:tw=80
