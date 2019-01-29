@@ -609,6 +609,16 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
     # Second options second the combination rule, and count from behind:
     minr = 1 - buckorlj # 0 lj and -1 buck
     
+    # Any 0 check, to check the feasibility of the conversion to sig and eps
+    regular_se = True
+    if buckorlj == 1 and comb_rule == 1:
+        for x in range( n_atomtypes):
+            _A_ = float( atom_info[x][ -1 + minr])
+            _B_ = float( atom_info[x][ -2 + minr])
+            if _A_ <> 0 and _B_ == 0:
+                regular_se = False
+                break
+    
     for x in range( n_atomtypes):
         #print atom_info[x]
         atom_type_d[atom_info[x][0]] = x+1
@@ -617,9 +627,9 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
         _B_ = float( atom_info[x][ -2 + minr])
         
         
-        if comb_rule==1:
-            _eps_ = (_B_**2)/(4*_A_)
-            _sig_ = (_A_/_B_)**(1/6.0)
+        if comb_rule == 1 and regular_se:
+            _eps_ = ( _B_**2)/( 4*_A_)
+            _sig_ = ( _A_/_B_)**( 1/6.0)
             
         else:
             _eps_ = _A_
