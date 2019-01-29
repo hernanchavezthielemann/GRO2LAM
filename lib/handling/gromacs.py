@@ -354,7 +354,9 @@ def sidemol_data_gatherer( _sm_files_, sm):
             i = 0
             for j_line in sm_data:
                 j_line = j_line.split(';')[0].strip()
-                print j_line, read_flag, j_line.startswith(sm)
+                
+                #print j_line, read_flag, j_line.startswith(sm)
+                
                 if j_line.startswith('['):
                     if j_line.startswith('[ moleculetype ]'):
                         read_flag = True
