@@ -260,8 +260,11 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     _box_= _topodata_['box']
     _mol_, _mtype_g_, _atype_, _xyz_, _mtype_ = _topodata_['atomsdata'] 
     
-    atomstyle, _solvated_f_, _autoload_ = _config_ 
+    atomstyle, _sidemol_f_, _autoload_ = _config_ 
     
+    if _sidemol_f_:
+        sidemol = _topodata_['sidemol']
+        
     _asty_d_ ={ 'atomic':1, 'charge':1, 'bond':2, 'angle':3,
                 'full':4, 'molecular':4}
     
@@ -302,12 +305,34 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     
     for i in range( n_atomtypes):
         _atom_mass_ = atom_info[i][ -5 + minr]
-        if not int( _atom_mass_.split('.')[0]):
-            _atom_mass_ = '0.1008' # H_mass/10 as minimum seems reasonable
-            pop_wrg_1( ('0.0 mass not supported! using {} instead for {} ' +
-                        'atom type').format( _atom_mass_, atom_info[i][0]) ) 
+        _atom_type_ = atom_info[i][0]
         
-        _text_ +=' {} {} # {}\n'.format( i+1, _atom_mass_, atom_info[i][0])
+        if not float( _atom_mass_) and _sidemol_f_: #meaning that is 0
+            
+            smols = sidemol['tag']
+            #print 'here1', smols
+            for ad in range( len(smols)):
+                _smda_ = sidemol['data'][ad]['atoms']
+                #print _smda_
+                at_ = 0
+                for at_ in range( len( _smda_)):
+                    #print _smda_[at_], at_
+                    if _smda_[at_][1] == _atom_type_ and len(_smda_[at_]) == 8:
+                        _atom_mass_ = _smda_[at_][7]
+                        print ( ('Mass for {} not found in atomtypes, taking' 
+                                 + ' {} as substitute').format( _atom_type_, 
+                                                                _atom_mass_)
+                              )
+                        break
+                #if len(_smda_[at_]) == 8 and _atom_mass_ == _smda_[at_][7]:
+                #    print at_
+                #    break
+        if not float( _atom_mass_):
+            _atom_mass_ = '0.01008' # H_mass/100 as minimum seems reasonable
+            pop_wrg_1( ('0.0 mass not supported! using {} instead for {} ' +
+                        'atom type').format( _atom_mass_, _atom_type_) ) 
+        
+        _text_ +=' {} {} # {}\n'.format( i+1, _atom_mass_, _atom_type_)
         
     #======================-------------------------==========================#
     #####------                    Force field                       ------####
@@ -322,9 +347,6 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     
     ####------                       ATOMS                           ------####
     known_atoms = _topodata_['atoms']
-    if _solvated_f_ == 1:
-        charge = _topodata_['S_charge']
-        conv_dict = _topodata_['S_translation'] # key s_tag : val l_tag
     
     
     _text_ +='\n Atoms #{}\n\n'.format( atomstyle)
@@ -357,9 +379,15 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                     bonds, angles.... get this with the coordinates is another
                     option that probably is going to take longer rt
                  '''
+    
     buffer_molnum_pevif = '00000000'
     buffer_moltype_pevif = 'none_type'
-    if _solvated_f_ == 1:
+    
+    if _sidemol_f_ == 1:
+        
+        charge = _topodata_['S_charge']
+        conv_dict = _topodata_['S_translation'] # key s_tag : val l_tag
+        
         solv_at_v = range( n_atoms)[ base_atoms_n:]
         #print n_atoms, base_atoms_n, len( _mtype_)
         for i in solv_at_v:
@@ -383,8 +411,9 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                     new_smol_str = '** New side molecule : {} 1st atom : {} **'
                     print '\n' + new_smol_str.format( _mtype_[i], aty)
                     
-                    sidemol = _topodata_['sidemol']
+                    
                     for sb in range( len( sidemol['tag'])):
+                        sidemol['data'][sb]['atoms']
                         if _mtype_[i] == sidemol['tag'][sb]:
                             nm_atn = len( sidemol['data'][sb]['atoms'])
                             print( _mtype_[i]+ '=='+ sidemol['tag'][sb] +'  '+
@@ -455,7 +484,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
             
             _text_ += bond_shape.format( i+1, _bond_ty_, at1, at2)
                         
-        if _solvated_f_ == 1:
+        if _sidemol_f_ == 1:
             # better way to do this is trough corrds ---------  <WFS>
             for i in range( n_bonds - base_bonds_n):
                 _bond_ty_ = dicts[1][ solv_bonds[i][0]]
@@ -495,7 +524,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
             #print angle_t, _angle_ty_
             _text_ += angle_shape.format( i+1, _angle_ty_, at1, at2, at3)
             
-        if _solvated_f_ == 1:
+        if _sidemol_f_ == 1:
             
             for i in range( n_angles - base_angles_n):
                 _angle_ty_ = dicts[2][ solv_angles[i][0]]
@@ -760,7 +789,9 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
     for di in dihe_kind_names:
         dihedtypename.append( DihedralDataBase[ int( di)- 1])
     
-    txt_p_d ='\n Dihedral Coeffs #{}\n\n'.format( dihedtypename[0])
+    txt_p_d = ''
+    if dihedtypename <> []:
+        txt_p_d ='\n Dihedral Coeffs #{}\n\n'.format( dihedtypename[0])
     
     rb_warning = (' Ryckaert-Bellemans angle style conversion in Fourier form' +
                   ' can only be used if LAMMPS was built with the MOLECULE' +
