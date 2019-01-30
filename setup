@@ -70,8 +70,7 @@ files = {'./grotolam.py', './__init__.py', './setup',
          './gui/img/logo2.ppm', './gui/img/small_logo2.ppm', 
          './gui/img/file.ppm', './gui/img/help.ppm',
          
-         './docs/COPYING', './docs/COPYING.LESSER', './docs/README.md',
-         './docs/LICENSE',
+         './docs/README.md', './docs/LICENSE',
          
          './misc/file.py', './misc/warn.py', './misc/version.py',
          './misc/data.py', './misc/__init__.py',
