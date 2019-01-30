@@ -79,6 +79,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
         data_container['atoms']     =   []
         data_container['bonds']     =   []
         data_container['angles']    =   []
+        data_container['dihedrals']     =   []
         
     for ti in range(len(startstrings))[:-1]:
         s_str_ = startstrings[ti][ 2:-2]
@@ -104,7 +105,8 @@ def extract_gromacs_data( _data_files_, _autoload_):
     #=========================================================================#
     #### research in topology for new molecules / side molecules
     if _autoload_:
-        data_container, ok_flag = sidemol_data( filename_top, data_container)
+        data_container, ok_flag, _sidemol_f_ = sidemol_data( filename_top,
+                                                            data_container)
     if not ok_flag:
         return {}, ok_flag
     
@@ -129,20 +131,15 @@ def extract_gromacs_data( _data_files_, _autoload_):
     
     startstrings=['[ bondtypes ]', '[ angletypes ]', '[ dihedraltypes ]', '']
     if filename_nb == filename_ff and filename_nb == filename_bon:
-        startstrings = startstrings[-1]
-        #n_bondstypes    =   0
-        #n_anglestypes   =   0
-        #n_dihedrals     =   0
-        #n_dihedraltypes =   0
-        #n_impropers     =   0
-        #n_impropertypes =   0
-        data_container['bondtypes']     =   []
-        data_container['angletypes']    =   []
-        data_container['dihedrals']     =   []
-        data_container['dihedraltypes'] =   []
-        data_container['impropers']     =   []
-        data_container['impropertypes'] =   []
         
+        for bi in range( len( startstrings))[:-1]:
+            s_str_ = startstrings[bi][ 2:-2]
+            data_container[ s_str_] =   []
+            data_container['define'][s_str_[:-5]] = []
+            
+        #data_container['impropers']     =   []
+        #data_container['impropertypes'] =   []
+        startstrings = startstrings[-1]
 
     for bi in range( len( startstrings))[:-1]:
         s_str_ = startstrings[bi][ 2:-2]
@@ -176,7 +173,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
     #=========================================================================#
     n_atomsnew = len( _type_)
     
-    if _autoload_:
+    if _sidemol_f_:
         
         # A_02 maths
         sidemol = data_container['sidemol']
@@ -208,7 +205,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
                 a_charge = float( sidemol['data'][sb]['atoms'][at][6])
                 _charge_[a_opls_tag] = a_charge
                 _conv_dict_[ a_elem_tag] = a_opls_tag
-        print '='*45+'\nCharges found: '
+        print '='*45+'\n'+'='*5+'Charges found: '
         print _charge_
         print _conv_dict_
         
@@ -275,8 +272,8 @@ def extract_gromacs_data( _data_files_, _autoload_):
                                          n_anglestypes, n_dihedraltypes,
                                          n_impropertypes]
     
-
-    return data_container, ok_flag
+    
+    return data_container, [ ok_flag, _sidemol_f_]
 
 def sidemol_data( _file_top_, data_container):
     ''' getter of the side molecules data'''
@@ -294,20 +291,22 @@ def sidemol_data( _file_top_, data_container):
         non_sm = ['']
         _buffer_ = '0'
         
-    # side molecules info
+    # all molecules info
     _aux_m_ = data_container[ 'molecules']
-    
+    # side molecules info filtering
     for i in range( len( _aux_m_)) :
         if _aux_m_[i][0] not in non_sm:
             sidemol['tag'].append( _aux_m_[i][0])
             sidemol['num'].append( int(_aux_m_[i][1]))
-            
+            sm_flag = True
     #////////========= Side molecule >>> file <<< search   ============////////
     print ('\nLoading side molecule files: ' )
     _sm_files_ = []
     root_dir = '/'.join( _file_top_.split('/')[:-1]+[''])
+    ok_flag = False
     with open( _file_top_, 'r')  as topdata:
-        
+        if sidemol['tag'] == []:
+            topdata = []
         for k_line in topdata:
             if k_line.startswith('#'):
                 
@@ -315,7 +314,7 @@ def sidemol_data( _file_top_, data_container):
                 
                 if k_line.startswith('#include') and logic_test:
                     if _sm_files_ == []:
-                        sm_flag = True
+                        ok_flag = True
                     
                     new_filename = k_line.split('"')[1].lstrip('.').lstrip('/')
                     new_filename = new_filename.split('/')[-1]
@@ -323,27 +322,28 @@ def sidemol_data( _file_top_, data_container):
                     if po_file <> []:
                         _sm_files_.append( po_file[0])
                         print _sm_files_[-1]
-                        sm_flag *= check_file( po_file[0], content='[ atoms ]')
+                        ok_flag *= check_file( po_file[0], content='[ atoms ]')
                 else:
                     _buffer_ = k_line
     # do it in the same loop or not that is the thing... maybe is better
     # to not just beacause the indentation going to +inf atoms
     #////////========= Side molecule >>> data <<< search   ============////////
-    if sm_flag:
+    if sm_flag*ok_flag:
         for sm in sidemol['tag']:
             aux_data, aux_flag = sidemol_data_gatherer( _sm_files_, sm)
-            sm_flag *= aux_flag
+            #print aux_data
+            ok_flag *= aux_flag
             sidemol['data'].append( aux_data)
             
     
     data_container['sidemol'] = sidemol
-    return data_container, sm_flag
+    return data_container, ok_flag, sm_flag
 
 def sidemol_data_gatherer( _sm_files_, sm):
     ''' collects all the data related with one kind of side molecule
         the data types are specified in startstrings
     '''
-    print _sm_files_, sm
+    print 'Search for: ', sm, ' in: ' ,_sm_files_
     _flag_ = True
     _file_ = ''
     _sm_data_c_ = {}
@@ -377,7 +377,7 @@ def sidemol_data_gatherer( _sm_files_, sm):
         pop_err_1('Error!! side molecule {} not found in itp -- '.format( sm))
         _flag_ = False
     else:
-        tag_str = [ 'atoms', 'bonds', 'angles', 'dihedral','fin']
+        tag_str = [ 'atoms', 'bonds', 'angles', 'dihedrals','fin']
         _sm_data_c_ = { x:[] for x in tag_str if x <> 'fin'}
         read_flag = False
         iner_flag = False
@@ -385,16 +385,18 @@ def sidemol_data_gatherer( _sm_files_, sm):
         i=0
         with open( _file_, 'r')  as sm_data:
             for j_line in sm_data:
+                j_line = j_line.split(';')[0].strip()
                 if j_line.startswith(';') or j_line.startswith('#'):
                     pass
                 # at this point starts reading
                 elif j_line.startswith( sm):
                     read_flag = True
-                elif len( j_line.rstrip()) < 2:
-                    #print j_line
-                    iner_flag = False
+                #elif not len( j_line):
+                #    print j_line, 'iner_flag false'
+                #    iner_flag = False
                 elif read_flag and j_line.startswith('[ '):
-                    content = j_line.lstrip('[ ').rstrip(' ]\n')
+                    content = j_line.lstrip('[ ').rstrip(' ]')
+                    #print j_line, '[ '
                     if content == tag_str[i]:
                         cd_tag = tag_str[i]
                         iner_flag = True
@@ -402,12 +404,17 @@ def sidemol_data_gatherer( _sm_files_, sm):
                         
                     elif content == 'moleculetype':
                         break
+
                     else:
                         print '> {} not considered in {}'.format( content, sm)
-                
                 elif iner_flag:
-                    # print j_line.rstrip()
-                    _sm_data_c_[cd_tag].append( j_line.rstrip().split())
+                    if not len(j_line):
+                        if _sm_data_c_[cd_tag]<>[]:
+                            iner_flag = False
+                            
+                    else:
+                        #print j_line.rstrip()
+                        _sm_data_c_[cd_tag].append( j_line.split())
                     
         # todo add a new check in case of empty container
         #print _sm_data_c_
@@ -620,9 +627,9 @@ def get_topitp_line( _filename_, _ss_):
             # I just whant to read once the flag is on
             j_line_s0 = j_line.split(';')[0].split()
             if read_flag and j_line_s0:
-                if _verbose_: ### is beter to store and print outside the
-                    # cycle with just one if 
-                    print j_line_s0
+                #if _verbose_: ### is beter to store and print outside the
+                # cycle with just one if 
+                #print j_line_s0
                 _line_ = j_line_s0
                 # getting out comments and empty lines
                 if len( _line_) <0: 
