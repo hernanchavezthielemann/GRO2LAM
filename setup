@@ -71,6 +71,7 @@ files = {'./grotolam.py', './__init__.py', './setup',
          './gui/img/file.ppm', './gui/img/help.ppm',
          
          './docs/README.md', './docs/LICENSE',
+         './docs/doc.txt',
          
          './misc/file.py', './misc/warn.py', './misc/version.py',
          './misc/data.py', './misc/__init__.py',
