@@ -250,10 +250,12 @@ class Conversion(Frame):
         if self.get_entriesvalues():
             
             data_cont = self.master._convert_['setup']
-            config = [data_cont[-1], 1, _autoload_]
             
-            sim_data, flag_done_ = extract_gromacs_data( data_cont[1:-1],
-                                                         _autoload_)
+            sim_data, _flags_ = extract_gromacs_data( data_cont[1:-1],
+                                                     _autoload_)
+            flag_done_, _sidemol_ = _flags_
+            
+            config = [data_cont[-1], _sidemol_, _autoload_]
             if flag_done_:
                 try:
                     flag_done_ = write_lammps_data( sim_data, 'data.gro2lam',
