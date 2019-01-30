@@ -216,36 +216,45 @@ def extract_gromacs_data( _data_files_, _autoload_):
         ####----------- DEFINING BONDED INTERACTIONS     ----------####
         # load the side molecules data if exist
         #sidemol = _topodata_['sidemol']
-        sidemol_extra_bondtypes = []
-        smol_extra_angletypes = []
+        smol_extra_bondtypes        =   []
+        smol_extra_angletypes       =   []
+        smol_extra_dihedraltypes    =   []
+        
         for sb in range( len( sidemol['tag'])):
-            _smat_ = sidemol['data'][sb]['atoms']
-            nm_atn = len( _smat_)
-            _at_dic_here = {}
-            for at in range( nm_atn):
-                _at_dic_here[ _smat_[at][0]] = _smat_[at][1]
+            _smd_ = sidemol['data'][sb]
             
-            if nm_atn > 1:
-                _smbn_ = sidemol['data'][sb]['bonds'][0]
-                aux_here = [_at_dic_here[_smbn_[0]], _at_dic_here[_smbn_[1]]]
-                sidemol_extra_bondtypes.append( aux_here + _smbn_[2:])
+            _at_dic_here = {}
+            for _at in range( len( _smd_['atoms'])):
+                _smat_ = _smd_['atoms'][_at]
+                _at_dic_here[ _smat_[0]] = _smat_[1]
+            
+            for _bn in range( len( _smd_['bonds'])):
+                _smbn_ = _smd_['bonds'][_bn]
+                aux_here = [_at_dic_here[ _smbn_[0]], _at_dic_here[ _smbn_[1]]]
+                smol_extra_bondtypes.append( aux_here + _smbn_[2:])
                 
-            if nm_atn > 2:
-                for bn in range( len( sidemol['data'][sb]['bonds']))[1:]:
-                    _smbn_ = sidemol['data'][sb]['bonds'][bn]
-                    aux_here = [_at_dic_here[_smbn_[0]], _at_dic_here[_smbn_[1]]]
-                    sidemol_extra_bondtypes.append( aux_here + _smbn_[2:])
-                _sman_ = sidemol['data'][sb]['angles'][0]
-                aux_here = [_at_dic_here[_sman_[0]], _at_dic_here[_sman_[1]],
-                            _at_dic_here[_sman_[2]] ]
+            for _an in range( len( _smd_['angles'])):
+                _sman_ = _smd_['angles'][_an]
+                aux_here = [_at_dic_here[ _sman_[0]], _at_dic_here[ _sman_[1]],
+                            _at_dic_here[ _sman_[2]] ]
                 smol_extra_angletypes.append( aux_here + _sman_[3:])
                 
-            #print sidemol_extra_bondtypes, '\n',smol_extra_angletypes
-            if nm_atn > 3:
-                print 'Uuupa!! dihedrals still not implemented as side mol part'
+            for _dh in range( len( _smd_['dihedrals'])):
+                _smdh_ = _smd_['dihedrals'][_dh]
+                aux_here = [_at_dic_here[ _smdh_[0]], _at_dic_here[ _smdh_[1]],
+                            _at_dic_here[ _smdh_[2]], _at_dic_here[ _smdh_[3]]]
+                smol_extra_dihedraltypes.append( aux_here + _smdh_[4:])
+                
+                
+            if len( _smd_.keys()) > 4:
+                print 'Uuupa!! This thing is not implemented yet as side mol part'
+                for ky in _smd_.keys():
+                    if ky not in [ 'atoms', 'bonds', 'angles', 'dihedrals']:
+                        print ('-- > this key : ' + ky)
+                
                 
             # ---------   !!!!    Update the info    !!!!
-        data_container['bondtypes'] = ( sidemol_extra_bondtypes +
+        data_container['bondtypes'] = ( smol_extra_bondtypes +
                                        data_container['bondtypes'] )
         n_bondstypes = len( data_container['bondtypes'])
         
@@ -255,6 +264,9 @@ def extract_gromacs_data( _data_files_, _autoload_):
                                         data_container['angletypes'])
         n_anglestypes = len( data_container['angletypes'])
         
+        data_container['dihedraltypes'] = ( smol_extra_dihedraltypes + 
+                                        data_container['dihedraltypes'])
+        n_dihedraltypes = len( data_container['dihedraltypes'])
         
     else:
         n_bondsnew = n_bonds
