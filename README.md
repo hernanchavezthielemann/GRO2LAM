@@ -57,11 +57,6 @@
 ## Licence
    [MIT](./LICENSE)
    Copyright 2018 Hernan Chavez Thielemann, Annalisa Cardellini, Matteo Fasano, Gianmarco Ciorra, Luca Bergamasco, Matteo Alberghini, Eliodoro Chiavazzo, Pietro Asinari
-   
-   This file is part of GROTOLAM.
-   This work is also licensed under the Creative Commons Attribution 4.0 International License. 
-   To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/ or send a letter to Creative Commons, 
-   PO Box 1866, Mountain View, CA 94042, USA.
 
 ## Citation
    The publication associated with this code is found here:
@@ -340,7 +335,6 @@
     ./lib/setup
     ./lib/gui/__init__.py
     ./lib/misc/data.py
-    ./lib/docs/COPYING.LESSER
     ./lib/misc/file.py
     ./lib/gui/img/help.ppm
     ./lib/misc/version.py
@@ -358,7 +352,6 @@
     ./lib/gui/run_gui.py
     ./lib/handling/lammps.py
     ./lib/gui/img/logo.ppm
-    ./lib/docs/COPYING
     ./lib/gui/custom_row.py
     ./lib/gui/script_gui.py
     ./lib/gui/popup.py
