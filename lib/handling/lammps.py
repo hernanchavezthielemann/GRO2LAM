@@ -380,8 +380,8 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                     option that probably is going to take longer rt
                  '''
     
-    buffer_molnum_pevif = '00000000'
-    buffer_moltype_pevif = 'none_type'
+    _residue_buffer_ = '00000000'
+    _moltype_buffer_ = 'none_type'
     
     if _sidemol_f_ == 1:
         
@@ -389,10 +389,11 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
         conv_dict = _topodata_['S_translation'] # key s_tag : val l_tag
         
         solv_at_v = range( n_atoms)[ base_atoms_n:]
-        #print n_atoms, base_atoms_n, len( _mtype_)
+        #print n_atoms, base_atoms_n, len( _mtype_), solv_at_v, _atype_
         for i in solv_at_v:
-            aty = conv_dict[_atype_[i]] # _atype_ is the atag in TOP
             
+            aty = conv_dict[_atype_[i]] # _atype_ is the atag in TOP
+            #print _atype_[i], aty
             _text_ += atom_shape.format(i+1, _mol_[i], dicts[0][aty],
                                         charge[aty],
                                         float(_xyz_[i][0])*10,
@@ -401,46 +402,77 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                                         aty
                                        )
             
-            #write_flag = False
+            ''' ///////////-------------------------------------\\\\\\\\\\ '''
+            '''<<<<<<<<<<<<    Side Molecule topology builder   >>>>>>>>>>>'''
+            ''' \\\\\\\\\\\-------------------------------------////////// '''
+            # This should be done in gromacs, in a near future
             # meaning new molecule // same type
-            if _mol_[i] <> buffer_molnum_pevif:
-                buffer_molnum_pevif = _mol_[i]
+            if _mol_[i] <> _residue_buffer_:
+                _residue_buffer_ = _mol_[i]
                 # meaning also a new type of molecule
-                if _mtype_[i] <> buffer_moltype_pevif:
-                    buffer_moltype_pevif = _mtype_[i]
+                if _mtype_[i] <> _moltype_buffer_:
+                    _moltype_buffer_ = _mtype_[i]
                     new_smol_str = '** New side molecule : {} 1st atom : {} **'
                     print '\n' + new_smol_str.format( _mtype_[i], aty)
                     
                     
                     for sb in range( len( sidemol['tag'])):
-                        sidemol['data'][sb]['atoms']
-                        if _mtype_[i] == sidemol['tag'][sb]:
-                            nm_atn = len( sidemol['data'][sb]['atoms'])
-                            print( _mtype_[i]+ '=='+ sidemol['tag'][sb] +'  '+
-                                   str(_mtype_[i] == sidemol['tag'][sb]) +'\n'+
-                                   str(nm_atn) )
+                        sm_data = sidemol['data'][sb]
+                        #for a_t in range( len( sm_d_atms)):
+                        # just one residue per side mol
+                        if _mtype_[i] == sm_data['atoms'][0][3]:
+                            nsm_data = sm_data
+                                
+                            print( _mtype_[i] + '=='+ sidemol['tag'][sb] + 
+                                  ' ' + str(_mtype_[i]==sidemol['tag'][sb])
+                                  +'\n'+ str(sm_data['atoms'][0][3]) )
+                            break
                             #bonds_x_mol = len( sidemol['data'][sb]['bonds'])
                             #angles_x_mol = len( sidemol['data'][sb]['angles'])
-                #if write_flag:
-                # here is needed something that changes acording to the
-                # molecule kind topology
-                if nm_atn == 1:
-                    pass
-                elif nm_atn >= 2:
+                    try:
+                        print nsm_data['atoms'][0][3]
+                    except UnboundLocalError as Err_here:
+                        print('Upa mala cosa!')
+                        exit( Err_here[0])
+                
+                # changes acording to the molecule kind topology
+                tag_str = [ 'bonds', 'angles', 'dihedrals']
+                for _st_ in tag_str:# range( len( tag_str)):
+                    #print _st_, i
+                    for xx in range( len( sm_data[ _st_])):
+                        index_c = sm_data[ _st_][ xx]
+                        #print index_c
+                        i1 = int(index_c[0])
+                        i2 = int(index_c[1])
+                        
+                        aty1 = conv_dict[ _atype_[ i + i1-1]]
+                        aty2 = conv_dict[ _atype_[ i + i2-1]]
+                        
+                        if _st_ == 'bonds':
+                            solv_bonds.append([ aty1+'-'+aty2, i1, i2])
+                            
+                        elif _st_ == 'angles':
+                            i3 = int(index_c[2])
+                            aty3 = conv_dict[ _atype_[ i + i3-1]]
+                            
+                            angle_str = '{}-{}-{}'.format( aty1, aty2, aty3)
+                            solv_angles.append( [ angle_str, i1, i2, i3])
+                            
+                        elif _st_ == 'dihedrals':
+                            i3 = int( index_c[ 2])
+                            i4 = int( index_c[ 3])
+                            aty3 = conv_dict[ _atype_[ i + i3-1]]
+                            aty4 = conv_dict[ _atype_[ i + i4-1]]
+                            
+                            dihe_str = '{}-{}-{}-{}'.format( aty1, aty2, aty3, aty4)
+                            solv_angles.append( [ angle_str, i1, i2, i3, i4])
+                        else:
+                            print aty, _mol_[i], _residue_buffer_, len( _atype_)
+                            exit('')
                     
                     
-                    aty2 = conv_dict[ _atype_[i+1]]
-                    solv_bonds.append([aty+'-'+aty2, i+1, i+2])
-                    
-                    
-                    if nm_atn == 3:
-                        aty3 = conv_dict[ _atype_[i+2]]
-                        solv_bonds.append([ aty + '-' + aty3, i+1, i+3])
-                        solv_angles.append([aty2 + '-' + aty + '-' + aty3,
-                                            i+2, i+1, i+3])
-                else:
-                    print aty, _mol_[i], buffer_molnum_pevif, i+2, len( _atype_)
-                    exit('')
+
+                        
     #########################################################
     '''----------   4th - Chemical topology   ------------'''
     #=======================================================#
@@ -735,7 +767,7 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
                      'charmm','quartic angle','','tabulated'] 
     
     aty = _topodata_['angletypes']
-    angletypename = AngleDataBase[ int(aty[0][3])- 1]
+    angletypename = AngleDataBase[ int( aty[0][3])- 1]
     
     txt_p_a ='\n Angle Coeffs #{}\n\n'.format( angletypename)
     
