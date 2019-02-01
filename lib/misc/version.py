@@ -8,4 +8,4 @@ __old_vers__ = ['1.12 20 Dic 2018', '1.11 20 Jul 2018', '1.1 07 May 2018','1.0 1
 
 __url__ = 'https://github.com/hernanchavezthielemann/GRO2LAM'
 
-__version__ = 'GROTOLAM version {} ({} {} {})'.format(*__curr_ver__)
+__version__ = ' GRO2LAM version {} ({} {} {})'.format(*__curr_ver__)
