@@ -574,7 +574,8 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     if _asty_d_[atomstyle]>=4:
         known_dihedrals = _topodata_['dihedrals']
         base_dihedrals_n = len(known_dihedrals)
-        _text_ +='\n Dihedrals\n\n'
+        if base_dihedrals_n:
+            _text_ +='\n Dihedrals\n\n'
         dihedral_shape = ' {}'*6+'\n'
         for i in range(base_dihedrals_n):
             err_str = ''
@@ -718,7 +719,7 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
     
     
     ########    -----------     BOND        ----------     ########
-    BondDataBase = ['harmonic','G96','morse','cubic','connection','harmonic',
+    BondDataBase = ['harmonic','gromos','morse','cubic','connection','harmonic',
                     'fene','tabulated','tabulated','restraint']
     Bonds_structures = {'harmonic': {},
                        'morse': {}}
@@ -748,6 +749,13 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
             info_cont = [ i+1,
                           float( bty[i][4])/ 100/ 4.186/2,
                           float( bty[i][3])*10 ]
+            
+        elif int(bty[i][2]) == 2: # bond_style  G96 in gromacs
+            print bty[i]
+            info_cont = [ i+1,
+                          float( bty[i][4])/ 100/ 4.186/4,
+                          float( bty[i][3])*10 ]
+            
         elif int(bty[i][2]) == 3:
             extra_end_str = ' {:.4f}\n'
             info_cont = [ i+1,
@@ -763,7 +771,8 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
     
     
     ########    -----------     ANGLE      ----------     ########
-    AngleDataBase = ['harmonic','G96','cross bond-bond','cross bond-angle',
+    AngleDataBase = ['harmonic','cosine/squared','cross bond-bond',
+                     'cross bond-angle',
                      'charmm','quartic angle','','tabulated'] 
     
     aty = _topodata_['angletypes']
@@ -787,6 +796,12 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
             info_cont = [ i+1,
                          float(aty[i][5])/ 4.186/2,
                          float(aty[i][4]) ]
+            
+        elif int(aty[i][3]) == 2:# angle_style G96 in gromacs
+            info_cont = [ i+1,
+                         float(aty[i][5])/ 4.186/2,
+                         float(aty[i][4]) ]
+            
         elif int(aty[i][3]) == 5:
             extra_end_str = ' {:.4f} {:.4f}\n'
             info_cont = [ i+1,
