@@ -27,7 +27,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
     if not _autoload_:
         print filename_ff # or not
         
-    
+    _sidemol_f_ = False
     
     ###########################################################################
     ###########################################################################
@@ -59,8 +59,10 @@ def extract_gromacs_data( _data_files_, _autoload_):
     
     #################   Defaults   ##################
     
-    data_container['defaults'], ok_flag = ck_forcefield( filename_ff, 
-                                                         filename_top)
+    data_container['defaults'], ok_flag, _a_fff_ = ck_forcefield( filename_ff,
+                                                                  filename_top)
+    filename_ff = _a_fff_
+    
     if not ok_flag:
         pop_err_1('Problem detected in :\n' + section.split('.')[1])
         return {}, [ ok_flag, _sidemol_f_]
@@ -155,7 +157,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
         data_container[ s_str_], ok_flag, _data_define_ = _aux_here_
         data_container['define'][s_str_[:-5]] = _data_define_
         #debugger_file(s_str_, data_container[s_str_])
-                
+        
         if not ok_flag:
             
             if data_container[ aux_strings[ bi]] <> []:
@@ -763,14 +765,14 @@ def get_ffldfiles( _topfile_):
     # a file integrity check should be done outside
     return file_cont, nonerr_flag
 
-def ck_forcefield( _ff_file_, _secondoption_ = None):
+def ck_forcefield( _the_file_, _secondoption_ = None):
     '''
     podria pedirse solo este archivo y 
     de aqui sacar la iformacion de los otros dos....
     '''
     _flag_ = False
     comb_rule = -1
-    with open(_ff_file_, 'r')  as indata:
+    with open( _the_file_, 'r')  as indata:
         for j_line in indata:
             line_c = j_line.split()
             if j_line.startswith('[ defaults ]'):
@@ -781,13 +783,13 @@ def ck_forcefield( _ff_file_, _secondoption_ = None):
                 print('---> comb_rule {}'.format(comb_rule[1]))
                 
     if not _flag_ and _secondoption_ <> None:
-        comb_rule, _flag_ = ck_forcefield( _secondoption_)
+        comb_rule, _flag_, _the_file_ = ck_forcefield( _secondoption_)
         
     if comb_rule < 0 or not _flag_:
         pop_err_1('forcefield.itp file is missing or incomplete')
-        comb_rule, _flag_ = [ 0, 0]
+        comb_rule, _flag_, _the_file_ = [ 0, 0, '']
     
-    return comb_rule, _flag_
+    return comb_rule, _flag_, _the_file_
 
 def seek_for_directive( _list_of_files_, _directive_):
     ''' search for a certain directive in a bunch of files
