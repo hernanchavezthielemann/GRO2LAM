@@ -27,18 +27,18 @@ def write_lammps_data( _topodata_, df_name, _config_):
         nam = ''.join([ chr( ord(l) - 32) for l in atomstyle])
         print_dec_g(style_str.format(nam))
         
-        if _autoload_:
+        if True:
             print '\n'+'='*10+' Still in BETA here '+'='*10+'\n'
             _content_, _flag_ = write_lammps_data_auto( _topodata_,
                                                         df_name,
                                                         _config_
                                                       )
             
-        else:
-            _content_, _flag_ = write_lammps_data_all( _topodata_,
-                                                       df_name,
-                                                       _config_
-                                                     )
+        #else:
+        #    _content_, _flag_ = write_lammps_data_all( _topodata_,
+        #                                               df_name,
+        #                                               _config_
+        #                                             )
         errmsg = 'Error writing lammps data file'
         if _flag_:
             write_file( df_name, _content_)
