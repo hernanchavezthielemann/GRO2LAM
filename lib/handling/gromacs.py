@@ -31,12 +31,13 @@ def extract_gromacs_data( _data_files_, _autoload_):
     
     ###########################################################################
     ###########################################################################
-    '''--------------------------    FILE GRO      -------------------------'''
+    section = '''---------------    FILE GRO      ----------------------'''
     #=========================================================================#
     
     ok_flag, gro_pack, b_xyzhi = get_gro_fixed_line( filename_gro)
     if not ok_flag:
-        return {}, ok_flag
+        pop_err_1('Problem detected in :\n' + section)
+        return {}, [ ok_flag, _sidemol_f_]
     
     _mol_, _mtype_, _type_, _xyz_, _mtypes_ = gro_pack
     data_container['atomsdata'] = [ _mol_, _mtypes_, _type_, _xyz_, _mtype_]
@@ -53,7 +54,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
     
     ###########################################################################
     ###########################################################################
-    '''----------------  FILE TOP  ---------------'''
+    section = '''----------------  .FILE TOP.  ---------------'''
     #=========================================================================#
     
     #################   Defaults   ##################
@@ -61,7 +62,8 @@ def extract_gromacs_data( _data_files_, _autoload_):
     data_container['defaults'], ok_flag = ck_forcefield( filename_ff, 
                                                          filename_top)
     if not ok_flag:
-        return {}, ok_flag
+        pop_err_1('Problem detected in :\n' + section.split('.')[1])
+        return {}, [ ok_flag, _sidemol_f_]
     
     buckorlj = int(data_container['defaults'][0])
     
@@ -69,7 +71,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
     startstrings = ['[ moleculetype ]', '[ atoms ]', '[ bonds ]', '[ pairs ]',
                     '[ angles ]', '[ dihedrals ]', '[ system ]',
                     '[ molecules ]', '']
-    
+    exclusions_ = ['[ bonds ]', '[ pairs ]', '[ angles ]', '[ dihedrals ]']
     if filename_nb == filename_ff and filename_nb == filename_bon:
         startstrings = startstrings[-3:]
         print wrg_3( 'Using pure side molecule scheme')
@@ -82,7 +84,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
         data_container['dihedrals']     =   []
         
     for ti in range(len(startstrings))[:-1]:
-        s_str_ = startstrings[ti][ 2:-2]
+        s_str_ = startstrings[ ti][ 2:-2]
         ''' here is possible to insert a selector in case pairs and 
         others can be obviated'''
         data_container[ s_str_], ok_flag, _ = get_topitp_line( filename_top,
@@ -90,10 +92,13 @@ def extract_gromacs_data( _data_files_, _autoload_):
                                                              )
         
         if not ok_flag:
-            print wrg_3( 'Not ok flag in <extract_gromacs_data> top file' +
+            
+            if startstrings[ti] not in exclusions_:
+                print wrg_3( 'Not ok flag in <extract_gromacs_data> top file' +
                          'section, in ' + s_str_)
-            return {}, ok_flag
-        
+                return {}, [ ok_flag, _sidemol_f_]
+            else:
+                ok_flag = True
         #debugger_file( s_str_, data_container[s_str_])
     
     n_atoms     =   len( data_container['atoms'])
@@ -101,31 +106,33 @@ def extract_gromacs_data( _data_files_, _autoload_):
     n_angles    =   len( data_container['angles'])
     
     ###########################################################################
-    '''----------  SIDE MOLE FILES   -------------'''
+    section = '''----------  .SIDE MOLE FILES.   -------------'''
     #=========================================================================#
     #### research in topology for new molecules / side molecules
     if _autoload_:
         data_container, ok_flag, _sidemol_f_ = sidemol_data( filename_top,
                                                             data_container)
     if not ok_flag:
-        return {}, ok_flag
+        pop_err_1( 'Problem detected in :\n' + section.split('.')[1])
+        return {}, [ ok_flag, _sidemol_f_]
     
     
     ###########################################################################
-    '''-----------------  FILE NB  ---------------'''
+    section = '''-----------------  .FILE NB.  ---------------'''
     #=========================================================================#
     startstrings = ['[ atomtypes ]', '[ nonbond_params ]']
     
     data_container['atomtypes'], ok_flag, _ = get_topitp_line( filename_nb,
                                                                '[ atomtypes ]')
     if not ok_flag:
-        return {}, ok_flag
+        pop_err_1('Problem detected in :\n' + section.split('.')[1])
+        return {}, [ ok_flag, _sidemol_f_]
     
     n_atomtypes     =   len( data_container['atomtypes'])
     
     #debugger_file( 'atomtypes',data_container['atomtypes'])
     ###########################################################################
-    '''----------------  FILE BON  ---------------'''
+    section = '''----------------  .FILE BON.  ---------------'''
     #=========================================================================#
     
     
@@ -133,16 +140,16 @@ def extract_gromacs_data( _data_files_, _autoload_):
     if filename_nb == filename_ff and filename_nb == filename_bon:
         
         for bi in range( len( startstrings))[:-1]:
-            s_str_ = startstrings[bi][ 2:-2]
+            s_str_ = startstrings[ bi][ 2:-2]
             data_container[ s_str_] =   []
             data_container['define'][s_str_[:-5]] = []
             
         #data_container['impropers']     =   []
         #data_container['impropertypes'] =   []
         startstrings = startstrings[-1]
-
+    aux_strings = ['bonds', 'angles', 'dihedrals']
     for bi in range( len( startstrings))[:-1]:
-        s_str_ = startstrings[bi][ 2:-2]
+        s_str_ = startstrings[ bi][ 2:-2]
         
         _aux_here_ = get_topitp_line( filename_bon, startstrings[ bi])
         data_container[ s_str_], ok_flag, _data_define_ = _aux_here_
@@ -150,8 +157,12 @@ def extract_gromacs_data( _data_files_, _autoload_):
         #debugger_file(s_str_, data_container[s_str_])
                 
         if not ok_flag:
-            return {}, ok_flag
-        
+            
+            if data_container[ aux_strings[ bi]] <> []:
+                pop_err_1('Problem detected in :\n' + section.split('.')[1])
+                return {}, [ ok_flag, _sidemol_f_]
+            else:
+                ok_flag = True
     
     n_bondstypes    =   len( data_container['bondtypes'])
     n_anglestypes   =   len( data_container['angletypes'])
@@ -233,6 +244,8 @@ def extract_gromacs_data( _data_files_, _autoload_):
                 aux_here = [_at_dic_here[ _smbn_[0]], _at_dic_here[ _smbn_[1]]]
                 smol_extra_bondtypes.append( aux_here + _smbn_[2:])
                 
+            print smol_extra_bondtypes
+            exit()
             for _an in range( len( _smd_['angles'])):
                 _sman_ = _smd_['angles'][_an]
                 aux_here = [_at_dic_here[ _sman_[0]], _at_dic_here[ _sman_[1]],
@@ -284,7 +297,6 @@ def extract_gromacs_data( _data_files_, _autoload_):
                                          n_anglestypes, n_dihedraltypes,
                                          n_impropertypes]
     
-    
     return data_container, [ ok_flag, _sidemol_f_]
 
 def sidemol_data( _file_top_, data_container):
@@ -292,8 +304,10 @@ def sidemol_data( _file_top_, data_container):
     
     sidemol = {'tag': [],'num':[], 'data':[] }# Tag # mol_number
     sm_flag = False
-    # names of non side molecules
+    # all molecules info
+    _aux_m_ = data_container[ 'molecules']
     
+    # names of non side molecules
     if 'moleculetype' in data_container.keys():
         non_sm = data_container['moleculetype']
         non_sm = [non_sm[i][0] for i in range(len(non_sm))]
@@ -303,52 +317,59 @@ def sidemol_data( _file_top_, data_container):
         non_sm = ['']
         _buffer_ = '0'
         
-    # all molecules info
-    _aux_m_ = data_container[ 'molecules']
     # side molecules info filtering
     for i in range( len( _aux_m_)) :
         if _aux_m_[i][0] not in non_sm:
             sidemol['tag'].append( _aux_m_[i][0])
             sidemol['num'].append( int(_aux_m_[i][1]))
             sm_flag = True
-    #////////========= Side molecule >>> file <<< search   ============////////
-    print ('\nLoading side molecule files: ' )
-    _sm_files_ = []
-    root_dir = '/'.join( _file_top_.split('/')[:-1]+[''])
-    ok_flag = False
-    with open( _file_top_, 'r')  as topdata:
-        if sidemol['tag'] == []:
-            topdata = []
-        for k_line in topdata:
-            if k_line.startswith('#'):
-                
-                logic_test = ('#if' not in _buffer_ and _buffer_ <> '')
-                
-                if k_line.startswith('#include') and logic_test:
-                    if _sm_files_ == []:
-                        ok_flag = True
-                    
-                    new_filename = k_line.split('"')[1].lstrip('.').lstrip('/')
-                    new_filename = new_filename.split('/')[-1]
-                    po_file = fileseeker( root_dir, new_filename)
-                    if po_file <> []:
-                        _sm_files_.append( po_file[0])
-                        print _sm_files_[-1]
-                        ok_flag *= check_file( po_file[0], content='[ atoms ]')
-                else:
-                    _buffer_ = k_line
-    # do it in the same loop or not that is the thing... maybe is better
-    # to not just beacause the indentation going to +inf atoms
-    #////////========= Side molecule >>> data <<< search   ============////////
-    if sm_flag*ok_flag:
-        for sm in sidemol['tag']:
-            aux_data, aux_flag = sidemol_data_gatherer( _sm_files_, sm)
-            #print aux_data
-            ok_flag *= aux_flag
-            sidemol['data'].append( aux_data)
-            
+        
     
-    data_container['sidemol'] = sidemol
+    if sm_flag:
+        #////////======= Side molecule >>> file <<< search   ==========////////
+        print ('\nLoading side molecule files: ' )
+        _sm_files_ = []
+        root_dir = '/'.join( _file_top_.split('/')[:-1]+[''])
+        ok_flag = False
+        with open( _file_top_, 'r')  as topdata:
+            if sidemol['tag'] == []:
+                topdata = []
+            for k_line in topdata:
+                if k_line.startswith('#'):
+                    
+                    logic_test = ('#if' not in _buffer_ and _buffer_ <> '')
+                    
+                    if k_line.startswith('#include') and logic_test:
+                        if _sm_files_ == []:
+                            ok_flag = True
+                        
+                        new_filename = k_line.split('"')[1].lstrip('.')
+                        new_filename = new_filename.lstrip('/').split('/')[-1]
+                        po_file = fileseeker( root_dir, new_filename)
+                        if po_file <> []:
+                            _sm_files_.append( po_file[0])
+                            print _sm_files_[-1]
+                            ok_flag *= check_file( po_file[0],
+                                                  content='[ atoms ]')
+                    else:
+                        _buffer_ = k_line
+        # do it in the same loop or not that is the thing... maybe is better
+        # to not just beacause the indentation going to +inf atoms
+        #////////======= Side molecule >>> data <<< search   ==========////////
+        if ok_flag:
+            for sm in sidemol['tag']:
+                aux_data, aux_flag = sidemol_data_gatherer( _sm_files_, sm)
+                #print aux_data
+                ok_flag *= aux_flag
+                sidemol['data'].append( aux_data)
+                
+        
+        data_container['sidemol'] = sidemol
+        
+    else:
+        print ('No side molecule files detected!' )
+        ok_flag = True
+        
     return data_container, ok_flag, sm_flag
 
 def sidemol_data_gatherer( _sm_files_, sm):
@@ -700,28 +721,43 @@ def get_ffldfiles( _topfile_):
     ff_file = ff_file.lstrip('.').lstrip('/')
     
     if ff_file <> '':
-        file_cont = ['']
+        # if there is at least one itp, lets parse it
+        # first seek for further includes itp
+        aux_file_cont = [_topfile_, '']
         print '----- Loading :'
-        file_cont[0] =  root_folder + ff_file
-        print file_cont[0]
-        i = 0
-        root_folder = '/'.join( file_cont[0].split('/')[:-1]+[''])
-        with open( file_cont[0], 'r')  as indata2:
+        i = 1
+        aux_file_cont[i] =  root_folder + ff_file
+        print aux_file_cont[i]
+        
+        root_folder = '/'.join( aux_file_cont[i].split('/')[:-1]+[''])
+        with open( aux_file_cont[i], 'r')  as indata2:
             for k_line in indata2:
                 if k_line.startswith('#include'):
                     i+=1
-                    file_cont.append( root_folder + k_line.split('"')[1])
-                    print file_cont[i]
+                    aux_file_cont.append( root_folder + k_line.split('"')[1])
+                    print aux_file_cont[i]
                     if i==2:
                         break
+        # the first one is [ defaults ]
+        # second nonbonded atomtypes
+        # third bonded 
+        _directives_ = ['defaults', 'atomtypes', 'bondtypes']
+        file_cont = []
+        for _di_ in _directives_:
+            file_cont.append( seek_for_directive( aux_file_cont, _di_))
+            if file_cont[-1] == '':
+                pop_wrg_1('Directive ' + _di_ + ' not found!')
+            else:
+                print ('Using :' +file_cont[-1]+' for ' + _di_) 
     else:
         pop_err_1('itp file not found!')
         nonerr_flag *= False
-        
+    # final check of non error flag
     if nonerr_flag and len(file_cont) < 3 :
         pop_wrg_1('Your structure seems unfamiliar, just ' +
                   '{} itp found.'.format( len(file_cont)) +
                   '\nthe conversion could fail!')
+        # Meaning that the directive seeker could not find the correspondin one
         while len(file_cont) < 3:
             file_cont.append( file_cont[-1])
     # a file integrity check should be done outside
@@ -753,6 +789,28 @@ def ck_forcefield( _ff_file_, _secondoption_ = None):
     
     return comb_rule, _flag_
 
+def seek_for_directive( _list_of_files_, _directive_):
+    ''' search for a certain directive in a bunch of files
+        and then returns the file in which it is, or an empty vector
+    '''
+    content_file = ''
+    for file_ in _list_of_files_:
+        
+        with open( file_, 'r')  as indata:
+            for j_line in indata:
+                line_c = j_line.split(' ]')[0].split('[ ')
+                if len( line_c) > 1:
+                    if line_c[1] == _directive_:
+                        content_file = file_
+                        break
+        if content_file <> '':
+            break
+    
+    return content_file
+    
+    
+    
+    
 def get_top_groups( _mtype_container_, _group_):
     
     _mtype_ = _mtype_container_
