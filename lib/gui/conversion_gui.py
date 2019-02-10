@@ -126,7 +126,7 @@ class Conversion(Frame):
         
         if self.master.test:
             print 'Seeing main gro2lam converter GUI'
-            self.after(2000, self.master.swap_hook  )
+            self.after(2000, self.test_hook  )
 
     def atomstyle( self):
         ''' in this case just one, but could be modified 
@@ -311,6 +311,10 @@ class Conversion(Frame):
             
         self.master._convert_['setup'] = e_values
         return _flag_
+
+    def test_hook(self, event=None):
+        self.autol_b.invoke()
+        self.b1.invoke()
 
     def createWidgets(self):
         ''' unified name hook'''
