@@ -250,16 +250,19 @@ class Conversion(Frame):
         if self.get_entriesvalues():
             
             data_cont = self.master._convert_['setup']
+            root_folder = '/'.join(data_cont[1].split('/')[:-1]+[''])
             
             sim_data, _flags_ = extract_gromacs_data( data_cont[1:-1],
                                                      _autoload_)
             flag_done_, _sidemol_ = _flags_
             
-            config = [data_cont[-1], _sidemol_, _autoload_]
+            config = [data_cont[-1], _sidemol_, _autoload_, root_folder]
             if flag_done_:
                 try:
-                    flag_done_ = write_lammps_data( sim_data, 'data.gro2lam',
-                                                   config )
+                    flag_done_, data_fnam = write_lammps_data( sim_data,
+                                                               'data.gro2lam',
+                                                              config )
+                    
                 except KeyError as Err:
                     err_str = ''
                     for er in Err.args:
@@ -277,6 +280,7 @@ class Conversion(Frame):
                 print_dec_g( 'Data file generated as "data.gro2lam"' )
                 
                 self._convertdata_ = sim_data
+                self._convertdata_['filename'] = data_fnam
                 self._convertdata_['config'] = config
                 
                 # Returning the values
