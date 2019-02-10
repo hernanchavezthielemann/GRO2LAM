@@ -149,6 +149,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
         #data_container['impropers']     =   []
         #data_container['impropertypes'] =   []
         startstrings = startstrings[-1]
+    
     aux_strings = ['bonds', 'angles', 'dihedrals']
     for bi in range( len( startstrings))[:-1]:
         s_str_ = startstrings[ bi][ 2:-2]
@@ -166,9 +167,6 @@ def extract_gromacs_data( _data_files_, _autoload_):
             else:
                 ok_flag = True
     
-    n_bondstypes    =   len( data_container['bondtypes'])
-    n_anglestypes   =   len( data_container['angletypes'])
-    
     
     ###########################################################################
     '''----------------        #define &  Impropers          ---------------'''
@@ -177,9 +175,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
     data_container = split_dihedral_improper( data_container)
     
     n_dihedrals     =   len( data_container['dihedrals'])
-    n_dihedraltypes =   len( data_container['dihedraltypes'])
     n_impropers     =   len( data_container['impropers'])
-    n_impropertypes =   len( data_container['impropertypes'])
     
     ###########################################################################
     '''--------------              "Side Mol"                 --------------'''
@@ -190,20 +186,30 @@ def extract_gromacs_data( _data_files_, _autoload_):
         
         # A_02 maths
         sidemol = data_container['sidemol']
-        side_bonds_n = 0
-        side_angles_n = 0
+        side_bonds_n    = 0
+        side_angles_n   = 0
+        side_dihed_n    = 0
+        side_improp_n   = 0
+        
         for sb in range( len( sidemol['tag'])):
             bonds_x_mol = len( sidemol['data'][sb]['bonds'])
             angles_x_mol = len( sidemol['data'][sb]['angles'])
+            dihedr_x_mol = len( sidemol['data'][sb]['dihedrals'])
+            improp_x_mol = len( sidemol['data'][sb]['impropers'])
             
-            side_bonds_n += sidemol['num'][sb] * bonds_x_mol
-            side_angles_n += sidemol['num'][sb] * angles_x_mol
+            sm_quantity = sidemol['num'][sb]
+            side_bonds_n    += sm_quantity * bonds_x_mol
+            side_angles_n   += sm_quantity * angles_x_mol
+            side_dihed_n    += sm_quantity * dihedr_x_mol
+            side_improp_n   += sm_quantity * improp_x_mol
         
-        n_bondsnew = n_bonds + side_bonds_n
-        n_anglesnew = n_angles + side_angles_n
+        n_bondsnew  =   n_bonds + side_bonds_n
+        n_anglesnew =   n_angles + side_angles_n
+        n_dihednew  =   n_dihedrals + side_dihed_n
+        n_impropnew =   n_impropers + side_improp_n
         
-        print n_bonds, side_bonds_n, n_bonds + side_bonds_n
-        print n_angles, side_angles_n, n_angles + side_angles_n
+        #print n_bonds, side_bonds_n, n_bonds + side_bonds_n
+        #print n_angles, side_angles_n, n_angles + side_angles_n
         
         # Regarding the itp format:
         #   charges index 6 in data-atoms
@@ -218,7 +224,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
                 a_charge = float( sidemol['data'][sb]['atoms'][at][6])
                 _charge_[a_opls_tag] = a_charge
                 _conv_dict_[ a_elem_tag] = a_opls_tag
-        print '='*45+'\n'+'='*5+'Charges found: '
+        print '='*45+'\n'+'='*5+'  Charges found: '
         print _charge_
         print _conv_dict_
         
@@ -232,6 +238,12 @@ def extract_gromacs_data( _data_files_, _autoload_):
         smol_extra_bondtypes        =   []
         smol_extra_angletypes       =   []
         smol_extra_dihedraltypes    =   []
+        smol_extra_impropertypes    =   []
+        
+        bn_namelist = []
+        an_namelist = []
+        di_namelist = []
+        im_namelist = []
         
         for sb in range( len( sidemol['tag'])):
             _smd_ = sidemol['data'][sb]
@@ -240,65 +252,96 @@ def extract_gromacs_data( _data_files_, _autoload_):
             for _at in range( len( _smd_['atoms'])):
                 _smat_ = _smd_['atoms'][_at]
                 _at_dic_here[ _smat_[0]] = _smat_[1]
+                
             
             for _bn in range( len( _smd_['bonds'])):
                 _smbn_ = _smd_['bonds'][_bn]
                 aux_here = [_at_dic_here[ _smbn_[0]], _at_dic_here[ _smbn_[1]]]
-                smol_extra_bondtypes.append( aux_here + _smbn_[2:])
-                
-            print smol_extra_bondtypes
-            exit()
+                name = '{}-{}'.format(*aux_here)
+                if name not in bn_namelist:
+                    bn_namelist.append( name)
+                    smol_extra_bondtypes.append( aux_here + _smbn_[2:])
+                    
             for _an in range( len( _smd_['angles'])):
                 _sman_ = _smd_['angles'][_an]
                 aux_here = [_at_dic_here[ _sman_[0]], _at_dic_here[ _sman_[1]],
                             _at_dic_here[ _sman_[2]] ]
-                smol_extra_angletypes.append( aux_here + _sman_[3:])
-                
+                name = '{}-{}-{}'.format(*aux_here)
+                if name not in an_namelist:
+                    an_namelist.append( name)
+                    smol_extra_angletypes.append( aux_here + _sman_[3:])
+                    
             for _dh in range( len( _smd_['dihedrals'])):
                 _smdh_ = _smd_['dihedrals'][_dh]
                 aux_here = [_at_dic_here[ _smdh_[0]], _at_dic_here[ _smdh_[1]],
                             _at_dic_here[ _smdh_[2]], _at_dic_here[ _smdh_[3]]]
-                smol_extra_dihedraltypes.append( aux_here + _smdh_[4:])
+                name = '{}-{}-{}-{}'.format(*aux_here)
+                if name not in di_namelist:
+                    di_namelist.append( name)
+                    smol_extra_dihedraltypes.append( aux_here + _smdh_[4:])
+            
+            for _im in range( len( _smd_['impropers'])):
+                _smim_ = _smd_['impropers'][_im]
+                aux_here = [_at_dic_here[ _smim_[0]], _at_dic_here[ _smim_[1]],
+                            _at_dic_here[ _smim_[2]], _at_dic_here[ _smim_[3]]]
+                name = '{}-{}-{}-{}'.format(*aux_here)
+                if name not in im_namelist:
+                    im_namelist.append( name)
+                    smol_extra_impropertypes.append( aux_here + _smim_[4:])
                 
-                
-            if len( _smd_.keys()) > 4:
-                print 'Uuupa!! This thing is not implemented yet as side mol part'
+            if len( _smd_.keys()) > 5:
+                print ('Uuupa!! This thing is not implemented yet' +
+                       ' as side mol part')
+                a_key = [ 'atoms', 'bonds', 'angles', 'dihedrals', 'impropers']
                 for ky in _smd_.keys():
-                    if ky not in [ 'atoms', 'bonds', 'angles', 'dihedrals']:
+                    if ky not in a_key:
                         print ('-- > this key : ' + ky)
                 
                 
             # ---------   !!!!    Update the info    !!!!
         data_container['bondtypes'] = ( smol_extra_bondtypes +
                                        data_container['bondtypes'] )
-        n_bondstypes = len( data_container['bondtypes'])
-        
-
-        
         data_container['angletypes'] = ( smol_extra_angletypes + 
                                         data_container['angletypes'])
-        n_anglestypes = len( data_container['angletypes'])
-        
         data_container['dihedraltypes'] = ( smol_extra_dihedraltypes + 
                                         data_container['dihedraltypes'])
-        n_dihedraltypes = len( data_container['dihedraltypes'])
-        
+        data_container['impropertypes'] = ( smol_extra_impropertypes + 
+                                        data_container['impropertypes'])
     else:
-        n_bondsnew = n_bonds
+        n_bondsnew  = n_bonds
         n_anglesnew = n_angles
-        indexoxy = 0
-        indexhyd = 0
-        #indexsod=0;
-        n_atomsnew = n_atoms
-        
+        n_atomsnew  = n_atoms
+        n_dihednew  = n_dihedrals
+        n_impropnew = n_impropers
+    
+    ###################### trabajo
+    # marker: 'bond_kinds'angl_kinds'dihe_kinds'impr_kinds'
+    nice_list = [ 'bondtypes', 'angletypes', 'dihedraltypes','impropertypes']
+    
+    for it in range( len( nice_list)):
+        _aux_set_here = set()
+        poss = it + 2
+        if poss > 4:
+            poss = 4
+        for i in range( len ( data_container[ nice_list[it] ])):
+            _aux_set_here.add( data_container[ nice_list[it] ][i][ poss ])
+        #print _aux_set_here
+        data_container[ nice_list[it][:4]+'_kinds'] = _aux_set_here
+    
+    
+    n_bondstypes    =   len( data_container['bondtypes'])
+    n_anglestypes   =   len( data_container['angletypes'])
+    n_dihedraltypes =   len( data_container['dihedraltypes'])
+    n_impropertypes =   len( data_container['impropertypes'])
+    
     data_container['numbers']={}
     data_container['numbers']['total'] = [n_atomsnew, n_bondsnew,
-                                          n_anglesnew, n_dihedrals, n_impropers
+                                          n_anglesnew, n_dihednew, n_impropnew
                                          ]
     data_container['numbers']['type'] = [n_atomtypes, n_bondstypes,
                                          n_anglestypes, n_dihedraltypes,
                                          n_impropertypes]
-    
+    print 'Ending gromacs data parsing\n'
     return data_container, [ ok_flag, _sidemol_f_]
 
 def sidemol_data( _file_top_, data_container):
@@ -374,11 +417,11 @@ def sidemol_data( _file_top_, data_container):
         
     return data_container, ok_flag, sm_flag
 
-def sidemol_data_gatherer( _sm_files_, sm):
+def sidemol_data_gatherer( _sm_files_, _sm_):
     ''' collects all the data related with one kind of side molecule
         the data types are specified in startstrings
     '''
-    print 'Search for: ', sm, ' in: ' ,_sm_files_
+    print 'Search for: ', _sm_, ' in: ' ,_sm_files_
     _flag_ = True
     _file_ = ''
     _sm_data_c_ = {}
@@ -399,7 +442,7 @@ def sidemol_data_gatherer( _sm_files_, sm):
                     else:
                         read_flag = False
                         
-                elif read_flag and j_line.startswith(sm):
+                elif read_flag and j_line.startswith( _sm_):
                     _file_ = smfile
                     break
                 elif read_flag:
@@ -409,7 +452,7 @@ def sidemol_data_gatherer( _sm_files_, sm):
                 
                         
     if _file_=='':
-        pop_err_1('Error!! side molecule {} not found in itp -- '.format( sm))
+        pop_err_1('Error!! side molecule {} not found in itp -- '.format( _sm_))
         _flag_ = False
     else:
         tag_str = [ 'atoms', 'bonds', 'angles', 'dihedrals','fin']
@@ -417,45 +460,65 @@ def sidemol_data_gatherer( _sm_files_, sm):
         read_flag = False
         iner_flag = False
         cd_tag = ''
-        i=0
+        i = 0
         with open( _file_, 'r')  as sm_data:
-            for j_line in sm_data:
-                j_line = j_line.split(';')[0].strip()
-                if j_line.startswith(';') or j_line.startswith('#'):
+            
+            for j_line0 in sm_data:
+                j_line = j_line0.split(';')[0].split()
+                if not j_line:
                     pass
-                # at this point starts reading
-                elif j_line.startswith( sm):
-                    read_flag = True
-                #elif not len( j_line):
-                #    print j_line, 'iner_flag false'
-                #    iner_flag = False
-                elif read_flag and j_line.startswith('[ '):
-                    content = j_line.lstrip('[ ').rstrip(' ]')
-                    #print j_line, '[ '
-                    if content == tag_str[i]:
-                        cd_tag = tag_str[i]
-                        iner_flag = True
-                        i+=1
-                        
-                    elif content == 'moleculetype':
-                        break
-
-                    else:
-                        print '> {} not considered in {}'.format( content, sm)
-                elif iner_flag:
-                    if not len(j_line):
-                        if _sm_data_c_[cd_tag]<>[]:
-                            iner_flag = False
+                elif read_flag:
+                    if j_line[0][0] == '#':
+                        pass
+                    elif j_line[0][0] == '[':
+                        if  j_line[1]  <> tag_str[i] :
+                            if j_line[1] in tag_str[i+1:]:
+                                i = tag_str.index( j_line[1])
+                                cd_tag = tag_str[i]
+                                iner_flag = True
+                            elif j_line[1] == 'moleculetype':
+                                break
+                            else:
+                                txt_s = '> {} not considered in {}'
+                                print txt_s.format( j_line[1], _sm_)
+                                iner_flag = False
+                        else :
+                            cd_tag = tag_str[i]
+                            iner_flag = True
                             
-                    else:
-                        #print j_line.rstrip()
-                        _sm_data_c_[cd_tag].append( j_line.split())
+                    elif iner_flag:
+                        #print j_line
+                        _sm_data_c_[ cd_tag].append( j_line)
+                            
+                            
+                elif j_line0.lstrip().startswith( _sm_):
+                    read_flag = True
                     
         # todo add a new check in case of empty container
         #print _sm_data_c_
+        ######### Split impropers and dihedrals
+        # to do make this a function and use it also in split_dihedral_improper
+        # GROMOS improper dihedrals
+        ImproperKind = '2' 
+        sm_im_data_ = []
+        sm_dh_data_ = []
+        _dihedrals_data_ = _sm_data_c_['dihedrals']
+        for i in range( len ( _dihedrals_data_)):
+            if _dihedrals_data_[i][4] == ImproperKind:
+                sm_im_data_.append( _dihedrals_data_[i])
+            else:
+                sm_dh_data_.append( _dihedrals_data_[i])
+                
+        # Save/overwriting point
+        _sm_data_c_['impropers'] = sm_im_data_
+        _sm_data_c_['dihedrals'] = sm_dh_data_
+        
+        #if _sm_data_c_['impropers'] <>[]:
+        #    print _sm_data_c_['impropers']
+        
     return _sm_data_c_, _flag_
 
-def split_dihedral_improper( _data_container_):
+def split_dihedral_improper( _data_container_, smt_flag = False):
     ''' Seems that in GROMACS, impropers are present as a kind of 
         dihedral type, so this function is meant to pick the dihedral
         data and split it resizing the original container and creating
@@ -481,32 +544,34 @@ def split_dihedral_improper( _data_container_):
     def_dihe_extra = [] # ---------------------------------CanBDel?
     def_impr_extra = []
     
-    def_dihe_type_set = set()
-    def_impr_type_set = set()
-    dihe_kind_name = set() 
+    ##def_dihe_type_set = set()
+    #def_impr_type_set = set()
+    #dihe_kind_name = set()
+    #impr_kind_name = set()
     for i in range( len ( _dihedrals_data_)):
         #  Dihedral line format in :
         #  ai  aj  ak  al  funct   c0  c1  c2  c3  c4  c5
         #print _dihedrals_data_[i]
         if _dihedrals_data_[i][4] in [ DihedralKind, RyckBellKind]:
             dh_data_.append( _dihedrals_data_[i])
-            dihe_kind_name.add( _dihedrals_data_[i][4])
+            #dihe_kind_name.add( _dihedrals_data_[i][4])
             
             if len (_dihedrals_data_[i])>5:
                 def_dihe_extra.append( _dihedrals_data_[i])
-                def_dihe_type_set.add( str(_dihedrals_data_[i][5:]))
+                #def_dihe_type_set.add( str(_dihedrals_data_[i][5:]))
                 
                 
         elif _dihedrals_data_[i][4] == ImproperKind:
             im_data_.append( _dihedrals_data_[i])
+            #impr_kind_name.add( _dihedrals_data_[i][4])
+            
             if len (_dihedrals_data_[i])>5:
                 def_impr_extra.append( _dihedrals_data_[i])
-                def_impr_type_set.add( str(_dihedrals_data_[i][5:]))
+                #def_impr_type_set.add( str(_dihedrals_data_[i][5:]))
         else:
             print 'Problem #008 here\n #split_dihedral_improper'
     
     # Save/overwriting point
-    _data_container_['dihe_kinds'] = dihe_kind_name
     _data_container_['impropers'] = im_data_
     _data_container_['dihedrals'] = dh_data_
     #====================================================
@@ -738,7 +803,7 @@ def get_ffldfiles( _topfile_):
                     i+=1
                     aux_file_cont.append( root_folder + k_line.split('"')[1])
                     print aux_file_cont[i]
-                    if i==2:
+                    if i==3:
                         break
         # the first one is [ defaults ]
         # second nonbonded atomtypes

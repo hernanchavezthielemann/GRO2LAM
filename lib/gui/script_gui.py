@@ -59,7 +59,7 @@ class Script_GUI(Frame):
         self.build_finalbuttons()
         
         if self.master.test:
-            self.after(2000, self.master.swap_hook )
+            self.after(2000, self.test_hook)
     
     def createWidgets_n_pack(self):
         self.createWidgets()
@@ -73,9 +73,9 @@ class Script_GUI(Frame):
         row2fill_l = Frame(row2fill)
         self.s_entry_c = []
         _mainpage_ = self._container_['mainpage']
-        _defvals_ = [ '0.5', '1000',
-                     '1000', '300:293', '100',
-                     '1000','-1:1', '1000', '293:300', '100']
+        _defvals_ = [ '0.1', '1000',
+                     '1000', '300:299', '100',
+                     '1000','10:1', '1000', '299:300', '100']
         _def_dataname_ = './data.gro2lam'
         if _mainpage_ <>[]:
             _def_dataname_ = _mainpage_[0]
@@ -435,5 +435,7 @@ class Script_GUI(Frame):
         if _bflag_<>None:
             return _flag_
         return max_at_index, bond_types, angle_types
-          
+        
+    def test_hook(self, event=None):
+        self.b1.invoke()         
 # vim:tw=80
