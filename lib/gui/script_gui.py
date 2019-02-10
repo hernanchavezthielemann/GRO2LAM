@@ -436,6 +436,6 @@ class Script_GUI(Frame):
             return _flag_
         return max_at_index, bond_types, angle_types
         
-     def test_hook(self, event=None):
+    def test_hook(self, event=None):
         self.b1.invoke()         
 # vim:tw=80
