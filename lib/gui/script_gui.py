@@ -77,9 +77,13 @@ class Script_GUI(Frame):
                      '1000', '300:299', '100',
                      '1000','10:1', '1000', '299:300', '100']
         _def_dataname_ = './data.gro2lam'
-        if _mainpage_ <>[]:
+        if self._convertdata_ <> []:
+            _def_dataname_ = self._convertdata_['filename']
+        elif _mainpage_ <> []:
             _def_dataname_ = _mainpage_[0]
             _defvals_ = _mainpage_[1:] 
+        
+        
         
         self.s_entry_c.append( createfileentry( self,
                                                'Lammps data file to work',
