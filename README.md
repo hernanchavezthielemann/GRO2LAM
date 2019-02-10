@@ -122,6 +122,12 @@
 
 ## Usage
 
+ To perform the conversion, there are two ways to proceed:
+   The "easy one": first select the gro and top files and then press the autoload button, after that press the convert button,
+   you can press this last one using space-key also.
+   The second option would be, first select gro and top files, an then select the itp files containin the defaults, atomtypes
+   and bondtypes directives.
+
 ### GUI
    In the GIF below, the typical protocol to convert Gromacs input file into Lammps input files is summed up.
    
