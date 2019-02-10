@@ -2,7 +2,7 @@
 #    By Hernan Chavez Thielemann
 __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
-from lib.misc.file import write_file
+from lib.misc.file import write_file, make_dir
 from lib.misc.warn import print_dec_g, pop_wrg_1, pop_err_1
 
 from sys import exit
@@ -18,7 +18,7 @@ def write_lammps_data( _topodata_, df_name, _config_):
     ''' Write a lammps data file'''
     print_dec_g ('Writing Lammps data file...')
     ####---------------  Unpacking data  ----------------####
-    atomstyle, _, _autoload_ = _config_
+    atomstyle, _, _autoload_, root_folder = _config_
     atsty = [ 'atomic', 'angle', 'full', 'charge', 'bond', 'molecular']
     style_str = '####-------  ATOM STYLE < {} >  --------####'
     _flag_ = False
@@ -30,12 +30,13 @@ def write_lammps_data( _topodata_, df_name, _config_):
         print '\n'+'='*10+' Still in BETA here '+'='*10+'\n'
         _content_, _flag_ = write_lammps_data_auto( _topodata_,
                                                     df_name,
-                                                    _config_
+                                                    _config_[:-1]
                                                   )
             
         errmsg = 'Error writing lammps data file'
         if _flag_:
-            write_file( df_name, _content_)
+            path_dir = make_dir( root_folder, 'g2l_dir')
+            write_file( df_name, _content_, path_dir)
             print_dec_g ('Successful writing!!')
         elif _autoload_:
             pop_err_1(errmsg + '\nAutoload failed!')
@@ -46,7 +47,7 @@ def write_lammps_data( _topodata_, df_name, _config_):
         exit(('Error 037!!  -  Atom style {} '
               +'not implemented yet').format(atomstyle))
     
-    return _flag_
+    return _flag_, path_dir + df_name
 
 def write_lammps_data_auto( _topodata_, data_name, _config_):
     ''' Write a lammps data file
@@ -998,11 +999,12 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     
     print '\n'+data_file + '\n'
     if _topodata_ <> None:
-        atomstyle_o, _solvated_, _autoload_ = _topodata_['config'] 
+        atomstyle_o, _solvated_, _autoload_, root_folder = _topodata_['config']
         _, comb_rule, _, _, _ = _topodata_['defaults']
         
     else:
         print '**** Without _topodata_ !!'
+        root_folder = './'
         atomstyle_o = ''
         comb_rule = ''
         
@@ -1069,9 +1071,9 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     
     
     if 'data' in data_file:
-        _dtxt_+= 'read_data {}\n'.format(data_file)
+        _dtxt_+= 'read_data {}\n'.format( data_file)
     else:
-        _dtxt_+= 'read_restart {}\n'.format(data_file)
+        _dtxt_+= 'read_restart {}\n'.format( data_file)
     
     #===================================================
     ####--------------   NEIGHBOR LIST   -----------####
@@ -1212,8 +1214,11 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
                     _dtxt_ += 'unfix ' + tounfix[1][unf] + '\n'
     
     print ('Writing Lammps input script...')
-    
-    write_file( in_name , _dtxt_)
+    if root_folder <> './':
+        _folder_ = '/'.join( data_file.split('/')[:-1]+[''])
+    else:
+        _folder_ = root_folder
+    write_file( in_name , _dtxt_, _folder_)
     print_dec_g ('Successful writing!!')
     
     
