@@ -73,9 +73,9 @@ class Script_GUI(Frame):
         row2fill_l = Frame(row2fill)
         self.s_entry_c = []
         _mainpage_ = self._container_['mainpage']
-        _defvals_ = [ '0.5', '1000',
-                     '1000', '300:293', '100',
-                     '1000','-1:1', '1000', '293:300', '100']
+        _defvals_ = [ '0.1', '1000',
+                     '1000', '300:299', '100',
+                     '1000','10:1', '1000', '299:300', '100']
         _def_dataname_ = './data.gro2lam'
         if _mainpage_ <>[]:
             _def_dataname_ = _mainpage_[0]
