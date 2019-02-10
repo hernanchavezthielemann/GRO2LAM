@@ -59,7 +59,7 @@ class Script_GUI(Frame):
         self.build_finalbuttons()
         
         if self.master.test:
-            self.after(2000, self.master.swap_hook )
+            self.after(2000, self.test_hook)
     
     def createWidgets_n_pack(self):
         self.createWidgets()
@@ -435,5 +435,7 @@ class Script_GUI(Frame):
         if _bflag_<>None:
             return _flag_
         return max_at_index, bond_types, angle_types
-          
+        
+     def test_hook(self, event=None):
+        self.b1.invoke()         
 # vim:tw=80
