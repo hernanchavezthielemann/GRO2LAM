@@ -13,11 +13,7 @@
    * Works with more than one side molecule (eg. water + ions +...).
    * Accepts Ryckaert-Bellemans dihedral, direct conversion to opls dihedral Lammps style.
    * Accepts #define tag in dihedrals in the 'top' file.
-<!--te-->
-
-   New (possible) features in next release: 
-<!--ts-->
-   * To accept improper dihedral type. (An example to work with is needed)
+   * Accepts improper dihedral type.
 <!--te-->
 ## Table of contents
 
