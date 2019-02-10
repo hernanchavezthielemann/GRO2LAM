@@ -101,17 +101,42 @@ def check_in_file( _file_, *args, **kwargs):
                             break
     return _flags_
 
+def make_dir( _path_, _name_):
+    
+    if _path_[-1] == '/':
+        path_dir = _path_ + _name_
+    else:
+        path_dir = _path_ + '/' + _name_
+        
+    # TODO: hadle the case in which the folder already exists
+    #try:
+    #    write_file( 'test.txt', content=' ', path_dir):
+    #    out_file = open( path_dir + '/' + 'test.txt', "r")
+    #    out_file.close()
+    #    
+    #except IOError:
+        
+    system( 'mkdir ' + path_dir)
+    return path_dir + '/'
 
 def write_xfile(filename='test.txt',  content=''):
     
     write_file( filename, content)
     system('chmod +x '+filename)
 
-def write_file( filename='test.txt', content=''):
-        '''classic file maker'''
-        out_file = open( filename, "w")
-        out_file.write( content)
-        out_file.close()
+def move_file( _file_, _folder_):
+    system('mv ' + _file_ + ' ' + _folder_)
+
+def write_file( filename='test.txt', content='', _folder_ = None):
+    '''classic file maker'''
+    out_file = open( filename, "w")
+    out_file.write( content)
+    out_file.close()
+    
+    if _folder_ <> None:
+        move_file( filename, _folder_)
+    
+    
 
 def write_list2file( filename, listofstrings):
         '''datafile maker'''
