@@ -44,10 +44,17 @@ class Run_GUI(Frame):
         row2fill = Frame(self)
         row2fill_l = Frame( row2fill)
         
+        _def_inname_ = 'in.gro2lam'
+        if self.master._convertdata_ <> []:
+            _def_dataname_ = self.master._convertdata_['filename']
+            _folder_ = '/'.join( _def_dataname_.split('/')[:-1]+[''])
+            _def_inname_ =  _folder_ + _def_inname_
+        else:
+            _def_inname_ = './' + 'in.gro2lam'
         b_enb = ( self.master._convertdata_ == None)
         self.r_entry_c.append( createfileentry( self,
                                                'Select the script to run',
-                                               './in.gro2lam',
+                                               _def_inname_,
                                                ['.in', 'in.*'],
                                                ['lammps input',]*2,
                                                b_enb
