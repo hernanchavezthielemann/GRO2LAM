@@ -1008,7 +1008,7 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
         
     ## -------------------------- getting styles
     _aux_her = get_style_info( data_file)
-    print _aux_her
+    
     atomstyle, pairstyle, bondstyle, anglstyle, dihestyle, imprstyle = _aux_her
     if atomstyle_o <> '' and atomstyle_o <> atomstyle[0]:
         pop_wrg_1( 'Incongruence between atom styles!')
@@ -1031,7 +1031,7 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     # as I understand lammps default is 3
     #_dtxt_+= '%s %d\n'.format('dimension',dimension)
     _dtxt_+= 'atom_style '+atomstyle[0]+'\n'
-    if pairstyle == []:
+    if pairstyle[0] == '':
         if atomstyle[0] not in ['full', 'charge]']: # no charges
             if 'coul' in pairwiseint:
                 pairwiseint = pairwiseint.split('/coul')[0]
@@ -1057,13 +1057,13 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     # options like full and non bonded interactions could be asked by the user
     _dsc_txt=['pair_style {} {}'.format( pairwiseint, lj_rcutoff)]
     _dsc_txt.append(' {}\n'.format( c_rcutoff))
-    if bondstyle <> []:
+    if bondstyle[0] <> '':
         _dsc_txt.append( 'bond_style '+' '.join( bondstyle)+'\n')
-    if anglstyle <> []:
+    if anglstyle[0] <> '':
         _dsc_txt.append( 'angle_style '+' '.join( anglstyle)+'\n')
-    if dihestyle <> []:
+    if dihestyle[0] <> '':
         _dsc_txt.append( 'dihedral_style '+' '.join( dihestyle)+'\n')
-    if imprstyle <> []:
+    if imprstyle[0] <> '':
         _dsc_txt.append( 'improper_style '+' '.join( imprstyle)+'\n')
     _dtxt_+= ''.join(_dsc_txt[:_asty_d_[atomstyle[0]]])+'\n'
     
@@ -1223,9 +1223,9 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
 def get_style_info( lammps_datafile):
     
     #atom_sty, bond_sty, angl_sty, dihe_sty, impr_sty = '', '', '', '', ''
-    styles = [ 'Bond', 'Angle', 'Dihedral', 'Improper', 'Atoms', 'Pair' ]
+    styles = ['Pair', 'Bond', 'Angle', 'Dihedral', 'Improper', 'Atoms' ]
     sty_qty = [0,]*len( styles)
-    default_styles = [ 'harmonic', 'harmonic', 'charmm', 'harmonic', 'full','']
+    default_styles = [ '',]+ ['harmonic']*2 + [ 'charmm', 'harmonic', 'full']
     sty_container = [ [], [], [], [], [], []]
     
     def_wrg_str = ( '{} style info not found or missing in the data file!'
@@ -1244,8 +1244,11 @@ def get_style_info( lammps_datafile):
                             break
                 elif len (line_c) > 3 and  line_c[2] == 'xlo':
                     break
-            sty_qty[ 5] = sty_qty[ 4]
-            print 'Quantities : ', sty_qty
+            sty_qty[ 0] = sty_qty[ 5]
+            print 'Quantities : ',
+            for st in range( len( styles)):
+                print styles[st] + ' : ' + str( sty_qty[st]),
+            print '\n'
             read_flag = False
             reading_flag = False
             index = 0
@@ -1270,7 +1273,7 @@ def get_style_info( lammps_datafile):
                         reading_flag = True
                         new_sty = line_c[1]
                         if new_sty not in sty_container[ index]:
-                            print 'Style : ', styles[ index], ' - ', new_sty,
+                            print styles[ index] + 'Style : ' , new_sty,
                             sty_container[ index].append( new_sty)
                     
                 # cutting out the crap, normal empty and commented lines
@@ -1278,9 +1281,9 @@ def get_style_info( lammps_datafile):
                     pass
                     
                 elif  ( styles[ index] == line_c[0] and 
-                      ( index == 4 or 'Coeffs' == line_c[1]) ):
+                      ( index == 5 or 'Coeffs' == line_c[1]) ):
                     
-                    print index, styles[ index], k_line
+                    print index, styles[ index], k_line.rstrip()
                     aux_cont = k_line.split('#')
                     
                     if len( aux_cont) > 1:
@@ -1302,8 +1305,10 @@ def get_style_info( lammps_datafile):
         pop_wrg_1( 'Data file not found!')
         print ( 'Maybe try performing a conversion first! ;)')
         _flag_ = False
+    
+    print('\n')
+    sty_container = [sty_container[5],] + sty_container[:5]
     print sty_container
-    sty_container = sty_container[4:] + sty_container[:4]
     return sty_container
 
 if __name__ == '__main__':
