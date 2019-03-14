@@ -2,991 +2,1385 @@
 #    By Hernan Chavez Thielemann
 __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
+from lib.misc.file import write_file, make_dir
+from lib.misc.warn import print_dec_g, pop_wrg_1, pop_err_1, wrg_1
 
-from lib.misc.warn import wrg_1, wrg_3, pop_err_1, pop_wrg_1
-from lib.misc.file import check_file, debugger_file, fileseeker
 from sys import exit
 
-
-def extract_gromacs_data( _data_files_, _autoload_):
-    
-    ''' data files ---> ['gro file', 'top file', 'forcefield',
-        'non bonded file', 'bonded file']'''
-    # _water_names_
-    filename_gro    =   _data_files_[0]
-    filename_top    =   _data_files_[1]
-    filename_ff     =   _data_files_[2]
-    filename_nb     =   _data_files_[3]
-    filename_bon    =   _data_files_[4]
-    
-    data_container  =   {}
-    data_container['define'] = {}
-    #_solvated_f_, _autoload_= _ck_buttons_
-    print 'Autoload: {}\n'.format( _autoload_)
-    
-    if not _autoload_:
-        print filename_ff # or not
-        
-    _sidemol_f_ = False
-    
-    ###########################################################################
-    ###########################################################################
-    section = '''---------------    FILE GRO      ----------------------'''
-    #=========================================================================#
-    
-    ok_flag, gro_pack, b_xyzhi = get_gro_fixed_line( filename_gro)
-    if not ok_flag:
-        pop_err_1('Problem detected in :\n' + section)
-        return {}, [ ok_flag, _sidemol_f_]
-    
-    _mol_, _mtype_, _type_, _xyz_, _mtypes_ = gro_pack
-    data_container['atomsdata'] = [ _mol_, _mtypes_, _type_, _xyz_, _mtype_]
-    
-    
-    #################    BOX DEF   ##################
-    xlo = 0
-    xhi = b_xyzhi[0]*10
-    ylo = 0
-    yhi = b_xyzhi[1]*10
-    zlo = 0
-    zhi = b_xyzhi[2]*10   
-    data_container['box']=[xlo,xhi, ylo,yhi, zlo,zhi]
-    
-    ###########################################################################
-    ###########################################################################
-    section = '''----------------  .FILE TOP.  ---------------'''
-    #=========================================================================#
-    
-    #################   Defaults   ##################
-    
-    data_container['defaults'], ok_flag, _a_fff_ = ck_forcefield( filename_ff,
-                                                                  filename_top)
-    filename_ff = _a_fff_
-    
-    if not ok_flag:
-        pop_err_1('Problem detected in :\n' + section.split('.')[1])
-        return {}, [ ok_flag, _sidemol_f_]
-    
-    buckorlj = int(data_container['defaults'][0])
-    
-    ############
-    startstrings = ['[ moleculetype ]', '[ atoms ]', '[ bonds ]', '[ pairs ]',
-                    '[ angles ]', '[ dihedrals ]', '[ system ]',
-                    '[ molecules ]', '']
-    exclusions_ = ['[ bonds ]', '[ pairs ]', '[ angles ]', '[ dihedrals ]']
-    # Scheme type????
-    pure_side_mol_flag = ( ( seek_for_directive( [ filename_top],
-                                                'moleculetype') == '') or 
-                           ( filename_nb == filename_ff and
-                             filename_nb == filename_bon))
-    
-    if pure_side_mol_flag:
-        startstrings = startstrings[-3:]
-        print wrg_3( 'Using pure side molecule scheme')
-        #n_atoms     =   0
-        #n_bonds     =   0
-        #n_angles    =   0
-        data_container['atoms']     =   []
-        data_container['bonds']     =   []
-        data_container['angles']    =   []
-        data_container['dihedrals']     =   []
-        
-    for ti in range(len(startstrings))[:-1]:
-        s_str_ = startstrings[ ti][ 2:-2]
-        ''' here is possible to insert a selector in case pairs and 
-        others can be obviated'''
-        data_container[ s_str_], ok_flag, _ = get_topitp_line( filename_top,
-                                                               startstrings[ti]
-                                                             )
-        
-        if not ok_flag:
-            
-            if startstrings[ti] not in exclusions_:
-                print wrg_3( 'Not ok flag in <extract_gromacs_data> top file' +
-                         'section, in ' + s_str_)
-                return {}, [ ok_flag, _sidemol_f_]
-            else:
-                ok_flag = True
-        #debugger_file( s_str_, data_container[s_str_])
-    
-    n_atoms     =   len( data_container['atoms'])
-    n_bonds     =   len( data_container['bonds'])
-    n_angles    =   len( data_container['angles'])
-    
-    ###########################################################################
-    section = '''----------  .SIDE MOLE FILES.   -------------'''
-    #=========================================================================#
-    #### research in topology for new molecules / side molecules
-    if _autoload_:
-        data_container, ok_flag, _sidemol_f_ = sidemol_data( filename_top,
-                                                            data_container)
-    if not ok_flag:
-        pop_err_1( 'Problem detected in :\n' + section.split('.')[1])
-        return {}, [ ok_flag, _sidemol_f_]
-    
-    
-    ###########################################################################
-    section = '''-----------------  .FILE NB.  ---------------'''
-    #=========================================================================#
-    startstrings = ['[ atomtypes ]', '[ nonbond_params ]']
-    
-    data_container['atomtypes'], ok_flag, _ = get_topitp_line( filename_nb,
-                                                               '[ atomtypes ]')
-    if not ok_flag:
-        pop_err_1('Problem detected in :\n' + section.split('.')[1])
-        return {}, [ ok_flag, _sidemol_f_]
-    
-    n_atomtypes     =   len( data_container['atomtypes'])
-    
-    #debugger_file( 'atomtypes',data_container['atomtypes'])
-    ###########################################################################
-    section = '''----------------  .FILE BON.  ---------------'''
-    #=========================================================================#
-    
-    
-    startstrings = ['[ bondtypes ]', '[ angletypes ]', '[ dihedraltypes ]', '']
-    if filename_nb == filename_ff and filename_nb == filename_bon:
-        
-        for bi in range( len( startstrings))[:-1]:
-            s_str_ = startstrings[ bi][ 2:-2]
-            data_container[ s_str_] =   []
-            data_container['define'][s_str_[:-5]] = {}
-            
-        #data_container['impropers']     =   []
-        #data_container['impropertypes'] =   []
-        startstrings = startstrings[-1]
-    
-    aux_strings = [ 'bonds', 'angles', 'dihedrals']
-    for bi in range( len( startstrings))[:-1]:
-        s_str_ = startstrings[ bi][ 2:-2]
-        
-        _aux_here_ = get_topitp_line( filename_bon, startstrings[ bi])
-        data_container[ s_str_], ok_flag, _data_define_ = _aux_here_
-        data_container['define'][s_str_[:-5]] = _data_define_
-        #debugger_file(s_str_, data_container[s_str_])
-        
-        if not ok_flag:
-            
-            if data_container[ aux_strings[ bi]] <> []:
-                pop_err_1('Problem detected in :\n' + section.split('.')[1])
-                return {}, [ ok_flag, _sidemol_f_]
-            else:
-                ok_flag = True
-    
-    ###########################################################################
-    '''----------------        #define &  Impropers          ---------------'''
-    #=========================================================================#
-    gromosff_flag = False
-    aux_here = {}
-    data_container[ 'define'][ 'improper'] = {}
-    
-    if filename_nb <> filename_ff and filename_nb <> filename_bon:
-        aux_here = get_gromos_define( filename_bon)
-        
-    for key_ in aux_here.keys():
-        if aux_here[ key_] <> {}:
-            print ( 'GROMOS ' + key_ + ' kind detected!')
-            data_container[ 'define'][ key_].update( aux_here[ key_])
-            gromosff_flag = True
-            
-    if gromosff_flag:
-        for ss_ in startstrings[:-1]:
-            s_str_ = ss_[ 2:-2]
-            data_aux = data_container[ s_str_]
-            cont_k = s_str_[ :-5]
-            cddd = data_container[ 'define'][ cont_k]
-            for i in range( len( data_aux)):
-                if len( data_aux[i][-1].split('.')) < 2:
-                    if  not data_aux[i][-1].isdigit():
-                        aux = data_aux[i][:-1] + cddd[ data_aux[i][-1]]
-                        #print aux
-                        data_container[ s_str_][i] = aux
                     
+
+def extract_lammps_data(_data_file_,_ck_buttons_, _forcefield_):
+    ''' already implemented in  topology analizer
+            MIXER
+    '''
+
+def write_lammps_data( _topodata_, df_name, _config_):
+    ''' Write a lammps data file'''
+    print_dec_g ('Writing Lammps data file...')
+    ####---------------  Unpacking data  ----------------####
+    atomstyle, _, _autoload_, root_folder = _config_
+    atsty = [ 'atomic', 'angle', 'full', 'charge', 'bond', 'molecular']
+    style_str = '####-------  ATOM STYLE < {} >  --------####'
+    _flag_ = False
+    _content_=''
+    if atomstyle in atsty:
+        nam = ''.join([ chr( ord(l) - 32) for l in atomstyle])
+        print_dec_g(style_str.format(nam))
+        
+        print '\n'+'='*10+' Still in BETA here '+'='*10+'\n'
+        _content_, _flag_ = write_lammps_data_auto( _topodata_,
+                                                    df_name,
+                                                    _config_[:-1]
+                                                  )
+            
+        errmsg = 'Error writing lammps data file'
+        if _flag_:
+            path_dir = make_dir( root_folder, 'g2l_dir')
+            write_file( df_name, _content_, path_dir)
+            print_dec_g ('Successful writing!!')
+        elif _autoload_:
+            pop_err_1(errmsg + '\nAutoload failed!')
+        else:
+            pop_err_1(errmsg)
+    else: #if atomstyle == 'Angle':
+        print '\n\nExit'
+        exit(('Error 037!!  -  Atom style {} '
+              +'not implemented yet').format(atomstyle))
     
+    return _flag_, path_dir + df_name
+
+def write_lammps_data_auto( _topodata_, data_name, _config_):
+    ''' Write a lammps data file
+        now with autoload,
+        including impropers dihedrals (Aka Wop)
+    '''
     
-        #print data_container['define']['bond']['gb_33']
-    # Search for impropers in TOP and BON, using crossreference if needed
-    data_container = split_dihedral_improper( data_container)
+    _flag_ = False
+    ####---------------  Unpacking data  ----------------####
+    _numbers_ = _topodata_['numbers']
+    n_atoms, n_bonds, n_angles, n_dihedrals, n_impropers = _numbers_['total']
+    n_atomtypes, n_bondtypes, n_angletypes = _numbers_['type'][:3]
+    n_dihedraltypes, n_impropertypes = _numbers_['type'][3:]
+    _box_= _topodata_['box']
+    _mol_, _mtype_g_, _atype_, _xyz_, _mtype_ = _topodata_['atomsdata'] 
     
-    n_dihedrals     =   len( data_container['dihedrals'])
-    n_impropers     =   len( data_container['impropers'])
-    
-    ###########################################################################
-    '''--------------              "Side Mol"                 --------------'''
-    #=========================================================================#
-    n_atomsnew = len( _type_)
+    atomstyle, _sidemol_f_, _autoload_ = _config_ 
     
     if _sidemol_f_:
+        sidemol = _topodata_['sidemol']
         
-        # A_02 maths
-        sidemol = data_container['sidemol']
-        side_bonds_n    = 0
-        side_angles_n   = 0
-        side_dihed_n    = 0
-        side_improp_n   = 0
+    _asty_d_ ={ 'atomic':1, 'charge':1, 'bond':2, 'angle':3,
+                'full':4, 'molecular':4}
+    
+    #########################################################
+    '''--------------      1st  Header      --------------'''
+    #=======================================================#
+    
+    ####---------------     TITLE        ----------------####
+    _text_ = '#Lammps data file. Geometry for PEG. By GRO2LAM converter.\n\n'
+    ####---------------     NUMBERS      ----------------####
+    _aux_txt = [' {} atoms\n'.format( n_atoms)]
+    _aux_txt.append(' {} bonds\n'.format( n_bonds))
+    _aux_txt.append(' {} angles\n'.format( n_angles))
+    _aux_txt.append(' {} dihedrals\n'.format( n_dihedrals) + 
+                    ' {} impropers\n'.format( n_impropers))
+    _text_ += ''.join( _aux_txt[:_asty_d_[atomstyle]])+'\n'
+    
+    ####----------------    TYPES       -----------------####
+    _aux_txt = [ ' {} atom types\n'.format( n_atomtypes)]
+    _aux_txt.append( ' {} bond types\n'.format( n_bondtypes))
+    _aux_txt.append( ' {} angle types\n'.format( n_angletypes))
+    _aux_txt.append( ' {} dihedral types\n'.format( n_dihedraltypes) +
+                     ' {} improper types\n\n'.format( n_impropertypes))
+    _text_ += ''.join( _aux_txt[ : _asty_d_[ atomstyle]]) + '\n'
+    
+    ####----------------    BOX     -----------------####
+    _text_ +=(' {:.4f} {:.4f} xlo xhi\n {:.4f} {:.4f} ylo yhi\n'
+              +' {:.4f} {:.4f} zlo zhi\n').format(*_box_)
+    
+    #######################-------------------------###########################
+    '''---------           2nd  Atom kind Properties             -----------'''
+    #======================-------------------------==========================#
+    
+    #####------                       MASSES                         ------####
+    _text_ +='\n Masses\n\n'
+    atom_info = _topodata_['atomtypes']
+    minr = 1 - int( _topodata_[ 'defaults'][0]) # 0 lj and -1 buck
+    already_warned = 0
+    for i in range( n_atomtypes):
+        _atom_mass_ = atom_info[i][ -5 + minr]
+        _atom_type_ = atom_info[i][0]
         
-        for sb in range( len( sidemol['tag'])):
-            bonds_x_mol = len( sidemol['data'][sb]['bonds'])
-            angles_x_mol = len( sidemol['data'][sb]['angles'])
-            dihedr_x_mol = len( sidemol['data'][sb]['dihedrals'])
-            improp_x_mol = len( sidemol['data'][sb]['impropers'])
+        if not float( _atom_mass_) and _sidemol_f_: #meaning that is 0
             
-            sm_quantity = sidemol['num'][sb]
-            side_bonds_n    += sm_quantity * bonds_x_mol
-            side_angles_n   += sm_quantity * angles_x_mol
-            side_dihed_n    += sm_quantity * dihedr_x_mol
-            side_improp_n   += sm_quantity * improp_x_mol
-            
+            smols = sidemol['tag']
+            #print 'here1', smols
+            for ad in range( len(smols)):
+                _smda_ = sidemol['data'][ad]['atoms']
+                #print _smda_
+                at_ = 0
+                for at_ in range( len( _smda_)):
+                    #print _smda_[at_], at_
+                    if _smda_[at_][1] == _atom_type_ and len(_smda_[at_]) == 8:
+                        _atom_mass_ = _smda_[at_][7]
+                        print ( ('Mass for {} not found in atomtypes, taking' 
+                                 + ' {} as substitute').format( _atom_type_, 
+                                                                _atom_mass_)
+                              )
+                        break
+                #if len(_smda_[at_]) == 8 and _atom_mass_ == _smda_[at_][7]:
+                #    print at_
+                #    break
         
-        contentkey = [ 'bond', 'angle', 'improper', 'dihedral']
-        for cont_k in contentkey:
-            cddd = data_container[ 'define'][ cont_k]
-            
-            if cddd.keys() <> []:
-                for sb in range( len( sidemol['tag'])):
-                    datacont = sidemol['data'][sb][cont_k+'s']
-                    for dc in range( len(datacont)):
-                        if not datacont[dc][-1].isdigit():
-                            aux = datacont[dc][:-1] + cddd[ datacont[dc][-1]]
-                            sidemol['data'][sb][cont_k+'s'][dc] = aux
-                        #elif 'gb_33' in datacont[dc]:
-                        #else:
-                            #print datacont[dc]
-        
-        n_bondsnew  =   n_bonds + side_bonds_n
-        n_anglesnew =   n_angles + side_angles_n
-        n_dihednew  =   n_dihedrals + side_dihed_n
-        n_impropnew =   n_impropers + side_improp_n
-        
-        #print n_bonds, side_bonds_n, n_bonds + side_bonds_n
-        #print n_angles, side_angles_n, n_angles + side_angles_n
-        
-        # Regarding the itp format:
-        #   charges index 6 in data-atoms
-        #   opls names in index 1
-        #   atom tags in index 4
-        _charge_ = {}
-        _conv_dict_ = {}
-        for sb in range( len( sidemol['tag'])):
-            for at in range( len( sidemol['data'][sb]['atoms'])):
-                a_opls_tag = sidemol['data'][sb]['atoms'][at][1]
-                a_elem_tag = sidemol['data'][sb]['atoms'][at][4]
-                a_charge = float( sidemol['data'][sb]['atoms'][at][6])
-                _charge_[a_opls_tag] = a_charge
-                _conv_dict_[ a_elem_tag] = a_opls_tag
-        print '='*45+'\n'+'='*5+'  Charges found: '
-        print _charge_
-        print _conv_dict_
-        
-        data_container['S_charge'] =_charge_
-        data_container['S_translation'] =_conv_dict_
-        #######################################################################
-        ############               Esoteric part ;)             ###############
-        ####----------- DEFINING BONDED INTERACTIONS     ----------####
-        # load the side molecules data if exist
-        #sidemol = _topodata_['sidemol']
-        smol_extra_bondtypes        =   []
-        smol_extra_angletypes       =   []
-        smol_extra_dihedraltypes    =   []
-        smol_extra_impropertypes    =   []
-        
-        bn_namelist = []
-        an_namelist = []
-        di_namelist = []
-        im_namelist = []
-        
-        for sb in range( len( sidemol['tag'])):
-            _smd_ = sidemol['data'][sb]
-            
-            _at_dic_here = {}
-            for _at in range( len( _smd_['atoms'])):
-                _smat_ = _smd_['atoms'][_at]
-                _at_dic_here[ _smat_[0]] = _smat_[1]
+        if not float( _atom_mass_):
+            _atom_mass_ = '0.01008' # H_mass/100 as minimum seems reasonable
+            if not already_warned:
+                pop_wrg_1( ('0.0 mass not supported! using {} instead for {} '
+                            + 'atom type').format( _atom_mass_, _atom_type_) )
+                already_warned += 1
                 
-            
-            for _bn in range( len( _smd_['bonds'])):
-                _smbn_ = _smd_['bonds'][_bn]
-                aux_here = [_at_dic_here[ _smbn_[0]], _at_dic_here[ _smbn_[1]]]
-                name = '{}-{}'.format(*aux_here)
-                if name not in bn_namelist:
-                    bn_namelist.append( name)
-                    smol_extra_bondtypes.append( aux_here + _smbn_[2:])
+            else: # just to avoid the pain in the ass caused by these popups
+                if already_warned == 1:
+                    pop_wrg_1( ( 'All 0.0 mass are converted as: {}\nSee the '
+                              +'terminal for more info.').format( _atom_mass_))
+                    already_warned += 1
                     
-            for _an in range( len( _smd_['angles'])):
-                _sman_ = _smd_['angles'][_an]
-                aux_here = [_at_dic_here[ _sman_[0]], _at_dic_here[ _sman_[1]],
-                            _at_dic_here[ _sman_[2]] ]
-                name = '{}-{}-{}'.format(*aux_here)
-                if name not in an_namelist:
-                    an_namelist.append( name)
-                    smol_extra_angletypes.append( aux_here + _sman_[3:])
-                    
-            for _dh in range( len( _smd_['dihedrals'])):
-                _smdh_ = _smd_['dihedrals'][_dh]
-                aux_here = [_at_dic_here[ _smdh_[0]], _at_dic_here[ _smdh_[1]],
-                            _at_dic_here[ _smdh_[2]], _at_dic_here[ _smdh_[3]]]
-                name = '{}-{}-{}-{}'.format(*aux_here)
-                if name not in di_namelist:
-                    di_namelist.append( name)
-                    smol_extra_dihedraltypes.append( aux_here + _smdh_[4:])
-            
-            for _im in range( len( _smd_['impropers'])):
-                _smim_ = _smd_['impropers'][_im]
-                aux_here = [_at_dic_here[ _smim_[0]], _at_dic_here[ _smim_[1]],
-                            _at_dic_here[ _smim_[2]], _at_dic_here[ _smim_[3]]]
-                name = '{}-{}-{}-{}'.format(*aux_here)
-                if name not in im_namelist:
-                    im_namelist.append( name)
-                    smol_extra_impropertypes.append( aux_here + _smim_[4:])
-                
-            if len( _smd_.keys()) > 5:
-                print ('Uuupa!! This thing is not implemented yet' +
-                       ' as side mol part')
-                a_key = [ 'atoms', 'bonds', 'angles', 'dihedrals', 'impropers']
-                for ky in _smd_.keys():
-                    if ky not in a_key:
-                        print ('-- > this key : ' + ky)
-                
-                
-            # ---------   !!!!    Update the info    !!!!
-        data_container['bondtypes'] = ( smol_extra_bondtypes +
-                                       data_container['bondtypes'] )
-        data_container['angletypes'] = ( smol_extra_angletypes + 
-                                        data_container['angletypes'])
-        data_container['dihedraltypes'] = ( smol_extra_dihedraltypes + 
-                                        data_container['dihedraltypes'])
-        data_container['impropertypes'] = ( smol_extra_impropertypes + 
-                                        data_container['impropertypes'])
-    else:
-        n_bondsnew  = n_bonds
-        n_anglesnew = n_angles
-        n_atomsnew  = n_atoms
-        n_dihednew  = n_dihedrals
-        n_impropnew = n_impropers
+                wrg_1(('0.0 mass not supported! using {} instead for {} '
+                            + 'atom type').format( _atom_mass_, _atom_type_))
+        
+        _text_ +=' {} {} # {}\n'.format( i+1, _atom_mass_, _atom_type_)
+        
+    #======================-------------------------==========================#
+    #####------                    Force field                       ------####
     
-    ###################### trabajo
-    # marker: 'bond_kinds'angl_kinds'dihe_kinds'impr_kinds'
-    nice_list = [ 'bondtypes', 'angletypes', 'dihedraltypes','impropertypes']
+    aux_pot_txt, dicts, _flag_, rg_sgep = write_lammps_potentials( _topodata_,
+                                                                   atomstyle)
+    _text_ += aux_pot_txt
     
-    for it in range( len( nice_list)):
-        _aux_set_here = set()
-        poss = it + 2
-        if poss > 4:
-            poss = 4
-        for i in range( len ( data_container[ nice_list[it] ])):
-            _aux_set_here.add( data_container[ nice_list[it] ][i][ poss ])
-        #print _aux_set_here
-        data_container[ nice_list[it][:4]+'_kinds'] = _aux_set_here
+    #########################################################
+    '''-----------       3rd  Atom Coords     ------------'''
+    #=======================================================#
+    
+    ####------                       ATOMS                           ------####
+    known_atoms = _topodata_['atoms']
     
     
-    n_bondstypes    =   len( data_container['bondtypes'])
-    n_anglestypes   =   len( data_container['angletypes'])
-    n_dihedraltypes =   len( data_container['dihedraltypes'])
-    n_impropertypes =   len( data_container['impropertypes'])
+    _text_ +='\n Atoms #{}\n\n'.format( atomstyle)
     
-    data_container['numbers']={}
-    data_container['numbers']['total'] = [n_atomsnew, n_bondsnew,
-                                          n_anglesnew, n_dihednew, n_impropnew
-                                         ]
-    data_container['numbers']['type'] = [n_atomtypes, n_bondstypes,
-                                         n_anglestypes, n_dihedraltypes,
-                                         n_impropertypes]
-    print 'Ending gromacs data parsing\n'
-    return data_container, [ ok_flag, _sidemol_f_]
+    if atomstyle in ['charge','full']:
+        atom_shape = ' {}'*3+' {:7.4f}'*4+' # {}\n'# idx mol atype charge x y z
+    elif atomstyle in ['bond','angle','molecular']:
+        atom_shape = ' {0} {1} {2} {4:7.4f} {5:7.4f} {6:7.4f} # {7}\n'
+    elif atomstyle =='atomic':
+        atom_shape = ' {0} {2} {4:7.4f} {5:7.4f} {6:7.4f} # {7}\n'
+        
+    base_atoms_n = len( known_atoms)
+    for i in range( base_atoms_n):
+        aty = known_atoms[i][1]
+        _text_ += atom_shape.format( i+1, _mol_[i],
+                                    dicts[0][ aty],
+                                    float(known_atoms[ i][6]), # charge?? WF
+                                    float(_xyz_[i][0])*10,
+                                    float(_xyz_[i][1])*10,
+                                    float(_xyz_[i][2])*10,
+                                    aty
+                                   )
+    sm_bonds = []
+    sm_angles = []
+    sm_dihedrals = []
+    sm_impropers = []
+    # asumption: all solvated structures are water??
+    # 
+    # =============== Solvated topogoly generation ================= #
+    TRASH_CAN =  ''' next time better to reccon the structure, the repeating
+                    unit, and then get the involved atoms, order, and then 
+                    bonds, angles.... get this with the coordinates is another
+                    option that probably is going to take longer rt
+                 '''
+    
+    _residue_buffer_    = '00'
+    _mol_buffer_ = 'nk_type'
+    solv_at_v           = []
+    #print dicts[0]
+    if _sidemol_f_ == 1:
+        
+        #charge = _topodata_['S_charge']
+        #conv_dict = _topodata_['S_translation'] # key s_tag : val l_tag
+        sm_cont = {}
+        sm_charge   = []
+        sm_aty      = []
+        sm_data     = {}
+        ji_ = 0
+        solv_at_v = range( n_atoms)[ base_atoms_n:]
+        multi_residue = 0
+        sidemols = 0
+        smc = -1
+        for i in range( len ( sidemol['tag'])): 
+            sidemols +=  sidemol['num'][i] 
+        
+        print( 'Sidemols: ' + str( sidemols) )
 
-def sidemol_data( _file_top_, data_container):
-    ''' getter of the side molecules data'''
-    
-    sidemol = {'tag': [],'num':[], 'data':[] }# Tag # mol_number
-    sm_flag = False
-    # all molecules info
-    _aux_m_ = data_container[ 'molecules']
-    
-    # names of non side molecules
-    if 'moleculetype' in data_container.keys():
-        non_sm = data_container['moleculetype']
-        non_sm = [non_sm[i][0] for i in range(len(non_sm))]
-        _buffer_ = ''
-    else:
-        # non conventional case
-        non_sm = ['']
-        _buffer_ = '0'
+        #print n_atoms, base_atoms_n, len( _mtype_), solv_at_v, _atype_
+    for i in solv_at_v:
         
-    # side molecules info filtering
-    for i in range( len( _aux_m_)) :
-        if _aux_m_[i][0] not in non_sm:
-            sidemol['tag'].append( _aux_m_[i][0])
-            sidemol['num'].append( int(_aux_m_[i][1]))
-            sm_flag = True
-        
-    
-    if sm_flag:
-        #////////======= Side molecule >>> file <<< search   ==========////////
-        print ('\nLoading side molecule files: ' )
-        _sm_files_ = []
-        root_dir = '/'.join( _file_top_.split('/')[:-1]+[''])
-        ok_flag = False
-        with open( _file_top_, 'r')  as topdata:
-            if sidemol['tag'] == []:
-                topdata = []
-            for k_line in topdata:
-                if k_line.startswith('#'):
-                    
-                    logic_test = ('#if' not in _buffer_ and _buffer_ <> '')
-                    
-                    if k_line.startswith('#include') and logic_test:
-                        if _sm_files_ == []:
-                            ok_flag = True
+        #aty = conv_dict[_atype_[i]] # _atype_ is the atag in TOP
+        #print _atype_[i], aty
+        # meaning new molecule // maybe same type
+        clause1 = (_mol_[i] <> _residue_buffer_)
+        #print clause1
+        if multi_residue and clause1: # mol number
+            _residue_buffer_ = _mol_[i]
+            multi_residue -= 1
+            if not multi_residue:
+                _mol_buffer_ = 'nk_type'
+            #print ji_, sm_aty[ ji_], _residue_buffer_
+            #print _mol_[i], bool(multi_residue)
+                
+        elif clause1: # mol number
+            
+            _residue_buffer_ = _mol_[i]
+            if _mtype_[i] <> _mol_buffer_:
+                _mol_buffer_ = _mtype_[i]
+                smc += 1
+                
+            _smol_tag_ = sidemol['tag'][ smc]
+            #print '\n'+'here ', smc
+            ji_ = 0 # j index
+            #print i+1, _mtype_[i], _smol_tag_
+            # meaning also a new type of molecule ???
+            if _smol_tag_ not in sm_cont.keys():
+                
+                new_smol_str = '** New side molecule : {} 1st atom : {} **'
+                print( '\n' + new_smol_str.format( _smol_tag_, _atype_[i]))
+                sm_charge   = []
+                sm_aty      = []
+                
+                ###########     New side mol data     ########
+                sm_data = sidemol['data'][  smc]
+                ##############################################
+                
+                aux_buffer = ''
+                if _mtype_[i] == sm_data['atoms'][0][3]:
+                    for ath in sm_data['atoms']:
+                        sm_charge.append(float( ath[6]))
+                        sm_aty.append( ath[1])
                         
-                        new_filename = k_line.split('"')[1].lstrip('.')
-                        new_filename = new_filename.lstrip('/').split('/')[-1]
-                        po_file = fileseeker( root_dir, new_filename)
-                        if po_file <> []:
-                            _sm_files_.append( po_file[0])
-                            print _sm_files_[-1]
-                            ok_flag *= check_file( po_file[0],
-                                                  content='[ atoms ]')
-                    else:
-                        _buffer_ = k_line
-        # do it in the same loop or not that is the thing... maybe is better
-        # to not just beacause the indentation going to +inf atoms
-        #////////======= Side molecule >>> data <<< search   ==========////////
-        if ok_flag:
-            for sm in sidemol['tag']:
-                aux_data, aux_flag = sidemol_data_gatherer( _sm_files_, sm)
-                #print aux_data
-                ok_flag *= aux_flag
-                sidemol['data'].append( aux_data)
-                
-        
-        data_container['sidemol'] = sidemol
-        
-    else:
-        print ('No side molecule files detected!' )
-        ok_flag = True
-        
-    return data_container, ok_flag, sm_flag
-
-def sidemol_data_gatherer( _sm_files_, _sm_):
-    ''' collects all the data related with one kind of side molecule
-        the data types are specified in startstrings
-    '''
-    print 'Search for: ', _sm_, ' in: ' ,_sm_files_
-    _flag_ = True
-    _file_ = ''
-    _sm_data_c_ = {}
-    # is sm in sm_file?? in cases with more than one file
-    for smfile in _sm_files_:
-        with open( smfile, 'r')  as sm_data:
-            read_flag = False
-            i = 0
-            for j_line in sm_data:
-                j_line = j_line.split(';')[0].strip()
-                
-                #print j_line, read_flag, j_line.startswith(sm)
-                
-                if j_line.startswith('['):
-                    if j_line.startswith('[ moleculetype ]'):
-                        read_flag = True
-                        i = 0
-                    else:
-                        read_flag = False
+                        # multiple residues per side mol???
+                        #lets see how many
+                        if ath[2] <> aux_buffer:
+                            #print ath[2]
+                            if aux_buffer <> '':
+                                multi_residue += 1
+                            aux_buffer = ath[2]
                         
-                elif read_flag and j_line.startswith( _sm_):
-                    _file_ = smfile
-                    break
-                elif read_flag:
-                    i +=1
-                    if i > 3:
-                        read_flag = False
-                
-                        
-    if _file_=='':
-        pop_err_1('Error!! side molecule {} not found in itp -- '.format( _sm_))
-        _flag_ = False
-    else:
-        tag_str = [ 'atoms', 'bonds', 'angles', 'dihedrals','fin']
-        _sm_data_c_ = { x:[] for x in tag_str if x <> 'fin'}
-        read_flag = False
-        iner_flag = False
-        cd_tag = ''
-        i = 0
-        with open( _file_, 'r')  as sm_data:
-            
-            for j_line0 in sm_data:
-                j_line = j_line0.split(';')[0].split()
-                if not j_line:
-                    pass
-                elif read_flag:
-                    if j_line[0][0] == '#':
-                        pass
-                    elif j_line[0][0] == '[':
-                        if  j_line[1]  <> tag_str[i] :
-                            if j_line[1] in tag_str[i+1:]:
-                                i = tag_str.index( j_line[1])
-                                cd_tag = tag_str[i]
-                                iner_flag = True
-                            elif j_line[1] == 'moleculetype':
-                                break
-                            else:
-                                txt_s = '> {} not considered in {}'
-                                print txt_s.format( j_line[1], _sm_)
-                                iner_flag = False
-                        else :
-                            cd_tag = tag_str[i]
-                            iner_flag = True
-                            
-                    elif iner_flag:
-                        #print j_line
-                        _sm_data_c_[ cd_tag].append( j_line)
-                            
-                            
-                elif j_line0.lstrip().startswith( _sm_):
-                    read_flag = True
+                    if multi_residue:
+                        print ( '** It is a multi residual structure.\n** '
+                               +'With: '+str( multi_residue +1)+' residues.')
+                        #multi_residue -= 1
                     
-        # todo add a new check in case of empty container
-        #print _sm_data_c_
-        ######### Split impropers and dihedrals
-        # to do make this a function and use it also in split_dihedral_improper
-        # GROMOS improper dihedrals
-        ImproperKind = '2' 
-        sm_im_data_ = []
-        sm_dh_data_ = []
-        _dihedrals_data_ = _sm_data_c_['dihedrals']
-        for i in range( len ( _dihedrals_data_)):
-            if _dihedrals_data_[i][4] == ImproperKind:
-                sm_im_data_.append( _dihedrals_data_[i])
-            else:
-                sm_dh_data_.append( _dihedrals_data_[i])
-                
-        # Save/overwriting point
-        _sm_data_c_['impropers'] = sm_im_data_
-        _sm_data_c_['dihedrals'] = sm_dh_data_
-        
-        #if _sm_data_c_['impropers'] <>[]:
-        #    print _sm_data_c_['impropers']
-        
-    return _sm_data_c_, _flag_
-
-def split_dihedral_improper( _data_container_, smt_flag = False):
-    ''' Seems that in GROMACS, impropers are present as a kind of 
-        dihedral type, so this function is meant to pick the dihedral
-        data and split it resizing the original container and creating
-        a new improper-container.
-        
-        Creates #define data in dihedrals
-        
-        Also creates the data regarding kinds of functions. Useful when
-        '1' and '3' are used in the same file
-        
-    '''
-    
-    DihedralKind = '1'
-    ImproperKind = '2'
-    RyckBellKind = '3'
-    
-    _dihedrals_data_ = _data_container_[ 'dihedrals']
-    ###              =========================================              ###
-    ''' =============             Dihedral TOP data           ============= ''' 
-    im_data_ = []
-    dh_data_ = []
-    
-    def_dihe_extra = [] # ---------------------------------CanBDel?
-    def_impr_extra = []
-    
-    ##def_dihe_type_set = set()
-    #def_impr_type_set = set()
-    #dihe_kind_name = set()
-    #impr_kind_name = set()
-    for i in range( len ( _dihedrals_data_)):
-        #  Dihedral line format in :
-        #  ai  aj  ak  al  funct   c0  c1  c2  c3  c4  c5
-        #print _dihedrals_data_[i]
-        if _dihedrals_data_[i][4] in [ DihedralKind, RyckBellKind]:
-            dh_data_.append( _dihedrals_data_[i])
-            #dihe_kind_name.add( _dihedrals_data_[i][4])
-            
-            if len (_dihedrals_data_[i])>5:
-                def_dihe_extra.append( _dihedrals_data_[i])
-                #def_dihe_type_set.add( str(_dihedrals_data_[i][5:]))
-                
-                
-        elif _dihedrals_data_[i][4] == ImproperKind:
-            im_data_.append( _dihedrals_data_[i])
-            #impr_kind_name.add( _dihedrals_data_[i][4])
-            
-            if len (_dihedrals_data_[i])>5:
-                def_impr_extra.append( _dihedrals_data_[i])
-                #def_impr_type_set.add( str(_dihedrals_data_[i][5:]))
-        else:
-            print 'Problem #008 here\n #split_dihedral_improper'
-    
-    # Save/overwriting point
-    _data_container_['impropers'] = im_data_
-    _data_container_['dihedrals'] = dh_data_
-    #====================================================
-    ''' ======== "Type" Dihedral BONDED data  ======= '''
-    _dihe_type_data_ = _data_container_['dihedraltypes']
-    im_type_ = []
-    dh_type_ = []
-    #print _dihe_type_data_
-    for i in range( len ( _dihe_type_data_)):
-        #  Dihedral line format:
-        #  ai  aj  ak  al  funct   c0  c1  c2  c3  c4  c5
-        if _dihe_type_data_[i][4] == ImproperKind:
-            im_type_.append( _dihe_type_data_[i])
-        else:
-            dh_type_.append( _dihe_type_data_[i])
-    # Save/overwriting point
-    _data_container_['impropertypes'] = im_type_
-    #_data_container_['dihedraltypes'] = dh_type_
-    #====================================================
-    ''' ========  Dihedral "#define" data  ========== ''' 
-    def_dihe_dic = {}
-    def_impr_dic = {}
-    # If there are define potentials, I have to process... by types and kind
-    '''    Make it homogeneous - New kind creations   '''
-    # first_clause = ( maybe should be an inner clause
-    '''     Now supposing that just #define exist with a tag in the c0
-            position...'''
-    new_dihedraltypes = {}
-    define_dic = _data_container_['define']['dihedral']
-    if define_dic <> {}:
-        
-        known_atoms = _data_container_['atoms']
-        for dh in range( len( def_dihe_extra)):
-            _dhi_ = def_dihe_extra[ dh]
-            
-            a_tag = ['',]*4
-            for at1 in range( 4): # at1 0 1 2 3
-                atnum = int( _dhi_[at1])
-                if ( known_atoms[ atnum - 1][0] == _dhi_[ at1]):
-                    a_tag[at1] = known_atoms[ atnum - 1][1]
-                # Si no esta ordenado nos vamos casi a la...
                 else:
-                    # Brute force, till should be found
-                    for at2 in range( len( known_atoms)):
-                        if known_atoms[at2][0] == _dhi_[at1]:
-                            a_tag[at1] = known_atoms[at2][1]
+                    print('xx/0   Residue: ' + _mtype_[i])
+                    print('xx/0   First line: ', sm_data['atoms'][0])
+                    print('xx/0   Molecules order mismatch '
+                         +'between [ molecules ] definition and gro file!')
+                    exit('xx/0   Error /lammps.py 001!')
+                try:
+                    print 'hop!',sm_data['atoms'][0][3]
+                    sm_cont[ _smol_tag_] = {}
+                    sm_cont[ _smol_tag_]['data']    = sm_data
+                    sm_cont[ _smol_tag_]['charge']  = sm_charge
+                    sm_cont[ _smol_tag_]['aty']     = sm_aty
+                    
+                except UnboundLocalError as Err_here:
+                    print('Upa mala cosa!')
+                    exit( Err_here[0])
+                ######################################################
+            else:
+                sm_data     = sm_cont[ _smol_tag_]['data']
+                sm_charge   = sm_cont[ _smol_tag_]['charge']
+                sm_aty      = sm_cont[ _smol_tag_]['aty']
+            ''' ///////////-------------------------------------\\\\\\\\\\ '''
+            '''<<<<<<<<<<<<    Side Molecule topology builder   >>>>>>>>>>>'''
+            ''' \\\\\\\\\\\-------------------------------------////////// '''
+            # This should be done in gromacs.py?? , in a near future
+            # changes acording to the molecule kind topology
+            #print sm_data
+            dirtv_data = sm_data[ 'bonds']
+            #print('here')
+            #print dirtv_data
+            for xx in range( len( dirtv_data)):
+                _row = dirtv_data[ xx]
+                #print sm_aty
+                #print _row
+                i1 =    int( _row[0])
+                i2 =    int( _row[1])
+                aty1 = sm_aty[ i1 - 1 ] 
+                aty2 = sm_aty[ i2 - 1 ]
+                
+                sm_bonds.append([ aty1 + '-' + aty2, i + i1, i + i2])
+                #print sm_bonds[-1]
+                #if sm_bonds[-1][0]=='HC-HC':
+                #    exit('opls_116-opls_116')
+            dirtv_data = sm_data[ 'angles']
+            for xx in range( len( dirtv_data)):
+                _row = dirtv_data[ xx]
+                i1 =    int( _row[0])
+                i2 =    int( _row[1])
+                i3 =    int( _row[2])
+                aty1 = sm_aty[ i1 - 1 ] 
+                aty2 = sm_aty[ i2 - 1 ] 
+                aty3 = sm_aty[ i3 - 1 ]
+                angle_str = '{}-{}-{}'.format( aty1, aty2, aty3)
+                sm_angles.append([ angle_str, i + i1, i + i2, i + i3])
+                
+            dirtv_data = sm_data[ 'dihedrals']
+            for xx in range( len( dirtv_data)):
+                _row = dirtv_data[ xx]
+                i1 = int( _row[0])
+                i2 = int( _row[1])
+                i3 = int( _row[2])
+                i4 = int( _row[3])
+                aty1 = sm_aty[ i1 - 1 ] 
+                aty2 = sm_aty[ i2 - 1 ] 
+                aty3 = sm_aty[ i3 - 1 ]
+                aty4 = sm_aty[ i4 - 1 ]
+                dih_str = '{}-{}-{}-{}'.format( aty1, aty2, aty3, aty4)
+                sm_dihedrals.append([ dih_str, i + i1, i + i2, i + i3, i + i4])
+                
+            dirtv_data = sm_data[ 'impropers']
+            for xx in range( len( dirtv_data)):
+                _row = dirtv_data[ xx]
+                i1 = int( _row[0])
+                i2 = int( _row[1])
+                i3 = int( _row[2])
+                i4 = int( _row[3])
+                aty1 = sm_aty[ i1 - 1 ] 
+                aty2 = sm_aty[ i2 - 1 ] 
+                aty3 = sm_aty[ i3 - 1 ]
+                aty4 = sm_aty[ i4 - 1 ]
+                imp_str = '{}-{}-{}-{}'.format( aty1, aty2, aty3, aty4)
+                sm_impropers.append([ imp_str, i + i1, i + i2, i + i3, i + i4])
+        
+        
+        #print ji_, sm_aty[ ji_]#, sm_aty
+        #print sm_aty[ ji_]
+        _text_ += atom_shape.format(i+1, _mol_[i],
+                                    dicts[0][ sm_aty[ ji_]],
+                                    sm_charge[ ji_],
+                                    float(_xyz_[i][0])*10,
+                                    float(_xyz_[i][1])*10,
+                                    float(_xyz_[i][2])*10,
+                                    sm_aty[ ji_]
+                                   )
+        ji_+=1
+                    
+    #########################################################
+    '''----------   4th - Chemical topology   ------------'''
+    #=======================================================#
+    # BULDING AUXILIAR ATOM TAG_ DATA DICTIONARY
+    aat_ddic = {}
+    if len(atom_info[0]) - minr > 7:
+        for i in range( n_atomtypes):
+            aat_ddic[ atom_info[i][0]] = atom_info[i][1]
+    
+    ####################        ------BONDS------          ####################
+    if _asty_d_[atomstyle]>=2:
+        known_bonds = _topodata_['bonds']
+        base_bonds_n = len (known_bonds)
+        _text_ +='\n Bonds\n\n'
+        bond_shape = ' {}'*4+'\n'
+        xf = 1
+        a_g_d = {} #aux_goofy_dic
+        for i in range(base_bonds_n):
+            # print known_bonds[i][0], known_bonds[i][1]
+            at1 = int(known_bonds[i][0])
+            at2 = int(known_bonds[i][1])
+            #print at1, at2
+            to_print = known_bonds[i][0] +' '+ known_bonds[i][1] +'\n'
+            try:
+                at1_tag = known_atoms[at1-1][xf]
+                at2_tag = known_atoms[at2-1][xf]
+                _bond_ty_ = dicts[1][ at1_tag + '-'+ at2_tag]
+                
+            except KeyError:
+                # meaning that is trying with the big name
+                try:
+                    at1_tag = aat_ddic[ at1_tag]
+                    at2_tag = aat_ddic[ at2_tag]
+                    _bond_ty_ = dicts[1][ at1_tag + '-'+ at2_tag]
+                    
+                except KeyError:
+                    print to_print
+                    print 'Exception {}-{}\n'.format( known_atoms[at1-1][4], 
+                                               known_atoms[at2-1][4])
+                
+            
+            _text_ += bond_shape.format( i+1, _bond_ty_, at1, at2)
+                        
+        if _sidemol_f_ == 1:
+            #print dicts[1]
+            # better way to do this is trough corrds ---------  <WFS>
+            for i in range( n_bonds - base_bonds_n):
+                # print sm_bonds[i]
+                _bond_ty_ = dicts[1][ sm_bonds[i][0]]
+                _text_ += bond_shape.format(i+1 + base_bonds_n,
+                                            _bond_ty_,
+                                            sm_bonds[i][1],
+                                            sm_bonds[i][2])
+    
+    
+    ####################        ------ANGLES------      #######################
+    xf = 1
+    if _asty_d_[ atomstyle]>=3:
+        known_angles = _topodata_['angles']
+        base_angles_n = len(known_angles)
+        _text_ +='\n Angles\n\n'
+        angle_shape = ' {}'*5+'\n'
+        for i in range(base_angles_n):
+            
+            at1 = int( known_angles[i][0])
+            at2 = int( known_angles[i][1])
+            at3 = int( known_angles[i][2])
+            
+            try:
+                at1_tag = known_atoms[at1-1][xf]
+                at2_tag = known_atoms[at2-1][xf]
+                at3_tag = known_atoms[at3-1][xf]
+                _angle_ty_ = dicts[2][at1_tag + '-'+ at2_tag+ '-'+ at3_tag]
+            except KeyError:
+                try:
+                    at1_tag = aat_ddic[ at1_tag]
+                    at2_tag = aat_ddic[ at2_tag]
+                    at3_tag = aat_ddic[ at3_tag]
+                    _angle_ty_ = dicts[2][at1_tag + '-'+ at2_tag+ '-'+ at3_tag]
+                except KeyError as Er_here:
+                    print 'Error ----- '+Er_here.args[0]
+                    
+            #print angle_t, _angle_ty_
+            _text_ += angle_shape.format( i+1, _angle_ty_, at1, at2, at3)
+            
+        if _sidemol_f_ == 1:
+            
+            for i in range( n_angles - base_angles_n):
+                _angle_ty_ = dicts[2][ sm_angles[i][0]]
+                
+                _text_ += angle_shape.format( i+1 + base_angles_n,
+                                             _angle_ty_,
+                                             sm_angles[i][1],
+                                             sm_angles[i][2],
+                                             sm_angles[i][3]
+                                            )
+    
+    
+    ####################        ------DIHEDRAL------       ####################
+    if _asty_d_[atomstyle] >= 4:
+        known_dihedrals = _topodata_['dihedrals']
+        base_dihedrals_n = len(known_dihedrals)
+        if base_dihedrals_n or ( n_dihedrals > base_dihedrals_n):
+            _text_ +='\n Dihedrals\n\n'
+        dihedral_shape = ' {}'*6+'\n'
+        for i in range( base_dihedrals_n):
+            err_str = ''
+            _dihe_ty_ = '0'
+            at1 = int(known_dihedrals[i][0])
+            at2 = int(known_dihedrals[i][1])
+            at3 = int(known_dihedrals[i][2])
+            at4 = int(known_dihedrals[i][3])
+            
+            try:
+                at1_tag = known_atoms[at1-1][xf]
+                at2_tag = known_atoms[at2-1][xf]
+                at3_tag = known_atoms[at3-1][xf]
+                at4_tag = known_atoms[at4-1][xf]
+                _dihe_ty_ = dicts[3][at1_tag + '-'+ at2_tag+ '-'+
+                                     at3_tag + '-'+ at4_tag]
+            except KeyError:
+                try:
+                    at1_tag = aat_ddic[ at1_tag]
+                    at2_tag = aat_ddic[ at2_tag]
+                    at3_tag = aat_ddic[ at3_tag]
+                    at4_tag = aat_ddic[ at4_tag]
+                    _dihe_ty_ = dicts[3][at1_tag + '-'+ at2_tag+ '-'+
+                                     at3_tag + '-'+ at4_tag]
+                except KeyError:
+                    options = ['X-'+at2_tag+'-'+at3_tag +'-'+at4_tag,
+                              at1_tag+'-'+at2_tag+'-'+at3_tag +'-X',
+                              'X-' + at2_tag + '-' + at3_tag + '-X',
+                              ]
+                    for _opt_ in options:
+                        try:
+                            _dihe_ty_ = dicts[3][ _opt_]
                             break
-                            
-                if '' == a_tag[at1]:
-                    _string_ = 'Error!! atom number {} not found in .top -- '
-                    pop_err_1( _string_.format( atnum))
-            #### TODO Flag
-            ## First case with coefs in the top file... c0  c1  c2  c3  c4  c5
-            if len( _dhi_) > 6:
-                print ('Coefficients in the top file are not supported yet' +
-                        '... or maybe they are '+ u'\u00AC'*2)
+                        except KeyError:
+                            if _opt_ == options[-1]:
+                                try:
+                                    _dihe_ty_ = dicts[3][ 'X-' + at2_tag[0] +
+                                                         'X-'+ at3_tag[0] +
+                                                         'X-X']
+                                except KeyError as Er_here:
+                                    err_str = Er_here.args[0]
+            if _dihe_ty_ == '0' and err_str <> '':
+                print 'Atoms {}-{}-{}-{} : '.format( at1, at2, at3, at4),
+                print (at1_tag +'-'+ at2_tag+'-'+ at3_tag+'-'+ at4_tag)
+                print ( 'Error dihedral ----- '+ err_str +' not found!')
+            
+            _text_+= dihedral_shape.format( i+1, _dihe_ty_, at1, at2, at3, at4)
+            
+        if _sidemol_f_ == 1:
+            for i in range( n_dihedrals - base_dihedrals_n):
+                _dihe_ty_ = dicts[3][ sm_dihedrals[i][0]]
                 
-                new_dihedraltypes['-'.join(a_tag)] = (a_tag + _dhi_[4:])
-            ## Second case with #define
-            elif len( _dhi_) == ( 4 + 1 + 1):
-                dh_kind_, dihedral_tag = _dhi_[4:]
-                _content_ = a_tag + [dh_kind_] + define_dic[ dihedral_tag]
-                # with a dictionary instead a set because, sets does not allow
-                # unhashable lists as items
-                new_dihedraltypes[ '-'.join( a_tag)] = _content_
+                _text_ += dihedral_shape.format( i+1 + base_dihedrals_n,
+                                                 _dihe_ty_,
+                                                 sm_dihedrals[i][1],
+                                                 sm_dihedrals[i][2],
+                                                 sm_dihedrals[i][3],
+                                                 sm_dihedrals[i][4]
+                                               )
+    
+    ###################        ------IMPROPERS------       ####################
+    # TODO SECTION
+    if _asty_d_[atomstyle] >= 4:
+        known_impropers = _topodata_['impropers']
+        base_impropers_n = len( known_impropers)
+        if base_impropers_n or ( n_impropers > base_impropers_n):
+            _text_ +='\n Impropers\n\n'
+        improper_shape = ' {}'*6+'\n'
+        for i in range( base_impropers_n):
+            
+            at1 = int(known_impropers[i][0])
+            at2 = int(known_impropers[i][1])
+            at3 = int(known_impropers[i][2])
+            at4 = int(known_impropers[i][3])
+            
+            _impr_ty_ = dicts[4][known_atoms[at1-1][1]+'-'
+                                 +known_atoms[at2-1][1]+'-'
+                                 +known_atoms[at3-1][1]+'-'
+                                 +known_atoms[at4-1][1]
+                                ]
+            _text_+= improper_shape.format( i+1, _impr_ty_, at1, at2, at3, at4)
+            
+        if _sidemol_f_ == 1:
+            for i in range( n_impropers - base_impropers_n):
+                _impr_ty_ = dicts[4][ sm_impropers[i][0]]
                 
-        for key in new_dihedraltypes.keys():
-                dh_type_.append( new_dihedraltypes[key])
-        _data_container_['dihedraltypes'] = dh_type_
+                _text_ += improper_shape.format( i+1 + base_impropers_n,
+                                                 _impr_ty_,
+                                                 sm_impropers[i][1],
+                                                 sm_impropers[i][2],
+                                                 sm_impropers[i][3],
+                                                 sm_impropers[i][4]
+                                               )
+    return _text_, _flag_
     
-    
-    return _data_container_
-
-def get_gro_fixed_line( _filename_):
-    ''' reading gromacs gro fixed lines'''
-    _content_ = []
-    _mol_=[]
-    _mtype_=[]
-    g_names =[]
-    _type_=[]
-    _xyz_=[]
-    _corrupt = True
-    with open(_filename_, 'r')  as indata:
-        read_flag = False
-        at=0
-        at_num = 0
+def side_mol_topology_builder( data_in):
+    ''' ///////////-------------------------------------\\\\\\\\\\ '''
+    '''<<<<<<<<<<<<    Side Molecule topology builder   >>>>>>>>>>>'''
+    ''' \\\\\\\\\\\-------------------------------------////////// '''
+    # This should be done in gromacs.py?? , in a near future
+    # changes acording to the molecule kind topology
+    tag_str = [ 'bonds', 'angles', 'dihedrals', 'impropers']
+    print conv_dict
+    for _st_ in tag_str:# range( len( tag_str)):
+        #print _st_, i
         
-        _buffer = []
-        for j_line in indata:
-            if read_flag:
-                at+=1
-                mtype = j_line[5:10].strip(' ')
+        for xx in range( len( sm_data[ _st_])):
+            index_c = sm_data[ _st_][ xx]
+            #print index_c
+            i1 = int(index_c[0])
+            i2 = int(index_c[1])
+            print _atype_[ i + i1-1],  _atype_[ i + i2-1]
+            
+            aty1 = conv_dict[ _atype_[ i + i1-1]]
+            aty2 = conv_dict[ _atype_[ i + i2-1]]
+            print aty1, aty2
+            
+            if _st_ == 'bonds':
+                sm_bonds.append([ aty1+'-'+aty2, i1, i2])
                 
-                _mol_.append( j_line[:5].lstrip(' '))
-                _mtype_.append(mtype)
-                _type_.append(j_line[10:15].lstrip(' '))
-                _xyz_.append([j_line[20:28], j_line[28:36], j_line[36:44]])
+            elif _st_ == 'angles':
+                i3 = int(index_c[2])
+                aty3 = conv_dict[ _atype_[ i + i3-1]]
                 
-                if _buffer==[]:
-                    _buffer = [ mtype, at]
-                ## TODO : Analyze if it is possible to improve here using sets
-                elif mtype<>_buffer[0]:
-                    
-                    _buffer += [at-1]
-                    g_names.append( _buffer)
-                    _buffer = [ mtype, at]
+                angle_str = '{}-{}-{}'.format( aty1, aty2, aty3)
+                sm_angles.append( [ angle_str, i1, i2, i3])
                 
+            elif _st_ == 'dihedrals':
+                i3 = int( index_c[ 2])
+                i4 = int( index_c[ 3])
+                aty3 = conv_dict[ _atype_[ i + i3-1]]
+                aty4 = conv_dict[ _atype_[ i + i4-1]]
                 
-                if at == at_num:
-                    read_flag = False
-                    g_names.append(_buffer+ [at])
-                    
-            elif j_line.startswith(';'):
-                pass
-            elif at_num==0:
-                j_line = indata.next()
-                at_num = int(j_line)
-                read_flag = True
-            elif at == at_num:
-                _corrupt = False
-                box_xyz_hi = [float(x) for x in j_line.split(';')[0].split()]
+                dihe_str = '{}-{}-{}-{}'.format( aty1, aty2, aty3,
+                                                aty4)
+                sm_dihedrals.append( [ dihe_str, i1, i2, i3, i4])
                 
+            elif _st_ == 'impropers':
+                i3 = int( index_c[ 2])
+                i4 = int( index_c[ 3])
+                aty3 = conv_dict[ _atype_[ i + i3-1]]
+                aty4 = conv_dict[ _atype_[ i + i4-1]]
                 
-    if at_num<>len(_type_):
-        pop_err_1('Atom number mismatch in .gro file')
-        return False, 0 ,0
-    elif _corrupt:
-        pop_err_1('Corrupt .gro file')
-        return False, 0,0
+                impr_str = '{}-{}-{}-{}'.format( aty1, aty2, aty3,
+                                                aty4)
+                sm_impropers.append( [ impr_str, i1, i2, i3, i4])
+                
+            else:
+                print aty, _mol_[i], _residue_buffer_, len( _atype_)
+                exit('')
+        
+    
+def write_lammps_potentials( _topodata_, atomstyle = 'full'):
+    ''' writes the potential part in the data file'''
+    _flag_ = True
+    atom_info = _topodata_['atomtypes'] # index 1: mass ; index 4 -5 : eps-sig
+    # unpacking
+    _numbers_ = _topodata_['numbers']
+    n_atomtypes, n_bondtypes, n_angletypes = _numbers_['type'][:3]
+    n_dihedraltypes, n_impropertypes = _numbers_['type'][3:]
+    
+    #n_bondstypes = len(data_container['bondtypes'])
+    
+    buckorlj = int( _topodata_[ 'defaults'][0]) # 1 -2 lj/buc
+    comb_rule = int( _topodata_[ 'defaults'][1]) # 1-2-3
+    
+    sigma = []
+    epsilon = []
+    buck3 = []
+    atom_type_d = {}
+    # find ptype index, since len can change and the user could put some garbage
+    # in between the previous commented line. Eg:
+    # ; name  mass charge ptype  V(sigma)  (epsilon) if the comb-rule "2"
+    #ptypei = atom_info[0].index('A')
+    # Second options second the combination rule, and count from behind:
+    minr = 1 - buckorlj # 1 lj and 2 buc --> minr = 0 lj and -1 buck
+    
+    # Any 0 check, to check the feasibility of the conversion to sig and eps
+    regular_se = True
+    pairtypename = ''
+    if buckorlj == 1 and comb_rule == 1:
+        for x in range( n_atomtypes):
+            _A_ = float( atom_info[x][ -1 + minr])
+            _B_ = float( atom_info[x][ -2 + minr])
+            if _A_ <> 0 and _B_ == 0 or _A_ == 0 and _B_ <> 0:
+                regular_se = False
+                pairtypename = 'hybrid/overlay'
+                wr_str = ('Using pair style lennard/mdf!!\nThis style can '
+                          + 'only be used if LAMMPS was built with the '
+                          + 'USER-MISC package')
+                pop_wrg_1( wr_str.format( pairtypename) )
+                break
+    
+    for x in range( n_atomtypes):
+        #print atom_info[x]
+        atom_type_d[atom_info[x][0]] = x+1
+        
+        _A_ = float( atom_info[x][ -1 + minr])
+        _B_ = float( atom_info[x][ -2 + minr])
+        
+        
+        if comb_rule == 1 and regular_se:
+            _eps_ = 0
+            _sig_ = 0
+            if _A_:
+                _eps_ = ( _B_**2)/( 4*_A_)
+                _sig_ = ( _A_/_B_)**( 1/6.0)
+                
+        elif comb_rule == 1:
+            _eps_ = _A_*(10**12)
+            _sig_ = _B_*(10**6)/ 4.186 /10# the last /10 just to make it easier
+        else:
+            _eps_ = _A_
+            _sig_ = _B_
+            
+            
+        epsilon.append(_eps_ / 4.186)
+        
+        if buckorlj == 2:#------------------------------------------  <WFS>
+            _C_ = float( atom_info[x][ -1])
+            buck3.append(' {:.5f}'.format( _C_*(10**6)/ 4.186 ))
+            sigma.append( 10 / _sig_)
+        else:
+            buck3.append('')
+            sigma.append( _sig_* 10)
+            
+    ####----------- DEFINING LJ INTERACTIONS     ----------####
+    #-------------------------------------------------------  <WFS> 
+    #                        make function- buck
+    '''potential'''
+    txt_p_p ='\n Pair Coeffs #{}\n\n'.format( pairtypename)
+    for i in range( n_atomtypes):
+        txt_p_p +=' {} {:.5f} {:.5f}{}\n'.format( i+1, epsilon[i], sigma[i], buck3[i])
+    
+    
+    ########    -----------     BOND        ----------     ########
+    BondDataBase = ['harmonic','gromos','morse','cubic','connection','harmonic',
+                    'fene','tabulated','tabulated','restraint']
+    Bonds_structures = {'harmonic': {},
+                       'morse': {}}
+    
+    bty =  _topodata_['bondtypes']
+    bond_kind_names = _topodata_['bond_kinds'] # set with numbers as string
+    
+    bondtypename = []
+    if len( bond_kind_names) > 1:
+        bondtypename.append( 'hybrid')
+        _bdb_ = BondDataBase[:]
+        for b in range( len( _bdb_)):
+            _bdb_[ b] = ' '+ _bdb_[ b]
     else:
-        return  True, [_mol_, _mtype_, _type_, _xyz_, g_names], box_xyz_hi
-
-def top_groups( mtype, _buffer, g_names):
+        _bdb_  = ['',]*len( BondDataBase)
+        
+    for bo in bond_kind_names:
+        bondtypename.append( BondDataBase[ int( bo)- 1])
     
-    return _buffer, g_names # hook
-
-def get_topitp_line( _filename_, _ss_):
-    ''' reading gromacs content lines
-        spliting by the space between info
-    '''
-    _verbose_ = True
-    content_line = []
-    _define_ = {}
+    txt_p_b = ''
+    if bondtypename <> []:
+        txt_p_b ='\n Bond Coeffs #{}\n\n'.format( bondtypename[0]) # bond_style hybrid
     
-    # \* TODO: apply a method just in case that
-    #          some _startstrings_ are not there ??
-    with open(_filename_, 'r')  as indata:
-        read_flag = False
-        ok_flag = True
-        tag_not_found = True
-        if _verbose_:
-            print  _ss_
-        for j_line in indata:
-            # I just whant to read once the flag is on
-            j_line_s0 = j_line.split(';')[0].split()
-            if read_flag and j_line_s0:
-                #if _verbose_: ### is beter to store and print outside the
-                # cycle with just one if 
-                #print j_line_s0
-                _line_ = j_line_s0
-                # getting out comments and empty lines
-                if len( _line_) <0: 
+    bondtypes_d = {}
+    
+    for i in range( n_bondtypes):
+        extra_end_str = '\n'
+        bondtypes_d[ bty[i][0] + '-' + bty[i][1]] = i+1
+        bondtypes_d[ bty[i][1] + '-' + bty[i][0]] = i+1
+        
+        _bi_ = int(bty[i][2])
+        if _bi_ == 1:
+            info_cont = [ i+1, _bdb_[ _bi_ - 1],
+                          float( bty[i][4])/ 100/ 4.186/2,
+                          float( bty[i][3])*10 ]
+            
+        elif _bi_ == 2: # bond_style  G96 in gromacs
+            print bty[i]
+            info_cont = [ i+1, _bdb_[ _bi_ - 1],
+                          float( bty[i][4])/ 100/ 4.186/4,
+                          float( bty[i][3])*10 ]
+            
+        elif _bi_ == 3:
+            extra_end_str = ' {:.4f}\n'
+            info_cont = [ i+1, _bdb_[ _bi_ - 1],
+                         float( bty[i][4])/ 100/ 4.186/2,
+                         float( bty[i][5])/10,
+                         float( bty[i][3])*10 ]
+        else:
+            wr_str = 'Bond type {} not implemented yet!'
+            pop_wrg_1( wr_str.format( bondtypename) )
+            info_cont = [ i+1, _bdb_[ _bi_ - 1], 0, 0 ]
+            _flag_ = False
+        txt_p_b += ( ' {}{} {:.4f} {:.4f}' + extra_end_str).format( *info_cont)
+    
+    
+    ########    -----------     ANGLE      ----------     ########
+    AngleDataBase = ['harmonic','cosine/squared','cross bond-bond',
+                     'cross bond-angle',
+                     'charmm','quartic angle','','tabulated'] 
+    
+    aty = _topodata_['angletypes']
+    angl_kind_names = _topodata_['angl_kinds'] # set with numbers as string
+    
+    angletypename = []
+    if len( angl_kind_names) > 1:
+        angletypename.append( 'hybrid')
+        _adb_ = AngleDataBase[:]
+        for a in range( len( _adb_)):
+            _adb_[ a] = ' '+ _adb_[ a]
+    else:
+        _adb_  = ['',]*len( AngleDataBase)
+        
+    for an in angl_kind_names:
+        angletypename.append( AngleDataBase[ int( an)- 1])
+    
+    txt_p_a = ''
+    if angletypename <> []:
+        txt_p_a ='\n Angle Coeffs #{}\n\n'.format( angletypename[0]) 
+    
+    angletypes_d = {}
+    i=0
+    info_cont = []
+    for i in range( n_angletypes):
+        extra_end_str = '\n'
+        angletypes_d[aty[i][0]+'-'+aty[i][1]+'-'+aty[i][2]]= i+1
+        angletypes_d[aty[i][2]+'-'+aty[i][1]+'-'+aty[i][0]]= i+1
+        _ai_ = int(aty[i][3])
+            
+        if _ai_ == 1:
+            info_cont = [ i+1, _adb_[ _ai_ - 1],
+                         float(aty[i][5])/ 4.186/2,
+                         float(aty[i][4]) ]
+            
+        elif _ai_ == 2:# angle_style G96 in gromacs
+            info_cont = [ i+1, _adb_[ _ai_ - 1],
+                         float(aty[i][5])/ 4.186/2,
+                         float(aty[i][4]) ]
+            
+        elif _ai_ == 5:
+            extra_end_str = ' {:.4f} {:.4f}\n'
+            info_cont = [ i+1, _adb_[ _ai_ - 1],
+                         float(aty[i][5])/ 4.186/2,
+                         float(aty[i][4]),
+                         float(aty[i][7])/ 4.186/2,
+                         float(aty[i][6])*10 ]
+        else:
+            wr_str = 'Angle type {} not implemented yet!'
+            pop_wrg_1( wr_str.format( angletypename) )
+            info_cont = [ i+1, _adb_[ _ai_ - 1], 0, 0 ]
+            _flag_ = False
+        txt_p_a += ( ' {}{} {:.4f} {:.4f}' + extra_end_str).format( *info_cont)
+    
+    # >===========================================================< #
+    ########    -----------     DIHEDRAL      ----------     ########
+    DihedralDataBase = [ 'charmm', 'improper', 'opls', # opls<RyckaertBellemans
+    # Not implemented ones:
+                         'periodic','tabulated'] 
+    # asuming that impropers can not be here, purged previously in gromacs.py
+    dty = _topodata_['dihedraltypes']
+    dihe_kind_names = _topodata_['dihe_kinds'] # set with numbers as string
+    
+    dihedtypename = []
+    if len( dihe_kind_names) > 1:
+        dihedtypename.append( 'hybrid')
+        _ddb_ = DihedralDataBase[:]
+        for d in range( len(_ddb_)):
+            _ddb_[d] = ' '+ _ddb_[d]
+    else:
+        _ddb_  = ['',]*len( DihedralDataBase)
+    for di in dihe_kind_names:
+        dihedtypename.append( DihedralDataBase[ int( di)- 1])
+    
+    txt_p_d = ''
+    if dihedtypename <> []:
+        txt_p_d ='\n Dihedral Coeffs #{}\n\n'.format( dihedtypename[0])
+    
+    rb_warning = (' Ryckaert-Bellemans angle style conversion in Fourier form' +
+                  ' can only be used if LAMMPS was built with the MOLECULE' +
+                  ' package!!! quite a base, so this is not printed')
+            
+    dihedraltypes_d = {} # types dictionary
+    i=0
+    info_cont = ''
+    for i in range( n_dihedraltypes):
+        # tag creation
+        _type_forward_ = dty[i][0]+'-'+dty[i][1]+'-'+dty[i][2]+'-'+dty[i][3]
+        # FIFO type number asigment
+        dihedraltypes_d[ _type_forward_ ] = i+1
+        ##  need also in backward direction in the lysozyme case
+        _type_backward_ = dty[i][3]+'-'+dty[i][2]+'-'+dty[i][1]+'-'+dty[i][0]
+        dihedraltypes_d[ _type_backward_] = i+1
+        
+        _di_ = int(dty[i][4])
+        # Charmm / Amber -> coeff_4 = 0.0
+        if _di_ == 1:
+            info_cont = ( i+1, _ddb_[ _di_ - 1],
+                         float(dty[i][6])/4.186/2,
+                         int(float(dty[i][7])),
+                         int(float(dty[i][5])),
+                         '0.0'
+                        )
+        # Ryckaert-Bellemans
+        elif _di_ == 3:
+            C0 = float(dty[i][5])
+            C1 = float(dty[i][6])
+            C2 = float(dty[i][7])
+            C3 = float(dty[i][8])
+            C4 = float(dty[i][9])
+            C5 = float(dty[i][10])
+            
+            info_cont = ( i+1, _ddb_[ _di_ - 1],
+                         ( -2*C1 - (3/2)*C3)/4.186,#K1
+                         '{:.4f}'.format( (-C2 - C4)/4.186),#K2
+                         '{:.4f}'.format( (-(1/2)*C3)/4.186),#K3
+                         '{:.4f}'.format( (-(1/4)*C4)/4.186) #K4
+                        )
+        else:
+            wr_str = 'Dihedral type {} not implemented yet!'
+            pop_wrg_1( wr_str.format( DihedralDataBase[ _di_- 1]))
+            info_cont = ( i+1, _ddb_[ _di_ - 1],0,0,0,0)
+            _flag_ = False
+            break
+            
+        ### TODO :
+        #       Optimize here and there, special care with the string handling.
+        #       Create a ordered type list if there is more than one kind_
+        #       of dihedral.
+        txt_p_d += ' {}{} {:.4f} {} {} {}\n'.format( *info_cont)
+        
+    ########    -----------     IMPROPER      ----------     ########
+    # improper comes with type number "2", TODO: correct that
+    ImproperDataBase = ['not_here', 'harmonic','cossq','class2'] 
+    ity = _topodata_['impropertypes']
+    impr_kind_names = _topodata_['impr_kinds'] # set with numbers as string
+    
+    imprtypename = []
+    
+    if len( impr_kind_names) > 1:
+        imprtypename.append( 'hybrid')
+        _idb_ = ImproperDataBase[:]
+        for i in range( len( _idb_)):
+            _idb_[i] = ' '+ _idb_[i]
+    else:
+        _idb_  = ['',]*len( ImproperDataBase)
+    for im in impr_kind_names:
+        imprtypename.append( ImproperDataBase[ int( im)- 1])
+    
+    txt_p_i = ''
+    if imprtypename <> []:
+        txt_p_i ='\n Improper Coeffs #{}\n\n'.format( imprtypename[0])
+            
+    impropertypes_d = {} # types dictionary
+    i=0
+    info_cont = ''
+    for i in range( n_impropertypes):
+        # tag creation
+        _type_forward_ = ity[i][0]+'-'+ity[i][1]+'-'+ity[i][2]+'-'+ity[i][3]
+        # FIFO type number asigment IJKL
+        impropertypes_d[ _type_forward_ ] = i+1
+        ##  need also in backward direction in the lysozyme case
+        #_type_backward_ = dty[i][3]+'-'+dty[i][2]+'-'+dty[i][1]+'-'+dty[i][0]
+        #impropertypes_d[ _type_backward_] = i+1
+        
+        _ii_ = int(ity[i][4])
+        if _ii_ == 2:
+            info_cont = ( i+1, _idb_[ _ii_ - 1],
+                         float(ity[i][6])/4.186/2,
+                         int(float(ity[i][5])),
+                        )
+            
+        else:
+            wr_str = 'Improper type {} not implemented yet!'
+            pop_wrg_1( wr_str.format( ImproperDataBase[ _ii_- 1]))
+            info_cont = ( i+1, _idb_[ _ii_ - 1],0,0,0,0)
+            _flag_ = False
+            break
+        txt_p_i += ' {}{} {:.4f} {}\n'.format( *info_cont)
+        
+    # === for cycle end
+    
+    ########    ---------    Final selector section   ----------     ########
+    #bad_sty = [ bondtypename, angletypename, dihedtypename]
+    if atomstyle in ['full', 'molecular']:
+        dicts = [ atom_type_d, bondtypes_d, angletypes_d,
+                  dihedraltypes_d, impropertypes_d]
+        txt_p_ = txt_p_p + txt_p_b + txt_p_a + txt_p_d + txt_p_i
+    elif atomstyle == 'angle':
+        dicts = [ atom_type_d, bondtypes_d, angletypes_d]
+        txt_p_ = txt_p_p + txt_p_b + txt_p_a
+    elif atomstyle == 'bond':
+        dicts = [ atom_type_d, bondtypes_d]
+        txt_p_ = txt_p_p + txt_p_b
+    elif atomstyle == 'atomic' or atomstyle == 'charge':
+        dicts = [atom_type_d]
+        txt_p_ = txt_p_p
+    else:
+        print ('\nWeird thing, it is supposed impossible to reach this place\n')
+        _flag_ = False
+        
+        
+    return txt_p_, dicts, _flag_, regular_se
+
+
+def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
+    ''' _simconfig_ contains the data gathered from the gui
+        _topodata_ comes from the converted gromacs file
+        in_name is intended as name for the input to create'''
+    
+    #================================================================
+    '''===========   Gathering and ordering the data   ==========='''
+    #================================================================
+    
+    #===================================================
+    ####-----------    SIM RAW CONFIG       --------####
+    
+    _simconfig_ = _simconfig_[:]
+    ( data_file, timestep, nve_steps, nvt_steps, nvt_tss,
+    nvt_tdamp, npt_steps, npt_pss, npt_pdamp, npt_tss,
+     npt_tdamp) = _simconfig_[0]
+    
+    nvt_tstart, nvt_tend = nvt_tss.split(':')
+    npt_pstart, npt_pend = npt_pss.split(':')
+    npt_tstart, npt_tend = npt_tss.split(':')
+    
+    #print (data_file, timestep, nve_steps, nvt_steps, nvt_tstart, nvt_tend,
+    #nvt_tdamp, npt_steps, npt_pstart, npt_pend, npt_tdamp, npt_tdamp,
+    #npt_ystart, npt_yend)
+    
+    i = 5
+    thermo, atommap, pairwiseint, lj_rcutoff, c_rcutoff = _simconfig_[1][ :i]
+    neighbordistance, lrsolver, lrerror = _simconfig_[1][ i:i+3]
+    lj12_13_14, co12_13_14 = _simconfig_[1][ i+3: i+5]
+    neighbordelay, neighborupdate, npt_kind = _simconfig_[1][ i+5:i+8]
+    f_comb_rule, T_init_vel, f_min_tol, _order_ = _simconfig_[1][ i+8:i+12]
+    shake_tol, shake_bn, shake_an = _simconfig_[1][ i+12:]
+    
+    #===================================================
+    ####------------    RESTRAIN DATA       --------####
+    
+    rest_line = ''
+    group_lines = ''
+    torestrain = []
+    ens_af = []
+    if _simconfig_[2] <> []:
+        g_names, g_aids, k_xyz_c, runs_c, ch_init = _simconfig_[2][0][:]
+        if _simconfig_[2][1] <> None:
+            ####### ------------------------------------ Super interesante!!
+            ##              este es uno de esos casos donde no es posible 
+            ##              utilizar += a pesar de desligar con [:] ... 
+            
+            aux1, aux2, aux3, aux4, aux5 = _simconfig_[2][1][:] 
+            g_names = g_names + aux1
+            g_aids  = g_aids  + aux2
+            k_xyz_c = k_xyz_c + aux3
+            runs_c  = runs_c  + aux4
+            ch_init = ch_init + aux5
+        print'\n'
+        for re in range(len(g_names)):
+            if ch_init[re]==1:
+                print 'Restraining group '+g_names[re]+' in '+runs_c[re]
+                groupinfo = [g_names[re], g_aids[re]]
+                group_lines += 'group {} id {}\n'.format( *groupinfo)
+                
+                if runs_c[re] not in ['', 'No', 'no', '0']:
+                    ens = [int(x)-1 for x in runs_c[re].split('-')]
+                    torestrain.append( [g_names[re], k_xyz_c[re], ens ])
+                
+                    for e in ens:
+                        if e not in ens_af:
+                            ens_af.append(e)
+        if group_lines <> '':
+            group_lines +='\n'
+    
+    mix_value = {'1':'geometric', '2':'arithmetic',
+                 '3':'geometric', '4':'sixthpower'}
+    
+    
+    #for mt in range(len( _mtype_)):
+        #group_lines += 'group {} id {}:{}\n'.format(*_mtype_[mt])
+    _asty_d_ ={ 'atomic':1, 'charge':2, 'bond':3, 'angle':4,
+                'full':6, 'molecular':6}
+    
+    #===================================================
+    ####------------      TOPO DATA         --------####
+    
+    print '\n'+data_file + '\n'
+    if _topodata_ <> None:
+        atomstyle_o, _solvated_, _autoload_, root_folder = _topodata_['config']
+        _, comb_rule, _, _, _ = _topodata_['defaults']
+        
+    else:
+        print '**** Without _topodata_ !!'
+        root_folder = './'
+        atomstyle_o = ''
+        comb_rule = ''
+        
+    ## -------------------------- getting styles
+    _aux_her = get_style_info( data_file)
+    
+    atomstyle, pairstyle, bondstyle, anglstyle, dihestyle, imprstyle = _aux_her
+    if atomstyle_o <> '' and atomstyle_o <> atomstyle[0]:
+        pop_wrg_1( 'Incongruence between atom styles!')
+        print atomstyle_o, atomstyle[0]
+    
+    ## ---------------- MIXING RULE
+    if f_comb_rule in mix_value.values():
+        mix_value_s=' mix '+f_comb_rule
+    elif f_comb_rule=='from_gromacs' and _topodata_<>None:
+        mix_value_s=' mix '+mix_value[comb_rule]
+    else:
+        print 'Using default mixing rule'
+        mix_value_s = ''
+        
+
+    #================================================================
+    '''===========   Writing Lammps input command file  =========='''
+    #================================================================
+    _dtxt_= '# Generated with Gro2lam\n\n'+'units real\nboundary p p p\n'
+    # as I understand lammps default is 3
+    #_dtxt_+= '%s %d\n'.format('dimension',dimension)
+    _dtxt_+= 'atom_style '+atomstyle[0]+'\n'
+    if pairstyle[0] == '':
+        if atomstyle[0] not in ['full', 'charge]']: # no charges
+            if 'coul' in pairwiseint:
+                pairwiseint = pairwiseint.split('/coul')[0]
+            c_rcutoff = ''
+        elif 'coul' not in pairwiseint:
+            c_rcutoff = ''
+        
+        if pairwiseint == 'zero':
+                c_rcutoff = 'nocoeff'
+    else:
+        pairwiseint = 'hybrid/overlay lennard/mdf 8 {}'.format( lj_rcutoff)
+        if atomstyle[0] in ['full', 'charge]']: # no charges
+            lj_rcutoff = ' coul/long'
+        else:
+            lj_rcutoff = ''
+            c_rcutoff  = ''
+                          
+    _dtxt_+= '\natom_modify map {}\n'.format( atommap)
+    #===================================================
+    ####------------  SYSTEM CONFIGURATION  --------####
+    
+    ###############    TODO_WF this for sure can be improved----------- please!
+    # options like full and non bonded interactions could be asked by the user
+    _dsc_txt=['pair_style {} {}'.format( pairwiseint, lj_rcutoff)]
+    _dsc_txt.append(' {}\n'.format( c_rcutoff))
+    if bondstyle[0] <> '':
+        _dsc_txt.append( 'bond_style '+' '.join( bondstyle)+'\n')
+    if anglstyle[0] <> '':
+        _dsc_txt.append( 'angle_style '+' '.join( anglstyle)+'\n')
+    if dihestyle[0] <> '':
+        _dsc_txt.append( 'dihedral_style '+' '.join( dihestyle)+'\n')
+    if imprstyle[0] <> '':
+        _dsc_txt.append( 'improper_style '+' '.join( imprstyle)+'\n')
+    _dtxt_+= ''.join(_dsc_txt[:_asty_d_[atomstyle[0]]])+'\n'
+    
+    
+    if 'data' in data_file:
+        _dtxt_+= 'read_data {}\n'.format( data_file)
+    else:
+        _dtxt_+= 'read_restart {}\n'.format( data_file)
+    
+    #===================================================
+    ####--------------   NEIGHBOR LIST   -----------####
+    
+    _dtxt_+= '\nneighbor {} bin\n'.format( neighbordistance)
+    
+    if lrsolver <> '' and atomstyle[0] in ['full','charge']:
+        if 'long' in pairwiseint:
+            _dtxt_+= 'kspace_style {} {}\n'.format( lrsolver, lrerror)
+        
+        aux_here1 = lj12_13_14.split(':')
+        if lj12_13_14 == co12_13_14:
+            sp_bon_3 = ['/coul {}'.format( aux_here1[0])] + aux_here1[1:]
+        else:
+            aux_here2 = co12_13_14.split(':')
+            aux_here1 += [ aux_here2[0]]
+            aux_txt = ' {} {} {} coul {}'.format( *aux_here1)
+            sp_bon_3 = [ aux_txt] + aux_here2[1:]
+                            
+    elif lrsolver <> '':
+        sp_bon_3 = lj12_13_14.split(':')
+        
+    
+    if lrsolver <> '':
+        _dtxt_+= 'special_bonds lj{} {} {}\n'.format( *sp_bon_3)
+        
+    _dtxt_+= 'pair_modify shift no tail yes'+mix_value_s+'\n'
+    
+    _aux_s_ = 'neigh_modify every {} delay {} check yes\n\n'
+    _dtxt_+= _aux_s_.format( neighborupdate, neighbordelay)
+    
+    #===================================================
+    ####---------------  TIMESTEP   ----------------####
+    _dtxt_+= 'timestep {}\n\n\n'.format(timestep)
+    _dtxt_+= 'thermo {}\n'.format(thermo)
+    _dtxt_+= ('thermo_style custom step temp press vol '
+              +'epair emol etotal enthalpy'
+              +'\n\n')
+    
+    #===================================================
+    ####--------------  Init VELOCITIES   ----------####
+    aux_vel_str = 'velocity all create {} 1234567 rot yes dist gaussian\n\n'
+    _dtxt_+= aux_vel_str.format(T_init_vel)
+    
+    #===================================================
+    ####----------------   GROUPS   ----------------####
+    _dtxt_+= group_lines
+    
+    #===================================================
+    ####---------------     SHAKE       ------------####
+    shake_bn, shake_an
+    shake_txt = 'fix shake_name1 all shake {} 20 0'.format( shake_tol)
+    print shake_bn, shake_an
+    if shake_bn <> '0' or shake_an <> '0':
+        
+        if shake_bn <> '0':
+            shake_txt += ' b'
+            shake_bn = shake_bn.split('-')
+            for bn in range(len(shake_bn)):
+                shake_txt += ' '+shake_bn[bn]
+
+        if shake_an <> '0':
+            shake_txt += ' a'
+            shake_an = shake_an.split('-')
+            for an in range(len(shake_an)):
+                shake_txt += ' '+shake_an[an]
+        _dtxt_+= shake_txt+'\n\n'
+    
+    #===================================================
+    ####---------------   SIMULATION    ------------####
+    ensembles = _order_.split('-')
+    curr_time = 0
+    timestep = float(timestep)
+    
+    tounfix = [[],[]]
+    _dtxt_ += '\n'
+    for en in range(len(ensembles)):
+        
+        
+        if ens_af<>[] and en in ens_af: #       RESTRAIN 
+            
+            for re in range(len(torestrain)):
+                if en in torestrain[re][2]:
+                    
+                    if en-1 not in torestrain[re][2]:
+                        spring_f = 'fix rest_{0}_{1} {0} spring/self {2} {3}\n'
+                        k, xyz = torestrain[re][1].split(':')
+                        _dtxt_ += spring_f.format( torestrain[re][0], en+1 ,
+                                                  k, xyz)
+                        unr= 0+en
+                        while unr+1 in torestrain[re][2]:
+                            unr+=1
+                        
+                        name_2uf = 'rest_{0}_{1}'.format( torestrain[re][0],
+                                                         en+1)
+                        tounfix= [ tounfix[0]+ [unr], tounfix[1]+ [name_2uf]]
+            _dtxt_ += '\n'
+            
+        if ensembles[en]=='NVE' and nve_steps <> '' and nve_steps.isdigit():
+            steps = int(nve_steps)
+            nve_frm = 'fix nve_name1 all nve\nrun {}\nunfix nve_name1\n\n'
+            _dtxt_ += nve_frm.format(steps)
+            curr_time += steps*timestep
+        
+        elif ensembles[en]=='NPT' and npt_steps <> '' and npt_steps.isdigit():
+            steps = int(npt_steps)
+            npt_frm = 'fix npt_name1 all npt temp {} {} {} {} {} {} {}\n'
+            _dtxt_ += npt_frm.format( npt_tstart, npt_tend, npt_tdamp,
+                                     npt_kind, npt_pstart, npt_pend, npt_pdamp)
+            _dtxt_+= 'run {}\nunfix npt_name1\n\n'.format( steps)
+            curr_time += steps*timestep
+        
+        elif ensembles[en]=='NVT' and nvt_steps <> '' and nvt_steps.isdigit():
+            steps = int(nvt_steps)
+            nvt_frm = 'fix nvt_name1 all nvt temp {} {} {}\n'
+            _dtxt_ += nvt_frm.format( nvt_tstart, nvt_tend, nvt_tdamp )
+            _dtxt_+= 'run {}\nunfix nvt_name1\n\n'.format( steps)
+            curr_time += steps*timestep
+        
+        elif ensembles[en]=='R':
+            restart_txt = '\nwrite_restart restart.g2l_{}fs\n'
+            _dtxt_ += restart_txt.format(int(curr_time))
+            
+        elif ensembles[en]=='M':
+            if float(f_min_tol) > 1.0e-3:
+                e_min_tol = 1.0e-2
+                f_min_tol = 1.0e-3
+            else:
+                e_min_tol = float(f_min_tol)*100
+            
+            emin_frm = 'minimize {} {} 10000 100000\n\n'
+            _dtxt_+= emin_frm.format( e_min_tol, f_min_tol )
+            
+            
+        if tounfix <> [ [], []] and en in tounfix[0]: #       UNFIX RESTRAIN
+            for unf in range( len( tounfix[0])):
+                if tounfix[0][unf] == en:
+                    _dtxt_ += 'unfix ' + tounfix[1][unf] + '\n'
+    
+    print ('Writing Lammps input script...')
+    if root_folder <> './':
+        _folder_ = '/'.join( data_file.split('/')[:-1]+[''])
+    else:
+        _folder_ = root_folder
+    write_file( in_name , _dtxt_, _folder_)
+    print_dec_g ('Successful writing!!')
+    
+    
+     #-------------------- here would be optimum some further check
+    return True
+
+def get_style_info( lammps_datafile):
+    
+    #atom_sty, bond_sty, angl_sty, dihe_sty, impr_sty = '', '', '', '', ''
+    styles = ['Pair', 'Bond', 'Angle', 'Dihedral', 'Improper', 'Atoms' ]
+    sty_qty = [0,]*len( styles)
+    default_styles = [ '',]+ ['harmonic']*2 + [ 'charmm', 'harmonic', 'full']
+    sty_container = [ [], [], [], [], [], []]
+    
+    def_wrg_str = ( '{} style info not found or missing in the data file!'
+                       + 'Using default : {}')
+    try:
+        
+        with open( lammps_datafile, 'r')  as indata:
+            
+            # types collection
+            for k_line in indata:
+                line_c =  k_line.split()
+                if len (line_c) == 3 and line_c[2] == 'types':
+                    for st in range( len( styles)):
+                        if line_c[1][1:] in styles[ st]:
+                            sty_qty[st] = int( line_c[0])
+                            break
+                elif len (line_c) > 3 and  line_c[2] == 'xlo':
+                    break
+            sty_qty[ 0] = sty_qty[ 5]
+            print 'Quantities : ',
+            for st in range( len( styles)):
+                print styles[st] + ' : ' + str( sty_qty[st]),
+            print '\n'
+            read_flag = False
+            reading_flag = False
+            index = 0
+            for k_line in indata:
+                line_c =  k_line.split()
+                #print line_c
+                # in cases with hybrid type, it should read from the second 
+                # position in the data line of bond, angle, dihedral and impr
+                if read_flag:
+                    
+                    if len( line_c) < 1 and reading_flag:
+                        read_flag = False
+                        reading_flag = False
+                        index += 1
+                        while not sty_qty[ index]:
+                            sty_container[ index].append( '')
+                            index += 1
+                        print '... done!'
+                    elif len( line_c) < 1 or line_c[0][0] == '#':
+                        pass
+                    else:
+                        reading_flag = True
+                        new_sty = line_c[1]
+                        if new_sty not in sty_container[ index]:
+                            print styles[ index] + 'Style : ' , new_sty,
+                            sty_container[ index].append( new_sty)
+                    
+                # cutting out the crap, normal empty and commented lines
+                elif len( line_c) < 1 or line_c[0][0] == '#':
                     pass
                     
-                elif _line_[0][0] == '#':
-                    if _line_[0] == '#include':
-                        print( wrg_3( _line_[1] + ' skipped this time'))
-                    elif _line_[0] == '#define':
-                        _define_[_line_[1]] = _line_[2:]
+                elif  ( styles[ index] == line_c[0] and 
+                      ( index == 5 or 'Coeffs' == line_c[1]) ):
+                    
+                    print index, styles[ index], k_line.rstrip()
+                    aux_cont = k_line.split('#')
+                    
+                    if len( aux_cont) > 1:
+                        sty_container[ index].append( aux_cont[1].strip())
+                        if sty_container[ index][0] == 'hybrid':
+                            read_flag = True
+                            index -= 1
                     else:
-                        print wrg_3( str(_line_) + '  ??')
-                        
-                elif _line_[0][0] == '[':
-                    print( ' '.join(_line_) + 'Checked!')
-                    if  ' '.join(_line_)  <> _ss_ :
-                        read_flag = False
-                    #print 'exit here 424'
+                        sty_container[ index].append( default_styles[ index])
+                        pop_wrg_1( def_wrg_str.format( styles[ index], 
+                                                       sty_container[ index]))
+                    if index + 1 < len(sty_qty):
+                        index += 1
+                        while not sty_qty[ index]:
+                            sty_container[ index].append( '')
+                            index += 1
                     
-                elif len( _line_) > 0:
-                    content_line.append( _line_)
-                else:
-                    print('Ups... please raise an issue at GitHub ;)')
-            elif j_line.lstrip().startswith( _ss_):
-                if _verbose_:
-                    print( _ss_+' found!')
-                read_flag = True
-                tag_not_found = False
+    except IOError:
+        pop_wrg_1( 'Data file not found!')
+        print ( 'Maybe try performing a conversion first! ;)')
+        _flag_ = False
     
-    if content_line == [] or tag_not_found:
-        if '/' in _filename_:
-            _filename_ = _filename_.split('/')[-1]
-        pop_err_1( 'The {} section is missing on {} file'.format( _ss_ ,
-                                                                  _filename_)
-                 )
-        ok_flag = False
-    return content_line, ok_flag, _define_
-
-def get_gromos_define( _bondedfile_):
-    ''' reading GROMOS define forcefield format
-        gb_ : bond
-        ga_ : angle
-        gi_ : wop - improper
-        gd_ : dihedral
-        eg. #define gb_12
-    '''
-    _dedic_ = {'b':'bond', 'a':'angle', 'i':'improper', 'd':'dihedral'}
-    _define_ = {}
-    for k in _dedic_.keys():
-        _define_[ _dedic_[k]] = {}
-    
-    with open(_bondedfile_, 'r')  as indata:
-        for j_line in indata:
-            _line_ = j_line.split(';')[0].split()
-            if _line_ and _line_[0][0] == '#':
-                if _line_[0] == '#define':
-                    if _line_[1][0] == 'g':
-                        if _line_[1][2] == '_' and _line_[1][3].isdigit():
-                            aux_dic = { _line_[1] : _line_[2:]}
-                            _define_[ _dedic_[ _line_[1][1]]].update( aux_dic)
-                        else:
-                            print('Whojojoooh...')
-                    
-                elif _line_[0] == '#include':
-                    print(wrg_3( _line_[1] + ' skipped!'))
-                else:
-                    print(wrg_3( str(_line_) + '  ??'))
-    
-    return _define_
-
-def get_ffldfiles( _topfile_):
-    ''' 
-    self explanatory... sub routine to get the force field files
-    if they are stated in the top file.
-    starts from the top file
-    '''
-    ff_file = ''
-    nonerr_flag = True
-    with open( _topfile_, 'r')  as indata:
-        for j_line in indata:
-            if j_line.startswith('#include'):
-                ff_file =  j_line.split('"')[1]
-                break
-            elif j_line.startswith('[ moleculetype ]'):
-                break
-    
-    root_folder = '/'.join(_topfile_.split('/')[:-1]+[''])
-    ff_file = ff_file.lstrip('.').lstrip('/')
-    
-    if ff_file <> '':
-        # if there is at least one itp, lets parse it
-        # first seek for further includes itp
-        aux_file_cont = [_topfile_, '']
-        print '----- Loading :'
-        i = 1
-        aux_file_cont[i] =  root_folder + ff_file
-        print aux_file_cont[i]
-        
-        root_folder = '/'.join( aux_file_cont[i].split('/')[:-1]+[''])
-        with open( aux_file_cont[i], 'r')  as indata2:
-            for k_line in indata2:
-                if k_line.startswith('#include'):
-                    i+=1
-                    aux_file_cont.append( root_folder + k_line.split('"')[1])
-                    print aux_file_cont[i]
-                    if i==3:
-                        break
-        # the first one is [ defaults ]
-        # second nonbonded atomtypes
-        # third bonded 
-        _directives_ = ['defaults', 'atomtypes', 'bondtypes']
-        file_cont = []
-        for _di_ in _directives_:
-            file_cont.append( seek_for_directive( aux_file_cont, _di_))
-            if file_cont[-1] == '':
-                pop_wrg_1('Directive ' + _di_ + ' not found!')
-            else:
-                print ('Using :' +file_cont[-1]+' for ' + _di_) 
-    else:
-        pop_err_1('itp file not found!')
-        nonerr_flag *= False
-    # final check of non error flag
-    if nonerr_flag and len(file_cont) < 3 :
-        pop_wrg_1('Your structure seems unfamiliar, just ' +
-                  '{} itp found.'.format( len(file_cont)) +
-                  '\nthe conversion could fail!')
-        # Meaning that the directive seeker could not find the correspondin one
-        while len(file_cont) < 3:
-            file_cont.append( file_cont[-1])
-    # a file integrity check should be done outside
-    return file_cont, nonerr_flag
-
-def ck_forcefield( _the_file_, _secondoption_ = None):
-    '''
-    podria pedirse solo este archivo y 
-    de aqui sacar la iformacion de los otros dos....
-    '''
-    _flag_ = False
-    comb_rule = -1
-    with open( _the_file_, 'r')  as indata:
-        for j_line in indata:
-            line_c = j_line.split()
-            if j_line.startswith('[ defaults ]'):
-                _flag_ = True
-            if len(line_c)>1 and 'fudgeQQ'==line_c[-1]:
-                j_line = indata.next()
-                comb_rule= j_line.split()
-                print('---> comb_rule {}'.format(comb_rule[1]))
-                
-    if not _flag_ and _secondoption_ <> None:
-        comb_rule, _flag_, _the_file_ = ck_forcefield( _secondoption_)
-        
-    if comb_rule < 0 or not _flag_:
-        pop_err_1('forcefield.itp file is missing or incomplete')
-        comb_rule, _flag_, _the_file_ = [ 0, 0, '']
-    
-    return comb_rule, _flag_, _the_file_
-
-def seek_for_directive( _list_of_files_, _directive_):
-    ''' search for a certain directive in a bunch of files
-        and then returns the file in which it is, or an empty string
-        PS: a directive is a word wrapped with [] 
-    '''
-    content_file = ''
-    for file_ in _list_of_files_:
-        
-        with open( file_, 'r')  as indata:
-            for j_line in indata:
-                line_c = j_line.split(' ]')[0].split('[ ')
-                if len( line_c) > 1:
-                    if line_c[1] == _directive_:
-                        content_file = file_
-                        break
-        if content_file <> '':
-            break
-    
-    return content_file
-    
-    
-    
-    
-def get_top_groups( _mtype_container_, _group_):
-    
-    _mtype_ = _mtype_container_
-    _buffer = []
-    for mt in range(len( _mtype_)):
-        
-        mtype = _mtype_[mt].strip(' ')
-        if _buffer==[] and mtype==_group_:
-            buffer = [ mtype, mt+1]
-            
-        elif _buffer<>[] and mtype<>_group_:
-            _buffer += [mt]
-            break
-            
-        elif mt==(len(_mtype_)-1):
-            
-            _buffer += [mt+1]
-                
-    print''
-    print 'Group characterized as: {} with ids {} to {}'.format(*_buffer)
-    return _buffer
-
+    print('\n')
+    sty_container = [sty_container[5],] + sty_container[:5]
+    print sty_container
+    return sty_container
 
 if __name__ == '__main__':
-    
     pass
     
 # vim:tw=80
