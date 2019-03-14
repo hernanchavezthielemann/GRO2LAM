@@ -74,7 +74,13 @@ def extract_gromacs_data( _data_files_, _autoload_):
                     '[ angles ]', '[ dihedrals ]', '[ system ]',
                     '[ molecules ]', '']
     exclusions_ = ['[ bonds ]', '[ pairs ]', '[ angles ]', '[ dihedrals ]']
-    if filename_nb == filename_ff and filename_nb == filename_bon:
+    # Scheme type????
+    pure_side_mol_flag = ( ( seek_for_directive( [ filename_top],
+                                                'moleculetype') == '') or 
+                           ( filename_nb == filename_ff and
+                             filename_nb == filename_bon))
+    
+    if pure_side_mol_flag:
         startstrings = startstrings[-3:]
         print wrg_3( 'Using pure side molecule scheme')
         #n_atoms     =   0
@@ -138,19 +144,19 @@ def extract_gromacs_data( _data_files_, _autoload_):
     #=========================================================================#
     
     
-    startstrings=['[ bondtypes ]', '[ angletypes ]', '[ dihedraltypes ]', '']
+    startstrings = ['[ bondtypes ]', '[ angletypes ]', '[ dihedraltypes ]', '']
     if filename_nb == filename_ff and filename_nb == filename_bon:
         
         for bi in range( len( startstrings))[:-1]:
             s_str_ = startstrings[ bi][ 2:-2]
             data_container[ s_str_] =   []
-            data_container['define'][s_str_[:-5]] = []
+            data_container['define'][s_str_[:-5]] = {}
             
         #data_container['impropers']     =   []
         #data_container['impropertypes'] =   []
         startstrings = startstrings[-1]
     
-    aux_strings = ['bonds', 'angles', 'dihedrals']
+    aux_strings = [ 'bonds', 'angles', 'dihedrals']
     for bi in range( len( startstrings))[:-1]:
         s_str_ = startstrings[ bi][ 2:-2]
         
@@ -167,10 +173,38 @@ def extract_gromacs_data( _data_files_, _autoload_):
             else:
                 ok_flag = True
     
-    
     ###########################################################################
     '''----------------        #define &  Impropers          ---------------'''
     #=========================================================================#
+    gromosff_flag = False
+    aux_here = {}
+    data_container[ 'define'][ 'improper'] = {}
+    
+    if filename_nb <> filename_ff and filename_nb <> filename_bon:
+        aux_here = get_gromos_define( filename_bon)
+        
+    for key_ in aux_here.keys():
+        if aux_here[ key_] <> {}:
+            print ( 'GROMOS ' + key_ + ' kind detected!')
+            data_container[ 'define'][ key_].update( aux_here[ key_])
+            gromosff_flag = True
+            
+    if gromosff_flag:
+        for ss_ in startstrings[:-1]:
+            s_str_ = ss_[ 2:-2]
+            data_aux = data_container[ s_str_]
+            cont_k = s_str_[ :-5]
+            cddd = data_container[ 'define'][ cont_k]
+            for i in range( len( data_aux)):
+                if len( data_aux[i][-1].split('.')) < 2:
+                    if  not data_aux[i][-1].isdigit():
+                        aux = data_aux[i][:-1] + cddd[ data_aux[i][-1]]
+                        #print aux
+                        data_container[ s_str_][i] = aux
+                    
+    
+    
+        #print data_container['define']['bond']['gb_33']
     # Search for impropers in TOP and BON, using crossreference if needed
     data_container = split_dihedral_improper( data_container)
     
@@ -202,6 +236,22 @@ def extract_gromacs_data( _data_files_, _autoload_):
             side_angles_n   += sm_quantity * angles_x_mol
             side_dihed_n    += sm_quantity * dihedr_x_mol
             side_improp_n   += sm_quantity * improp_x_mol
+            
+        
+        contentkey = [ 'bond', 'angle', 'improper', 'dihedral']
+        for cont_k in contentkey:
+            cddd = data_container[ 'define'][ cont_k]
+            
+            if cddd.keys() <> []:
+                for sb in range( len( sidemol['tag'])):
+                    datacont = sidemol['data'][sb][cont_k+'s']
+                    for dc in range( len(datacont)):
+                        if not datacont[dc][-1].isdigit():
+                            aux = datacont[dc][:-1] + cddd[ datacont[dc][-1]]
+                            sidemol['data'][sb][cont_k+'s'][dc] = aux
+                        #elif 'gb_33' in datacont[dc]:
+                        #else:
+                            #print datacont[dc]
         
         n_bondsnew  =   n_bonds + side_bonds_n
         n_anglesnew =   n_angles + side_angles_n
@@ -579,6 +629,7 @@ def split_dihedral_improper( _data_container_, smt_flag = False):
     _dihe_type_data_ = _data_container_['dihedraltypes']
     im_type_ = []
     dh_type_ = []
+    #print _dihe_type_data_
     for i in range( len ( _dihe_type_data_)):
         #  Dihedral line format:
         #  ai  aj  ak  al  funct   c0  c1  c2  c3  c4  c5
@@ -737,14 +788,14 @@ def get_topitp_line( _filename_, _ss_):
                     
                 elif _line_[0][0] == '#':
                     if _line_[0] == '#include':
-                        print wrg_3( _line_[1] + ' skipped this time')
+                        print( wrg_3( _line_[1] + ' skipped this time'))
                     elif _line_[0] == '#define':
                         _define_[_line_[1]] = _line_[2:]
                     else:
                         print wrg_3( str(_line_) + '  ??')
                         
                 elif _line_[0][0] == '[':
-                    print ' '.join(_line_) + 'Checked!'
+                    print( ' '.join(_line_) + 'Checked!')
                     if  ' '.join(_line_)  <> _ss_ :
                         read_flag = False
                     #print 'exit here 424'
@@ -752,10 +803,10 @@ def get_topitp_line( _filename_, _ss_):
                 elif len( _line_) > 0:
                     content_line.append( _line_)
                 else:
-                    print 'Ups... please raise an issue at GitHub ;)'
+                    print('Ups... please raise an issue at GitHub ;)')
             elif j_line.lstrip().startswith( _ss_):
                 if _verbose_:
-                    print _ss_+' found!'
+                    print( _ss_+' found!')
                 read_flag = True
                 tag_not_found = False
     
@@ -767,6 +818,38 @@ def get_topitp_line( _filename_, _ss_):
                  )
         ok_flag = False
     return content_line, ok_flag, _define_
+
+def get_gromos_define( _bondedfile_):
+    ''' reading GROMOS define forcefield format
+        gb_ : bond
+        ga_ : angle
+        gi_ : wop - improper
+        gd_ : dihedral
+        eg. #define gb_12
+    '''
+    _dedic_ = {'b':'bond', 'a':'angle', 'i':'improper', 'd':'dihedral'}
+    _define_ = {}
+    for k in _dedic_.keys():
+        _define_[ _dedic_[k]] = {}
+    
+    with open(_bondedfile_, 'r')  as indata:
+        for j_line in indata:
+            _line_ = j_line.split(';')[0].split()
+            if _line_ and _line_[0][0] == '#':
+                if _line_[0] == '#define':
+                    if _line_[1][0] == 'g':
+                        if _line_[1][2] == '_' and _line_[1][3].isdigit():
+                            aux_dic = { _line_[1] : _line_[2:]}
+                            _define_[ _dedic_[ _line_[1][1]]].update( aux_dic)
+                        else:
+                            print('Whojojoooh...')
+                    
+                elif _line_[0] == '#include':
+                    print(wrg_3( _line_[1] + ' skipped!'))
+                else:
+                    print(wrg_3( str(_line_) + '  ??'))
+    
+    return _define_
 
 def get_ffldfiles( _topfile_):
     ''' 
@@ -858,7 +941,8 @@ def ck_forcefield( _the_file_, _secondoption_ = None):
 
 def seek_for_directive( _list_of_files_, _directive_):
     ''' search for a certain directive in a bunch of files
-        and then returns the file in which it is, or an empty vector
+        and then returns the file in which it is, or an empty string
+        PS: a directive is a word wrapped with [] 
     '''
     content_file = ''
     for file_ in _list_of_files_:
