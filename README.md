@@ -70,6 +70,24 @@
 
     wget https://raw.githubusercontent.com/hernanchavezthielemann/utils/master/grotolam/G2L_iBeta && bash G2L_iBeta
     
+E.g.
+    
+<!--ts-->
+ * First create a folder in your desktop (lets say "Untitled Folder")
+ * Inside that folder open a terminal ( in Ubuntu: right click inside the folder-space to open a context menu > Open in Terminal )
+ * In that terminal copy&paste the previous "quantum start" command:
+     
+       wget https://raw.githubusercontent.com/hernanchavezthielemann/utils/master/grotolam/G2L_iBeta && bash G2L_iBeta
+ 
+ * Then hit intro key to start the setup
+ * If you have no errors, at this point a folder called GRO2LAM-20mar19 should exist in a path like:
+ 
+       /home/*YourUser*/Desktop/Untitled Folder/GRO2LAM-20mar19
+         
+ * Now, inside that folder it is possible to find the "run" file,  that was generated during the setup.
+ * To run this file open a terminal in that folder, and execute *./run* or *python run*
+<!--te-->
+    
 ### Quick start
    Download the compressed package of GRO2LAM:
    
