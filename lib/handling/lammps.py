@@ -61,9 +61,9 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     n_atoms, n_bonds, n_angles, n_dihedrals, n_impropers = _numbers_['total']
     n_atomtypes, n_bondtypes, n_angletypes = _numbers_['type'][:3]
     n_dihedraltypes, n_impropertypes = _numbers_['type'][3:]
-    _box_= _topodata_['box']
+    [_box_, _box_apend] = _topodata_['box']
     _mol_, _mtype_g_, _atype_, _xyz_, _mtype_ = _topodata_['atomsdata'] 
-    
+    _x_, _y_, _z_ = _xyz_
     atomstyle, _sidemol_f_, _autoload_ = _config_ 
     
     if _sidemol_f_:
@@ -95,8 +95,13 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     _text_ += ''.join( _aux_txt[ : _asty_d_[ atomstyle]]) + '\n'
     
     ####----------------    BOX     -----------------####
+    
     _text_ +=(' {:.4f} {:.4f} xlo xhi\n {:.4f} {:.4f} ylo yhi\n'
               +' {:.4f} {:.4f} zlo zhi\n').format(*_box_)
+    
+    if _box_apend <> [0,0,0]:
+        _text_ +=(' {:.4f} {:.4f} {:.4f} xy xz yz\n').format( *_box_apend)
+    
     
     #######################-------------------------###########################
     '''---------           2nd  Atom kind Properties             -----------'''
@@ -180,9 +185,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
         _text_ += atom_shape.format( i+1, _mol_[i],
                                     dicts[0][ aty],
                                     float(known_atoms[ i][6]), # charge?? WF
-                                    float(_xyz_[i][0])*10,
-                                    float(_xyz_[i][1])*10,
-                                    float(_xyz_[i][2])*10,
+                                    _x_[i]*10, _y_[i]*10, _z_[i]*10,
                                     aty
                                    )
     sm_bonds = []
@@ -367,9 +370,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
         _text_ += atom_shape.format(i+1, _mol_[i],
                                     dicts[0][ sm_aty[ ji_]],
                                     sm_charge[ ji_],
-                                    float(_xyz_[i][0])*10,
-                                    float(_xyz_[i][1])*10,
-                                    float(_xyz_[i][2])*10,
+                                    _x_[i]*10, _y_[i]*10, _z_[i]*10,
                                     sm_aty[ ji_]
                                    )
         ji_+=1
