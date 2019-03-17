@@ -41,7 +41,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
         return {}, [ ok_flag, _sidemol_f_]
     
     _mol_, _mtype_, _type_, _xyz_, _mtypes_ = gro_pack
-    data_container['atomsdata'] = [ _mol_, _mtypes_, _type_, _xyz_, _mtype_]
+    
     
     
     ################# ------------   BOX DEF   ------------- ##################
@@ -92,8 +92,8 @@ def extract_gromacs_data( _data_files_, _autoload_):
     zhi = zlo + Ar[2][2]
     
     data_container['box'][0] = [ xlo, xhi, ylo, yhi, zlo, zhi]
-        
-
+    
+    data_container['atomsdata'] = [ _mol_, _mtypes_, _type_, _xyz_, _mtype_]
     ###########################################################################
     
     ###########################################################################
