@@ -48,16 +48,16 @@ def extract_gromacs_data( _data_files_, _autoload_):
     data_container['box'] = [[],[]]
     b_xyz = [ x_y_z*10 for x_y_z in b_xyz ]
     angles = []
+    Ar = [[0,0,0],[0,0,0],[0,0,0]]
+    for i in range(3):
+            Ar[i][i] = b_xyz[i]
+            
     if len( b_xyz) == 3:
-        data_container['box'][1] = [0,0,0]
-        
+        pass
     elif len( b_xyz) == 9:
         
-        Ar = [[0,0,0],[0,0,0],[0,0,0]]
         k = 0
         for i in range(3):
-            Ar[i][i] = b_xyz[i]
-            print Ar
             for j in range(3):
                 if i <> j:
                     Ar[i][j] = b_xyz[ k + 3]
@@ -78,7 +78,6 @@ def extract_gromacs_data( _data_files_, _autoload_):
             
             _xyz_ = rotate( rotate( rotate( _xyz_, a_tor_y, 'y'),
                                         a_tor_z, 'z'), a_tor_x)
-        data_container['box'][1] = [ Ar[0][1], Ar[0][2], Ar[1][2]]
         
     else:
         exit('xx/0 Error box dimension 001')
@@ -92,7 +91,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
     zhi = zlo + Ar[2][2]
     
     data_container['box'][0] = [ xlo, xhi, ylo, yhi, zlo, zhi]
-    
+    data_container['box'][1] = [ Ar[0][1], Ar[0][2], Ar[1][2]]
     data_container['atomsdata'] = [ _mol_, _mtypes_, _type_, _xyz_, _mtype_]
     ###########################################################################
     
