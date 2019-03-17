@@ -5,6 +5,7 @@ __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
 from lib.misc.warn import wrg_1, wrg_3, pop_err_1, pop_wrg_1
 from lib.misc.file import check_file, debugger_file, fileseeker
+from lib.misc.geometry import rotate, arcos, raiz
 from sys import exit
 
 
@@ -34,7 +35,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
     section = '''---------------    FILE GRO      ----------------------'''
     #=========================================================================#
     
-    ok_flag, gro_pack, b_xyzhi = get_gro_fixed_line( filename_gro)
+    ok_flag, gro_pack, b_xyz = get_gro_fixed_line( filename_gro)
     if not ok_flag:
         pop_err_1('Problem detected in :\n' + section)
         return {}, [ ok_flag, _sidemol_f_]
@@ -43,14 +44,57 @@ def extract_gromacs_data( _data_files_, _autoload_):
     data_container['atomsdata'] = [ _mol_, _mtypes_, _type_, _xyz_, _mtype_]
     
     
-    #################    BOX DEF   ##################
-    xlo = 0
-    xhi = b_xyzhi[0]*10
-    ylo = 0
-    yhi = b_xyzhi[1]*10
-    zlo = 0
-    zhi = b_xyzhi[2]*10   
-    data_container['box']=[xlo,xhi, ylo,yhi, zlo,zhi]
+    ################# ------------   BOX DEF   ------------- ##################
+    data_container['box'] = [[],[]]
+    b_xyz = [ x_y_z*10 for x_y_z in b_xyz ]
+    angles = []
+    if len( b_xyz) == 3:
+        data_container['box'][1] = [0,0,0]
+        
+    elif len( b_xyz) == 9:
+        
+        Ar = [[0,0,0],[0,0,0],[0,0,0]]
+        k = 0
+        for i in range(3):
+            Ar[i][i] = b_xyz[i]
+            print Ar
+            for j in range(3):
+                if i <> j:
+                    Ar[i][j] = b_xyz[ k + 3]
+                    k += 1
+                    
+        cero = 1e-12
+        if Ar[1][0] < cero or Ar[2][0] < cero or Ar[2][1] < cero:
+            print('Your triclinic cell will be rotated to make it!')
+            # y rotation
+            a_tor_y = -arcos( (Ar[0][0])/(raiz(Ar[0][0]*Ar[0][0]+Ar[2][0]*Ar[2][0])) )
+            Ar = rotate( Ar, a_tor_y, 'y')
+            # z rotation
+            a_tor_z = arcos( (Ar[0][0])/(raiz(Ar[0][0]*Ar[0][0]+Ar[1][0]*Ar[1][0])) )
+            Ar = rotate( Ar, a_tor_z, 'z')
+            
+            a_tor_x = arcos( Ar[1][1]/( raiz( Ar[1][1]*Ar[1][1] + Ar[2][1]*Ar[2][1])) )
+            Ar = rotate( Ar, a_tor_x)
+            
+            _xyz_ = rotate( rotate( rotate( _xyz_, a_tor_y, 'y'),
+                                        a_tor_z, 'z'), a_tor_x)
+        data_container['box'][1] = [ Ar[0][1], Ar[0][2], Ar[1][2]]
+        
+    else:
+        exit('xx/0 Error box dimension 001')
+        
+    _x_, _y_, _z_ = _xyz_
+    xlo = min( _x_)*10
+    xhi = xlo + Ar[0][0]
+    ylo = min( _y_)*10
+    yhi = ylo + Ar[1][1]
+    zlo = min( _z_)*10
+    zhi = zlo + Ar[2][2]
+    
+    data_container['box'][0] = [ xlo, xhi, ylo, yhi, zlo, zhi]
+        
+
+    ###########################################################################
     
     ###########################################################################
     ###########################################################################
@@ -697,12 +741,15 @@ def split_dihedral_improper( _data_container_, smt_flag = False):
 
 def get_gro_fixed_line( _filename_):
     ''' reading gromacs gro fixed lines'''
-    _content_ = []
-    _mol_=[]
-    _mtype_=[]
-    g_names =[]
-    _type_=[]
-    _xyz_=[]
+    _content_   =   []
+    _mol_       =   []
+    _mtype_     =   []
+    g_names     =   []
+    _type_      =   []
+    _xyz_       =   []
+    _x_         =   []
+    _y_         =   []
+    _z_         =   []
     _corrupt = True
     with open(_filename_, 'r')  as indata:
         read_flag = False
@@ -718,7 +765,9 @@ def get_gro_fixed_line( _filename_):
                 _mol_.append( j_line[:5].lstrip(' '))
                 _mtype_.append(mtype)
                 _type_.append(j_line[10:15].lstrip(' '))
-                _xyz_.append([j_line[20:28], j_line[28:36], j_line[36:44]])
+                _x_.append( float( j_line[20:28]) )
+                _y_.append( float( j_line[28:36]) )
+                _z_.append( float( j_line[36:44]) )
                 
                 if _buffer==[]:
                     _buffer = [ mtype, at]
@@ -732,26 +781,28 @@ def get_gro_fixed_line( _filename_):
                 
                 if at == at_num:
                     read_flag = False
-                    g_names.append(_buffer+ [at])
+                    g_names.append(_buffer + [at])
                     
             elif j_line.startswith(';'):
                 pass
-            elif at_num==0:
+            elif at_num == 0:
                 j_line = indata.next()
-                at_num = int(j_line)
+                at_num = int( j_line)
                 read_flag = True
             elif at == at_num:
-                _corrupt = False
                 box_xyz_hi = [float(x) for x in j_line.split(';')[0].split()]
+                if len( box_xyz_hi) in [ 3, 9]:
+                    _corrupt = False
+                    
                 
-                
-    if at_num<>len(_type_):
+    if at_num <> len(_type_):
         pop_err_1('Atom number mismatch in .gro file')
         return False, 0 ,0
     elif _corrupt:
-        pop_err_1('Corrupt .gro file')
+        pop_err_1('Corrupt .gro file box definition')
         return False, 0,0
     else:
+        _xyz_ = [ _x_, _y_, _z_]
         return  True, [_mol_, _mtype_, _type_, _xyz_, g_names], box_xyz_hi
 
 def top_groups( mtype, _buffer, g_names):
