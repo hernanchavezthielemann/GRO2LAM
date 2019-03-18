@@ -43,7 +43,7 @@
    - Python coding:
        Hernan Chavez Thielemann  
    - Protocol definition:
-       Hernan Chavez Thielemann, Gianmarco Ciorra, Matteo Fasano, Annalisa Cardellini, Luca Bergamasco
+       Gianmarco Ciorra, Matteo Fasano, Annalisa Cardellini, Luca Bergamasco, Hernan Chavez Thielemann
 
 ## Description
    This program was designed for easy conversion of solvated structures between 
