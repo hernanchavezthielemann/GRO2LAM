@@ -43,7 +43,6 @@ def extract_gromacs_data( _data_files_, _autoload_):
     _mol_, _mtype_, _type_, _xyz_, _mtypes_ = gro_pack
     
     
-    
     ################# ------------   BOX DEF   ------------- ##################
     data_container['box'] = [[],[]]
     b_xyz = [ x_y_z*10 for x_y_z in b_xyz ]
@@ -232,6 +231,23 @@ def extract_gromacs_data( _data_files_, _autoload_):
             data_container[ 'define'][ key_].update( aux_here[ key_])
             gromosff_flag = True
             
+            dihe_g_data = data_container[ 'dihedraltypes']
+            if 'dihedraltypes' == key_+'types' and dihe_g_data <> []:
+                rewrite_flag = False
+                for gd_ in range( len( dihe_g_data)):
+                    #print dihe_g_data[gd_][2]
+                    if dihe_g_data[gd_][2].isdigit():
+                        if not rewrite_flag:
+                            print('Dihedral with 2 atoms re-formating to 4: ')
+                        rewrite_flag = True
+                        dihe_g_data[gd_] = ( [ 'X',] + dihe_g_data[ gd_][:2]
+                                            + [ 'X',] + dihe_g_data[ gd_][2:])
+                        print (dihe_g_data[ gd_]) 
+                if rewrite_flag:
+                    data_container[ 'dihedraltypes'] = dihe_g_data
+                
+            
+        
     if gromosff_flag:
         for ss_ in startstrings[:-1]:
             s_str_ = ss_[ 2:-2]
