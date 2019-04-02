@@ -219,10 +219,11 @@ def extract_gromacs_data( _data_files_, _autoload_):
     '''----------------        #define &  Impropers          ---------------'''
     #=========================================================================#
     gromosff_flag = False
-    aux_here = {}
     data_container[ 'define'][ 'improper'] = {}
+    aux_here = {}
     
     if filename_nb <> filename_ff and filename_nb <> filename_bon:
+        # it is GROMOS there ??
         aux_here = get_gromos_define( filename_bon)
         
     for key_ in aux_here.keys():
@@ -337,8 +338,8 @@ def extract_gromacs_data( _data_files_, _autoload_):
         print _charge_
         print _conv_dict_
         
-        data_container['S_charge'] =_charge_
-        data_container['S_translation'] =_conv_dict_
+        data_container['S_charge'] = _charge_
+        data_container['S_translation'] = _conv_dict_
         #######################################################################
         ############               Esoteric part ;)             ###############
         ####----------- DEFINING BONDED INTERACTIONS     ----------####
@@ -367,7 +368,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
                 _smbn_ = _smd_['bonds'][_bn]
                 aux_here = [_at_dic_here[ _smbn_[0]], _at_dic_here[ _smbn_[1]]]
                 name = '{}-{}'.format(*aux_here)
-                if name not in bn_namelist:
+                if name not in bn_namelist and len( _smbn_[2:]) > 1:
                     bn_namelist.append( name)
                     smol_extra_bondtypes.append( aux_here + _smbn_[2:])
                     
@@ -376,7 +377,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
                 aux_here = [_at_dic_here[ _sman_[0]], _at_dic_here[ _sman_[1]],
                             _at_dic_here[ _sman_[2]] ]
                 name = '{}-{}-{}'.format(*aux_here)
-                if name not in an_namelist:
+                if name not in an_namelist and len( _sman_[3:]) > 1:
                     an_namelist.append( name)
                     smol_extra_angletypes.append( aux_here + _sman_[3:])
                     
@@ -385,7 +386,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
                 aux_here = [_at_dic_here[ _smdh_[0]], _at_dic_here[ _smdh_[1]],
                             _at_dic_here[ _smdh_[2]], _at_dic_here[ _smdh_[3]]]
                 name = '{}-{}-{}-{}'.format(*aux_here)
-                if name not in di_namelist:
+                if name not in di_namelist and len( _smdh_[4:]) > 1:
                     di_namelist.append( name)
                     smol_extra_dihedraltypes.append( aux_here + _smdh_[4:])
             
@@ -394,7 +395,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
                 aux_here = [_at_dic_here[ _smim_[0]], _at_dic_here[ _smim_[1]],
                             _at_dic_here[ _smim_[2]], _at_dic_here[ _smim_[3]]]
                 name = '{}-{}-{}-{}'.format(*aux_here)
-                if name not in im_namelist:
+                if name not in im_namelist and len( _smim_[4:]) > 1:
                     im_namelist.append( name)
                     smol_extra_impropertypes.append( aux_here + _smim_[4:])
                 
@@ -416,6 +417,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
                                         data_container['dihedraltypes'])
         data_container['impropertypes'] = ( smol_extra_impropertypes + 
                                         data_container['impropertypes'])
+        #print(data_container['bondtypes'])
     else:
         n_bondsnew  = n_bonds
         n_anglesnew = n_angles
