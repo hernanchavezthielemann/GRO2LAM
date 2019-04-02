@@ -10,7 +10,7 @@
 
 
 ## Version
-   GRO2LAM version 1.21 (20 Mar 2019) - BETA
+   GRO2LAM version 1.21 (27 Jan 2019) - BETA
    
    :new:New features : 
 <!--ts-->
@@ -73,7 +73,7 @@
 ### Quantum start
    Copy&paste the following command in your bash console and execute it, this will download and execute Grotolam in about 5 seconds:
 
-    wget https://raw.githubusercontent.com/hernanchavezthielemann/utils/master/grotolam/G2L_iBeta && bash G2L_iBeta
+    wget https://raw.githubusercontent.com/hernanchavezthielemann/utils/master/grotolam/G2L_install && bash G2L_install
     
 E.g.
     
@@ -82,12 +82,12 @@ E.g.
  * Inside that folder open a terminal ( in Ubuntu: right click inside the folder-space to open a context menu > Open in Terminal )
  * In that terminal copy&paste the previous "quantum start" command:
      
-       wget https://raw.githubusercontent.com/hernanchavezthielemann/utils/master/grotolam/G2L_iBeta && bash G2L_iBeta
+       wget https://raw.githubusercontent.com/hernanchavezthielemann/utils/master/grotolam/G2L_install && bash G2L_install
  
  * Then hit intro key to start the setup
- * If you have no errors, at this point a folder called GRO2LAM-20mar19 should exist in a path like:
+ * If you have no errors, at this point a folder called GRO2LAM-27ene19 should exist in a path like:
  
-       /home/*YourUser*/Desktop/Untitled Folder/GRO2LAM-20mar19
+       /home/*YourUser*/Desktop/Untitled Folder/GRO2LAM-27ene19
          
  * Now, inside that folder it is possible to find the "run" file,  that was generated during the setup.
  * To run this file open a terminal in that folder, and execute *./run* or *python run*
@@ -96,11 +96,11 @@ E.g.
 ### Quick start
    Download the compressed package of GRO2LAM:
    
-     wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/20mar19.zip
+     wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/27ene19.zip
   
    Decompress it:
    
-     unzip 20mar19.zip
+     unzip 27ene19.zip
    
    Make sure that terminal is in the GRO2LAM folder, then:
    
@@ -108,30 +108,30 @@ E.g.
    
    Execute the setup file through the terminal as follows:
    
-     ~/Desktop/GRO2LAM-20mar19$python setup
+     ~/Desktop/GRO2LAM-27ene19$python setup
    
    Then, without changing the folder, execute the run script:
    
-     ~/Desktop/GRO2LAM-20mar19$./run
+     ~/Desktop/GRO2LAM-27ene19$./run
   
    After that, an intuitive graphical user interface should appear.
 
 ### Step by step
    The download page of GRO2LAM can be found at the following link:
 
-     https://github.com/hernanchavezthielemann/GRO2LAM/archive/20mar19.zip
+     https://github.com/hernanchavezthielemann/GRO2LAM/archive/27ene19.zip
 
    The installation package can be downloaded through the bash console as:
 
-    ~$ wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/20mar18.zip
+    ~$ wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/27ene19.zip
     
    This will download a zipped file, that you can uncompress with right click or with the command:
 
-    ~$ unzip 20mar19.zip
+    ~$ unzip 27ene19.zip
     
    Then, make sure that terminal is in the GROTOLAM folder. For example:
     
-    user@system:~/Downloads/GRO2LAM-20mar19$
+    user@system:~/Downloads/GRO2LAM-27ene19$
     
    Once there, execute the setup file through the terminal as:
     
