@@ -246,8 +246,9 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                 _mol_buffer_ = _mtype_[i]
                 smc += 1
                 
-            _smol_tag_ = sidemol['tag'][ smc]
             #print '\n'+'here ', smc
+            _smol_tag_ = sidemol['tag'][ smc]
+            
             ji_ = 0 # j index
             #print i+1, _mtype_[i], _smol_tag_
             # meaning also a new type of molecule ???
@@ -255,15 +256,38 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                 
                 new_smol_str = '** New side molecule : {} 1st atom : {} **'
                 print( '\n' + new_smol_str.format( _smol_tag_, _atype_[i]))
-                sm_charge   = []
-                sm_aty      = []
-                
                 ###########     New side mol data     ########
                 sm_data = sidemol['data'][  smc]
                 ##############################################
+                first_atom_check = _atype_[i] == sm_data['atoms'][0][4]
+                
+                # In the weird case of a missing residue tag in the GRO file
+                if _mtype_[i] == '':
+                    print ('\n')
+                    pop_wrg_1('Missing residue tag in .gro file.\n'
+                              + 'atom #'+ str( i+1)+ '. Asuming: ' +_smol_tag_)
+                    atom_x_ress = len( sm_data['atoms']) * sidemol['num'][ smc]
+                    #print atom_x_ress, len( sm_data['atoms']), sidemol['num'][ smc]
+                    _mol_buffer_ = _smol_tag_
+                    
+                    if first_atom_check:
+                        for i_s in range( atom_x_ress):
+                            if _mtype_[ i + i_s ] == '':
+                                _mtype_[ i + i_s ] = _smol_tag_
+                        
+                    
+                #""""""""""""""""""""""""""""""""""""""""""""#
+                
+                sm_charge   = []
+                sm_aty      = []
+                ##############################################
                 
                 aux_buffer = ''
-                if _mtype_[i] == sm_data['atoms'][0][3]:
+                if not first_atom_check:
+                    print('xx/0   Atoms order mismatch '
+                         +'between residue definition and gro file!')
+                    exit('xx/0   Error /lammps.py 001!')
+                elif _mtype_[i] == sm_data['atoms'][0][3]:
                     for ath in sm_data['atoms']:
                         sm_charge.append(float( ath[6]))
                         sm_aty.append( ath[1])
@@ -283,10 +307,11 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                     
                 else:
                     print('xx/0   Residue: ' + _mtype_[i])
-                    print('xx/0   First line: ', sm_data['atoms'][0])
+                    fst_line = (' ').join( sm_data['atoms'][0]) 
+                    print('xx/0   First line: ' + fst_line)
                     print('xx/0   Molecules order mismatch '
                          +'between [ molecules ] definition and gro file!')
-                    exit('xx/0   Error /lammps.py 001!')
+                    exit('xx/0   Error /lammps.py 002!')
                 try:
                     print 'hop!',sm_data['atoms'][0][3]
                     sm_cont[ _smol_tag_] = {}
