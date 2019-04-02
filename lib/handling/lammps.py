@@ -3,7 +3,7 @@
 __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
 from lib.misc.file import write_file, make_dir
-from lib.misc.warn import print_dec_g, pop_wrg_1, pop_err_1
+from lib.misc.warn import print_dec_g, pop_wrg_1, pop_err_1, wrg_1
 
 from sys import exit
 
@@ -61,9 +61,9 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     n_atoms, n_bonds, n_angles, n_dihedrals, n_impropers = _numbers_['total']
     n_atomtypes, n_bondtypes, n_angletypes = _numbers_['type'][:3]
     n_dihedraltypes, n_impropertypes = _numbers_['type'][3:]
-    _box_= _topodata_['box']
+    [_box_, _box_apend] = _topodata_['box']
     _mol_, _mtype_g_, _atype_, _xyz_, _mtype_ = _topodata_['atomsdata'] 
-    
+    _x_, _y_, _z_ = _xyz_
     atomstyle, _sidemol_f_, _autoload_ = _config_ 
     
     if _sidemol_f_:
@@ -95,8 +95,13 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     _text_ += ''.join( _aux_txt[ : _asty_d_[ atomstyle]]) + '\n'
     
     ####----------------    BOX     -----------------####
+    
     _text_ +=(' {:.4f} {:.4f} xlo xhi\n {:.4f} {:.4f} ylo yhi\n'
               +' {:.4f} {:.4f} zlo zhi\n').format(*_box_)
+    
+    if _box_apend <> [0,0,0]:
+        _text_ +=(' {:.4f} {:.4f} {:.4f} xy xz yz\n').format( *_box_apend)
+    
     
     #######################-------------------------###########################
     '''---------           2nd  Atom kind Properties             -----------'''
@@ -106,7 +111,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     _text_ +='\n Masses\n\n'
     atom_info = _topodata_['atomtypes']
     minr = 1 - int( _topodata_[ 'defaults'][0]) # 0 lj and -1 buck
-    
+    already_warned = 0
     for i in range( n_atomtypes):
         _atom_mass_ = atom_info[i][ -5 + minr]
         _atom_type_ = atom_info[i][0]
@@ -131,10 +136,22 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                 #if len(_smda_[at_]) == 8 and _atom_mass_ == _smda_[at_][7]:
                 #    print at_
                 #    break
+        
         if not float( _atom_mass_):
             _atom_mass_ = '0.01008' # H_mass/100 as minimum seems reasonable
-            pop_wrg_1( ('0.0 mass not supported! using {} instead for {} ' +
-                        'atom type').format( _atom_mass_, _atom_type_) ) 
+            if not already_warned:
+                pop_wrg_1( ('0.0 mass not supported! using {} instead for {} '
+                            + 'atom type').format( _atom_mass_, _atom_type_) )
+                already_warned += 1
+                
+            else: # just to avoid the pain in the ass caused by these popups
+                if already_warned == 1:
+                    pop_wrg_1( ( 'All 0.0 mass are converted as: {}\nSee the '
+                              +'terminal for more info.').format( _atom_mass_))
+                    already_warned += 1
+                    
+                wrg_1(('0.0 mass not supported! using {} instead for {} '
+                            + 'atom type').format( _atom_mass_, _atom_type_))
         
         _text_ +=' {} {} # {}\n'.format( i+1, _atom_mass_, _atom_type_)
         
@@ -168,9 +185,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
         _text_ += atom_shape.format( i+1, _mol_[i],
                                     dicts[0][ aty],
                                     float(known_atoms[ i][6]), # charge?? WF
-                                    float(_xyz_[i][0])*10,
-                                    float(_xyz_[i][1])*10,
-                                    float(_xyz_[i][2])*10,
+                                    _x_[i]*10, _y_[i]*10, _z_[i]*10,
                                     aty
                                    )
     sm_bonds = []
@@ -186,8 +201,8 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                     option that probably is going to take longer rt
                  '''
     
-    _residue_buffer_    = '00000000'
-    _moltype_buffer_    = 'none_type'
+    _residue_buffer_    = '00'
+    _mol_buffer_ = 'nk_type'
     solv_at_v           = []
     #print dicts[0]
     if _sidemol_f_ == 1:
@@ -200,47 +215,93 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
         sm_data     = {}
         ji_ = 0
         solv_at_v = range( n_atoms)[ base_atoms_n:]
+        multi_residue = 0
+        sidemols = 0
+        smc = -1
+        for i in range( len ( sidemol['tag'])): 
+            sidemols +=  sidemol['num'][i] 
+        
+        print( 'Sidemols: ' + str( sidemols) )
+
         #print n_atoms, base_atoms_n, len( _mtype_), solv_at_v, _atype_
     for i in solv_at_v:
         
         #aty = conv_dict[_atype_[i]] # _atype_ is the atag in TOP
         #print _atype_[i], aty
         # meaning new molecule // maybe same type
-        if _mol_[i] <> _residue_buffer_:
+        clause1 = (_mol_[i] <> _residue_buffer_)
+        #print clause1
+        if multi_residue and clause1: # mol number
             _residue_buffer_ = _mol_[i]
-            ji_ = 0 # j index
-            #print _residue_buffer_
-            # meaning also a new type of molecule ???
-            if _mtype_[i] <> _moltype_buffer_:
+            multi_residue -= 1
+            if not multi_residue:
+                _mol_buffer_ = 'nk_type'
+            #print ji_, sm_aty[ ji_], _residue_buffer_
+            #print _mol_[i], bool(multi_residue)
                 
-                if _mtype_[i] not in sm_cont.keys():
-                    new_smol_str = '** New side molecule : {} 1st atom : {} **'
-                    print '\n' + new_smol_str.format( _mtype_[i], _atype_[i])
-                    sm_charge   = []
-                    sm_aty      = []
-                    for sb in range( len( sidemol['tag'])):
-                        sm_data = sidemol['data'][sb]
-                        # just one residue per side mol
-                        # New side mol data
-                        if _mtype_[i] == sm_data['atoms'][0][3]:
-                            for ath in sm_data['atoms']:
-                                sm_charge.append(float( ath[6]))
-                                sm_aty.append( ath[1])
-                            break
-                    try:
-                        print 'hop!',sm_data['atoms'][0][3]
-                        sm_cont[ _mtype_[i]] = {}
-                        sm_cont[ _mtype_[i]]['data']    = sm_data
-                        sm_cont[ _mtype_[i]]['charge']  = sm_charge
-                        sm_cont[ _mtype_[i]]['aty']     = sm_aty
+        elif clause1: # mol number
+            
+            _residue_buffer_ = _mol_[i]
+            if _mtype_[i] <> _mol_buffer_:
+                _mol_buffer_ = _mtype_[i]
+                smc += 1
+                
+            _smol_tag_ = sidemol['tag'][ smc]
+            #print '\n'+'here ', smc
+            ji_ = 0 # j index
+            #print i+1, _mtype_[i], _smol_tag_
+            # meaning also a new type of molecule ???
+            if _smol_tag_ not in sm_cont.keys():
+                
+                new_smol_str = '** New side molecule : {} 1st atom : {} **'
+                print( '\n' + new_smol_str.format( _smol_tag_, _atype_[i]))
+                sm_charge   = []
+                sm_aty      = []
+                
+                ###########     New side mol data     ########
+                sm_data = sidemol['data'][  smc]
+                ##############################################
+                
+                aux_buffer = ''
+                if _mtype_[i] == sm_data['atoms'][0][3]:
+                    for ath in sm_data['atoms']:
+                        sm_charge.append(float( ath[6]))
+                        sm_aty.append( ath[1])
                         
-                    except UnboundLocalError as Err_here:
-                        print('Upa mala cosa!')
-                        exit( Err_here[0])
+                        # multiple residues per side mol???
+                        #lets see how many
+                        if ath[2] <> aux_buffer:
+                            #print ath[2]
+                            if aux_buffer <> '':
+                                multi_residue += 1
+                            aux_buffer = ath[2]
+                        
+                    if multi_residue:
+                        print ( '** It is a multi residual structure.\n** '
+                               +'With: '+str( multi_residue +1)+' residues.')
+                        #multi_residue -= 1
+                    
                 else:
-                    sm_data     = sm_cont[ _mtype_[i]]['data']
-                    sm_charge   = sm_cont[ _mtype_[i]]['charge']
-                    sm_aty      = sm_cont[ _mtype_[i]]['aty']
+                    print('xx/0   Residue: ' + _mtype_[i])
+                    print('xx/0   First line: ', sm_data['atoms'][0])
+                    print('xx/0   Molecules order mismatch '
+                         +'between [ molecules ] definition and gro file!')
+                    exit('xx/0   Error /lammps.py 001!')
+                try:
+                    print 'hop!',sm_data['atoms'][0][3]
+                    sm_cont[ _smol_tag_] = {}
+                    sm_cont[ _smol_tag_]['data']    = sm_data
+                    sm_cont[ _smol_tag_]['charge']  = sm_charge
+                    sm_cont[ _smol_tag_]['aty']     = sm_aty
+                    
+                except UnboundLocalError as Err_here:
+                    print('Upa mala cosa!')
+                    exit( Err_here[0])
+                ######################################################
+            else:
+                sm_data     = sm_cont[ _smol_tag_]['data']
+                sm_charge   = sm_cont[ _smol_tag_]['charge']
+                sm_aty      = sm_cont[ _smol_tag_]['aty']
             ''' ///////////-------------------------------------\\\\\\\\\\ '''
             '''<<<<<<<<<<<<    Side Molecule topology builder   >>>>>>>>>>>'''
             ''' \\\\\\\\\\\-------------------------------------////////// '''
@@ -248,6 +309,8 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
             # changes acording to the molecule kind topology
             #print sm_data
             dirtv_data = sm_data[ 'bonds']
+            #print('here')
+            #print dirtv_data
             for xx in range( len( dirtv_data)):
                 _row = dirtv_data[ xx]
                 #print sm_aty
@@ -300,13 +363,14 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                 aty4 = sm_aty[ i4 - 1 ]
                 imp_str = '{}-{}-{}-{}'.format( aty1, aty2, aty3, aty4)
                 sm_impropers.append([ imp_str, i + i1, i + i2, i + i3, i + i4])
-            
+        
+        
+        #print ji_, sm_aty[ ji_]#, sm_aty
+        #print sm_aty[ ji_]
         _text_ += atom_shape.format(i+1, _mol_[i],
                                     dicts[0][ sm_aty[ ji_]],
                                     sm_charge[ ji_],
-                                    float(_xyz_[i][0])*10,
-                                    float(_xyz_[i][1])*10,
-                                    float(_xyz_[i][2])*10,
+                                    _x_[i]*10, _y_[i]*10, _z_[i]*10,
                                     sm_aty[ ji_]
                                    )
         ji_+=1
@@ -358,7 +422,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
             #print dicts[1]
             # better way to do this is trough corrds ---------  <WFS>
             for i in range( n_bonds - base_bonds_n):
-                #print sm_bonds[i]
+                # print sm_bonds[i]
                 _bond_ty_ = dicts[1][ sm_bonds[i][0]]
                 _text_ += bond_shape.format(i+1 + base_bonds_n,
                                             _bond_ty_,
@@ -418,6 +482,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
         dihedral_shape = ' {}'*6+'\n'
         for i in range( base_dihedrals_n):
             err_str = ''
+            _dihe_ty_ = '0'
             at1 = int(known_dihedrals[i][0])
             at2 = int(known_dihedrals[i][1])
             at3 = int(known_dihedrals[i][2])
@@ -455,7 +520,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                                                          'X-X']
                                 except KeyError as Er_here:
                                     err_str = Er_here.args[0]
-            if err_str <> '':
+            if _dihe_ty_ == '0' and err_str <> '':
                 print 'Atoms {}-{}-{}-{} : '.format( at1, at2, at3, at4),
                 print (at1_tag +'-'+ at2_tag+'-'+ at3_tag+'-'+ at4_tag)
                 print ( 'Error dihedral ----- '+ err_str +' not found!')

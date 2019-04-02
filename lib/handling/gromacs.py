@@ -5,6 +5,7 @@ __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
 from lib.misc.warn import wrg_1, wrg_3, pop_err_1, pop_wrg_1
 from lib.misc.file import check_file, debugger_file, fileseeker
+from lib.misc.geometry import rotate, arcos, raiz
 from sys import exit
 
 
@@ -34,23 +35,64 @@ def extract_gromacs_data( _data_files_, _autoload_):
     section = '''---------------    FILE GRO      ----------------------'''
     #=========================================================================#
     
-    ok_flag, gro_pack, b_xyzhi = get_gro_fixed_line( filename_gro)
+    ok_flag, gro_pack, b_xyz = get_gro_fixed_line( filename_gro)
     if not ok_flag:
         pop_err_1('Problem detected in :\n' + section)
         return {}, [ ok_flag, _sidemol_f_]
     
     _mol_, _mtype_, _type_, _xyz_, _mtypes_ = gro_pack
+    
+    
+    ################# ------------   BOX DEF   ------------- ##################
+    data_container['box'] = [[],[]]
+    b_xyz = [ x_y_z*10 for x_y_z in b_xyz ]
+    angles = []
+    Ar = [[0,0,0],[0,0,0],[0,0,0]]
+    for i in range(3):
+            Ar[i][i] = b_xyz[i]
+            
+    if len( b_xyz) == 3:
+        pass
+    elif len( b_xyz) == 9:
+        
+        k = 0
+        for i in range(3):
+            for j in range(3):
+                if i <> j:
+                    Ar[i][j] = b_xyz[ k + 3]
+                    k += 1
+                    
+        cero = 1e-12
+        if Ar[1][0] < cero or Ar[2][0] < cero or Ar[2][1] < cero:
+            print('Your triclinic cell will be rotated to make it!')
+            # y rotation
+            a_tor_y = -arcos( (Ar[0][0])/(raiz(Ar[0][0]*Ar[0][0]+Ar[2][0]*Ar[2][0])) )
+            Ar = rotate( Ar, a_tor_y, 'y')
+            # z rotation
+            a_tor_z = arcos( (Ar[0][0])/(raiz(Ar[0][0]*Ar[0][0]+Ar[1][0]*Ar[1][0])) )
+            Ar = rotate( Ar, a_tor_z, 'z')
+            
+            a_tor_x = arcos( Ar[1][1]/( raiz( Ar[1][1]*Ar[1][1] + Ar[2][1]*Ar[2][1])) )
+            Ar = rotate( Ar, a_tor_x)
+            
+            _xyz_ = rotate( rotate( rotate( _xyz_, a_tor_y, 'y'),
+                                        a_tor_z, 'z'), a_tor_x)
+        
+    else:
+        exit('xx/0 Error box dimension 001')
+        
+    _x_, _y_, _z_ = _xyz_
+    xlo = min( _x_)*10
+    xhi = xlo + Ar[0][0]
+    ylo = min( _y_)*10
+    yhi = ylo + Ar[1][1]
+    zlo = min( _z_)*10
+    zhi = zlo + Ar[2][2]
+    
+    data_container['box'][0] = [ xlo, xhi, ylo, yhi, zlo, zhi]
+    data_container['box'][1] = [ Ar[0][1], Ar[0][2], Ar[1][2]]
     data_container['atomsdata'] = [ _mol_, _mtypes_, _type_, _xyz_, _mtype_]
-    
-    
-    #################    BOX DEF   ##################
-    xlo = 0
-    xhi = b_xyzhi[0]*10
-    ylo = 0
-    yhi = b_xyzhi[1]*10
-    zlo = 0
-    zhi = b_xyzhi[2]*10   
-    data_container['box']=[xlo,xhi, ylo,yhi, zlo,zhi]
+    ###########################################################################
     
     ###########################################################################
     ###########################################################################
@@ -74,7 +116,13 @@ def extract_gromacs_data( _data_files_, _autoload_):
                     '[ angles ]', '[ dihedrals ]', '[ system ]',
                     '[ molecules ]', '']
     exclusions_ = ['[ bonds ]', '[ pairs ]', '[ angles ]', '[ dihedrals ]']
-    if filename_nb == filename_ff and filename_nb == filename_bon:
+    # Scheme type????
+    pure_side_mol_flag = ( ( seek_for_directive( [ filename_top],
+                                                'moleculetype') == '') or 
+                           ( filename_nb == filename_ff and
+                             filename_nb == filename_bon))
+    
+    if pure_side_mol_flag:
         startstrings = startstrings[-3:]
         print wrg_3( 'Using pure side molecule scheme')
         #n_atoms     =   0
@@ -138,19 +186,19 @@ def extract_gromacs_data( _data_files_, _autoload_):
     #=========================================================================#
     
     
-    startstrings=['[ bondtypes ]', '[ angletypes ]', '[ dihedraltypes ]', '']
+    startstrings = ['[ bondtypes ]', '[ angletypes ]', '[ dihedraltypes ]', '']
     if filename_nb == filename_ff and filename_nb == filename_bon:
         
         for bi in range( len( startstrings))[:-1]:
             s_str_ = startstrings[ bi][ 2:-2]
             data_container[ s_str_] =   []
-            data_container['define'][s_str_[:-5]] = []
+            data_container['define'][s_str_[:-5]] = {}
             
         #data_container['impropers']     =   []
         #data_container['impropertypes'] =   []
         startstrings = startstrings[-1]
     
-    aux_strings = ['bonds', 'angles', 'dihedrals']
+    aux_strings = [ 'bonds', 'angles', 'dihedrals']
     for bi in range( len( startstrings))[:-1]:
         s_str_ = startstrings[ bi][ 2:-2]
         
@@ -167,10 +215,55 @@ def extract_gromacs_data( _data_files_, _autoload_):
             else:
                 ok_flag = True
     
-    
     ###########################################################################
     '''----------------        #define &  Impropers          ---------------'''
     #=========================================================================#
+    gromosff_flag = False
+    aux_here = {}
+    data_container[ 'define'][ 'improper'] = {}
+    
+    if filename_nb <> filename_ff and filename_nb <> filename_bon:
+        aux_here = get_gromos_define( filename_bon)
+        
+    for key_ in aux_here.keys():
+        if aux_here[ key_] <> {}:
+            print ( 'GROMOS ' + key_ + ' kind detected!')
+            data_container[ 'define'][ key_].update( aux_here[ key_])
+            gromosff_flag = True
+            
+            dihe_g_data = data_container[ 'dihedraltypes']
+            if 'dihedraltypes' == key_+'types' and dihe_g_data <> []:
+                rewrite_flag = False
+                for gd_ in range( len( dihe_g_data)):
+                    #print dihe_g_data[gd_][2]
+                    if dihe_g_data[gd_][2].isdigit():
+                        if not rewrite_flag:
+                            print('Dihedral with 2 atoms re-formating to 4: ')
+                        rewrite_flag = True
+                        dihe_g_data[gd_] = ( [ 'X',] + dihe_g_data[ gd_][:2]
+                                            + [ 'X',] + dihe_g_data[ gd_][2:])
+                        print (dihe_g_data[ gd_]) 
+                if rewrite_flag:
+                    data_container[ 'dihedraltypes'] = dihe_g_data
+                
+            
+        
+    if gromosff_flag:
+        for ss_ in startstrings[:-1]:
+            s_str_ = ss_[ 2:-2]
+            data_aux = data_container[ s_str_]
+            cont_k = s_str_[ :-5]
+            cddd = data_container[ 'define'][ cont_k]
+            for i in range( len( data_aux)):
+                if len( data_aux[i][-1].split('.')) < 2:
+                    if  not data_aux[i][-1].isdigit():
+                        aux = data_aux[i][:-1] + cddd[ data_aux[i][-1]]
+                        #print aux
+                        data_container[ s_str_][i] = aux
+                    
+    
+    
+        #print data_container['define']['bond']['gb_33']
     # Search for impropers in TOP and BON, using crossreference if needed
     data_container = split_dihedral_improper( data_container)
     
@@ -202,6 +295,22 @@ def extract_gromacs_data( _data_files_, _autoload_):
             side_angles_n   += sm_quantity * angles_x_mol
             side_dihed_n    += sm_quantity * dihedr_x_mol
             side_improp_n   += sm_quantity * improp_x_mol
+            
+        
+        contentkey = [ 'bond', 'angle', 'improper', 'dihedral']
+        for cont_k in contentkey:
+            cddd = data_container[ 'define'][ cont_k]
+            
+            if cddd.keys() <> []:
+                for sb in range( len( sidemol['tag'])):
+                    datacont = sidemol['data'][sb][cont_k+'s']
+                    for dc in range( len(datacont)):
+                        if not datacont[dc][-1].isdigit():
+                            aux = datacont[dc][:-1] + cddd[ datacont[dc][-1]]
+                            sidemol['data'][sb][cont_k+'s'][dc] = aux
+                        #elif 'gb_33' in datacont[dc]:
+                        #else:
+                            #print datacont[dc]
         
         n_bondsnew  =   n_bonds + side_bonds_n
         n_anglesnew =   n_angles + side_angles_n
@@ -579,6 +688,7 @@ def split_dihedral_improper( _data_container_, smt_flag = False):
     _dihe_type_data_ = _data_container_['dihedraltypes']
     im_type_ = []
     dh_type_ = []
+    #print _dihe_type_data_
     for i in range( len ( _dihe_type_data_)):
         #  Dihedral line format:
         #  ai  aj  ak  al  funct   c0  c1  c2  c3  c4  c5
@@ -646,12 +756,15 @@ def split_dihedral_improper( _data_container_, smt_flag = False):
 
 def get_gro_fixed_line( _filename_):
     ''' reading gromacs gro fixed lines'''
-    _content_ = []
-    _mol_=[]
-    _mtype_=[]
-    g_names =[]
-    _type_=[]
-    _xyz_=[]
+    _content_   =   []
+    _mol_       =   []
+    _mtype_     =   []
+    g_names     =   []
+    _type_      =   []
+    _xyz_       =   []
+    _x_         =   []
+    _y_         =   []
+    _z_         =   []
     _corrupt = True
     with open(_filename_, 'r')  as indata:
         read_flag = False
@@ -667,7 +780,9 @@ def get_gro_fixed_line( _filename_):
                 _mol_.append( j_line[:5].lstrip(' '))
                 _mtype_.append(mtype)
                 _type_.append(j_line[10:15].lstrip(' '))
-                _xyz_.append([j_line[20:28], j_line[28:36], j_line[36:44]])
+                _x_.append( float( j_line[20:28]) )
+                _y_.append( float( j_line[28:36]) )
+                _z_.append( float( j_line[36:44]) )
                 
                 if _buffer==[]:
                     _buffer = [ mtype, at]
@@ -681,26 +796,28 @@ def get_gro_fixed_line( _filename_):
                 
                 if at == at_num:
                     read_flag = False
-                    g_names.append(_buffer+ [at])
+                    g_names.append(_buffer + [at])
                     
             elif j_line.startswith(';'):
                 pass
-            elif at_num==0:
+            elif at_num == 0:
                 j_line = indata.next()
-                at_num = int(j_line)
+                at_num = int( j_line)
                 read_flag = True
             elif at == at_num:
-                _corrupt = False
                 box_xyz_hi = [float(x) for x in j_line.split(';')[0].split()]
+                if len( box_xyz_hi) in [ 3, 9]:
+                    _corrupt = False
+                    
                 
-                
-    if at_num<>len(_type_):
+    if at_num <> len(_type_):
         pop_err_1('Atom number mismatch in .gro file')
         return False, 0 ,0
     elif _corrupt:
-        pop_err_1('Corrupt .gro file')
+        pop_err_1('Corrupt .gro file box definition')
         return False, 0,0
     else:
+        _xyz_ = [ _x_, _y_, _z_]
         return  True, [_mol_, _mtype_, _type_, _xyz_, g_names], box_xyz_hi
 
 def top_groups( mtype, _buffer, g_names):
@@ -737,14 +854,14 @@ def get_topitp_line( _filename_, _ss_):
                     
                 elif _line_[0][0] == '#':
                     if _line_[0] == '#include':
-                        print wrg_3( _line_[1] + ' skipped this time')
+                        print( wrg_3( _line_[1] + ' skipped this time'))
                     elif _line_[0] == '#define':
                         _define_[_line_[1]] = _line_[2:]
                     else:
                         print wrg_3( str(_line_) + '  ??')
                         
                 elif _line_[0][0] == '[':
-                    print ' '.join(_line_) + 'Checked!'
+                    print( ' '.join(_line_) + 'Checked!')
                     if  ' '.join(_line_)  <> _ss_ :
                         read_flag = False
                     #print 'exit here 424'
@@ -752,10 +869,10 @@ def get_topitp_line( _filename_, _ss_):
                 elif len( _line_) > 0:
                     content_line.append( _line_)
                 else:
-                    print 'Ups... please raise an issue at GitHub ;)'
+                    print('Ups... please raise an issue at GitHub ;)')
             elif j_line.lstrip().startswith( _ss_):
                 if _verbose_:
-                    print _ss_+' found!'
+                    print( _ss_+' found!')
                 read_flag = True
                 tag_not_found = False
     
@@ -767,6 +884,38 @@ def get_topitp_line( _filename_, _ss_):
                  )
         ok_flag = False
     return content_line, ok_flag, _define_
+
+def get_gromos_define( _bondedfile_):
+    ''' reading GROMOS define forcefield format
+        gb_ : bond
+        ga_ : angle
+        gi_ : wop - improper
+        gd_ : dihedral
+        eg. #define gb_12
+    '''
+    _dedic_ = {'b':'bond', 'a':'angle', 'i':'improper', 'd':'dihedral'}
+    _define_ = {}
+    for k in _dedic_.keys():
+        _define_[ _dedic_[k]] = {}
+    
+    with open(_bondedfile_, 'r')  as indata:
+        for j_line in indata:
+            _line_ = j_line.split(';')[0].split()
+            if _line_ and _line_[0][0] == '#':
+                if _line_[0] == '#define':
+                    if _line_[1][0] == 'g':
+                        if _line_[1][2] == '_' and _line_[1][3].isdigit():
+                            aux_dic = { _line_[1] : _line_[2:]}
+                            _define_[ _dedic_[ _line_[1][1]]].update( aux_dic)
+                        else:
+                            print('Whojojoooh...')
+                    
+                elif _line_[0] == '#include':
+                    print(wrg_3( _line_[1] + ' skipped!'))
+                else:
+                    print(wrg_3( str(_line_) + '  ??'))
+    
+    return _define_
 
 def get_ffldfiles( _topfile_):
     ''' 
@@ -858,7 +1007,8 @@ def ck_forcefield( _the_file_, _secondoption_ = None):
 
 def seek_for_directive( _list_of_files_, _directive_):
     ''' search for a certain directive in a bunch of files
-        and then returns the file in which it is, or an empty vector
+        and then returns the file in which it is, or an empty string
+        PS: a directive is a word wrapped with [] 
     '''
     content_file = ''
     for file_ in _list_of_files_:

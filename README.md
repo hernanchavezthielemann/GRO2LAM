@@ -1,11 +1,16 @@
  
-[![Build Status](https://travis-ci.org/hernanchavezthielemann/GRO2LAM.svg?branch=27ene19)](https://travis-ci.org/hernanchavezthielemann/GRO2LAM)
+[![Build Status](https://travis-ci.org/hernanchavezthielemann/GRO2LAM.svg?branch=20mar19)](https://travis-ci.org/hernanchavezthielemann/GRO2LAM)
 
 # GRO2LAM
    Gromacs to Lammps simulation converter
+   
+   <p align="center">
+   <img src="https://i.imgur.com/fEVcyxY.gif" title="source: imgur.com" />
+   </p>
+
 
 ## Version
-   GRO2LAM version 1.2 (27 Jan 2019) - BETA
+   GRO2LAM version 1.21 (20 Mar 2019) - BETA
    
    :new:New features : 
 <!--ts-->
@@ -15,6 +20,7 @@
    * Accepts #define tag in dihedrals in the 'top' file.
    * :soon: Accepts improper dihedral type. (under tests)
    * :soon: Accepts G96 bond and angle types. (under tests) 
+   * :soon: Accepts GROMOS force field define. (under tests) 
 <!--te-->
 ## Table of contents
 
@@ -39,10 +45,10 @@
 <!--te-->
 
 ## Authors
-   - Python version:
+   - Python coding:
        Hernan Chavez Thielemann  
    - Protocol definition:
-       Gianmarco Ciorra, Matteo Fasano, Annalisa Cardellini 
+       Gianmarco Ciorra, Matteo Fasano, Annalisa Cardellini, Luca Bergamasco, Hernan Chavez Thielemann
 
 ## Description
    This program was designed for easy conversion of solvated structures between 
@@ -67,16 +73,34 @@
 ### Quantum start
    Copy&paste the following command in your bash console and execute it, this will download and execute Grotolam in about 5 seconds:
 
-    wget https://raw.githubusercontent.com/hernanchavezthielemann/utils/master/grotolam/G2L_installer && bash G2L_installer
+    wget https://raw.githubusercontent.com/hernanchavezthielemann/utils/master/grotolam/G2L_iBeta && bash G2L_iBeta
+    
+E.g.
+    
+<!--ts-->
+ * First create a folder in your desktop (lets say "Untitled Folder")
+ * Inside that folder open a terminal ( in Ubuntu: right click inside the folder-space to open a context menu > Open in Terminal )
+ * In that terminal copy&paste the previous "quantum start" command:
+     
+       wget https://raw.githubusercontent.com/hernanchavezthielemann/utils/master/grotolam/G2L_iBeta && bash G2L_iBeta
+ 
+ * Then hit intro key to start the setup
+ * If you have no errors, at this point a folder called GRO2LAM-20mar19 should exist in a path like:
+ 
+       /home/*YourUser*/Desktop/Untitled Folder/GRO2LAM-20mar19
+         
+ * Now, inside that folder it is possible to find the "run" file,  that was generated during the setup.
+ * To run this file open a terminal in that folder, and execute *./run* or *python run*
+<!--te-->
     
 ### Quick start
    Download the compressed package of GRO2LAM:
    
-     wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/27ene19.zip
+     wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/20mar19.zip
   
    Decompress it:
    
-     unzip 27ene19.zip
+     unzip 20mar19.zip
    
    Make sure that terminal is in the GRO2LAM folder, then:
    
@@ -84,30 +108,30 @@
    
    Execute the setup file through the terminal as follows:
    
-     ~/Desktop/GRO2LAM-27ene19$python setup
+     ~/Desktop/GRO2LAM-20mar19$python setup
    
    Then, without changing the folder, execute the run script:
    
-     ~/Desktop/GRO2LAM-27ene19$./run
+     ~/Desktop/GRO2LAM-20mar19$./run
   
    After that, an intuitive graphical user interface should appear.
 
 ### Step by step
    The download page of GRO2LAM can be found at the following link:
 
-     https://github.com/hernanchavezthielemann/GRO2LAM/archive/27ene19.zip
+     https://github.com/hernanchavezthielemann/GRO2LAM/archive/20mar19.zip
 
    The installation package can be downloaded through the bash console as:
 
-    ~$ wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/20dec18.zip
+    ~$ wget https://github.com/hernanchavezthielemann/GRO2LAM/archive/20mar18.zip
     
    This will download a zipped file, that you can uncompress with right click or with the command:
 
-    ~$ unzip 27ene19.zip
+    ~$ unzip 20mar19.zip
     
    Then, make sure that terminal is in the GROTOLAM folder. For example:
     
-    user@system:~/Downloads/GRO2LAM-27ene19$
+    user@system:~/Downloads/GRO2LAM-20mar19$
     
    Once there, execute the setup file through the terminal as:
     
@@ -123,11 +147,23 @@
 ## Usage
 
  To perform the conversion, there are two ways to proceed:
-   The "easy one": first select the gro and top files and then press the autoload button, after that press the convert button,
-   you can press this last one using space-key also.
-   The second option would be, first select gro and top files, an then select the itp files containin the defaults, atomtypes
-   and bondtypes directives.
-
+   
+   The "easy one":
+   
+   <!--ts-->
+   * First select the gro and top files.
+   * Then press the autoload button.
+   * Finally press the convert button,  you can press this last one using space-key also.
+   <!--te-->
+   
+   The second option would be:
+   
+   <!--ts-->
+   * First select gro and top files
+   * Then select the itp files containing the defaults, atomtypes and bondtypes directives.
+   * Finally press the convert button,  you can press this last one using space-key also.
+   <!--te-->
+   
 ### GUI
    In the GIF below, the typical protocol to convert Gromacs input file into Lammps input files is summed up.
    

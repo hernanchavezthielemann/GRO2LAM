@@ -168,10 +168,8 @@ class Conversion(Frame):
         
         _text_ =  'Autoload forcefield files'
         
-        # in a future release this can be done with "self.radio_part"
-        # but there is the need to implenet it with function dependance
-        
         bt_txt_ = 'Press to autoload'
+        
         _f_labels = format_dec([_a_row_, _text_])
         
         self.autol_b = Button( _a_row_, text = bt_txt_,
