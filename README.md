@@ -3,6 +3,11 @@
 
 # GRO2LAM
    Gromacs to Lammps simulation converter
+   
+   <p align="center">
+   <img src="https://i.imgur.com/fEVcyxY.gif" title="source: imgur.com" />
+   </p>
+
 
 ## Version
    GRO2LAM version 1.21 (20 Mar 2019) - BETA
