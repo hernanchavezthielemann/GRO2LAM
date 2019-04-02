@@ -1,5 +1,5 @@
  
-[![Build Status](https://travis-ci.org/hernanchavezthielemann/GRO2LAM.svg?branch=20mar19)](https://travis-ci.org/hernanchavezthielemann/GRO2LAM)
+[![Build Status](https://travis-ci.org/hernanchavezthielemann/GRO2LAM.svg?branch=27ene19)](https://travis-ci.org/hernanchavezthielemann/GRO2LAM)
 
 # GRO2LAM
    Gromacs to Lammps simulation converter
