@@ -73,7 +73,7 @@
 ### Quantum start
    Copy&paste the following command in your bash console and execute it, this will download and execute Grotolam in about 5 seconds:
 
-    wget https://raw.githubusercontent.com/hernanchavezthielemann/utils/master/grotolam/G2L_install && bash G2L_install
+    wget https://raw.githubusercontent.com/hernanchavezthielemann/utils/master/grotolam/G2L_installer && bash G2L_installer
     
 E.g.
     
@@ -82,7 +82,7 @@ E.g.
  * Inside that folder open a terminal ( in Ubuntu: right click inside the folder-space to open a context menu > Open in Terminal )
  * In that terminal copy&paste the previous "quantum start" command:
      
-       wget https://raw.githubusercontent.com/hernanchavezthielemann/utils/master/grotolam/G2L_install && bash G2L_install
+       wget https://raw.githubusercontent.com/hernanchavezthielemann/utils/master/grotolam/G2L_installer && bash G2L_installer
  
  * Then hit intro key to start the setup
  * If you have no errors, at this point a folder called GRO2LAM-27ene19 should exist in a path like:
