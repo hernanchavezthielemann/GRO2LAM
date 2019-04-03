@@ -49,10 +49,14 @@ def extract_gromacs_data( _data_files_, _autoload_):
     angles = []
     Ar = [[0,0,0],[0,0,0],[0,0,0]]
     for i in range(3):
-            Ar[i][i] = b_xyz[i]
+        Ar[i][i] = b_xyz[i]
             
-    if len( b_xyz) == 3:
+    if sum( b_xyz) < 2.8:
+        exit('xx/0 Error in .gro file, box dimension 000')
+            
+    elif len( b_xyz) == 3:
         pass
+    
     elif len( b_xyz) == 9:
         
         k = 0
@@ -948,14 +952,18 @@ def get_ffldfiles( _topfile_):
         print aux_file_cont[i]
         
         root_folder = '/'.join( aux_file_cont[i].split('/')[:-1]+[''])
-        with open( aux_file_cont[i], 'r')  as indata2:
-            for k_line in indata2:
-                if k_line.startswith('#include'):
-                    i+=1
-                    aux_file_cont.append( root_folder + k_line.split('"')[1])
-                    print aux_file_cont[i]
-                    if i==3:
-                        break
+        try:
+            with open( aux_file_cont[i], 'r')  as indata2:
+                for k_line in indata2:
+                    if k_line.startswith('#include'):
+                        i+=1
+                        aux_file_cont.append( root_folder+k_line.split('"')[1])
+                        print aux_file_cont[i]
+                        if i==3:
+                            break
+                
+        except IOError:
+            exit('xx/0 Read error 030, file not found!!.\n')
         # the first one is [ defaults ]
         # second nonbonded atomtypes
         # third bonded 
@@ -968,8 +976,9 @@ def get_ffldfiles( _topfile_):
             else:
                 print ('Using :' +file_cont[-1]+' for ' + _di_) 
     else:
-        pop_err_1('itp file not found!')
+        pop_err_1('Force field files #include not found!')
         nonerr_flag *= False
+        
     # final check of non error flag
     if nonerr_flag and len(file_cont) < 3 :
         pop_wrg_1('Your structure seems unfamiliar, just ' +
@@ -1014,14 +1023,17 @@ def seek_for_directive( _list_of_files_, _directive_):
     '''
     content_file = ''
     for file_ in _list_of_files_:
-        
-        with open( file_, 'r')  as indata:
-            for j_line in indata:
-                line_c = j_line.split(' ]')[0].split('[ ')
-                if len( line_c) > 1:
-                    if line_c[1] == _directive_:
-                        content_file = file_
-                        break
+        try:
+            with open( file_, 'r')  as indata:
+                for j_line in indata:
+                    line_c = j_line.split(' ]')[0].split('[ ')
+                    if len( line_c) > 1:
+                        if line_c[1] == _directive_:
+                            content_file = file_
+                            break
+        except IOError:
+            exit('xx/0 Read error 030, file not found.\n' + file_)
+            
         if content_file <> '':
             break
     
