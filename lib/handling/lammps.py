@@ -77,7 +77,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     #=======================================================#
     
     ####---------------     TITLE        ----------------####
-    _text_ = '#Lammps data file. Geometry for PEG. By GRO2LAM converter.\n\n'
+    _text_ = '#Lammps data file. Generated with GRO2LAM converter.\n\n'
     ####---------------     NUMBERS      ----------------####
     _aux_txt = [' {} atoms\n'.format( n_atoms)]
     _aux_txt.append(' {} bonds\n'.format( n_bonds))
