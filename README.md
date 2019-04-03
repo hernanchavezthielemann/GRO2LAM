@@ -64,8 +64,7 @@
 ## Citation
    The publication associated with this code is found here:
    
-   Hernan Chavez Thielemann, Annalisa Cardellini, Matteo Fasano, Gianmarco Ciorra, Luca Bergamasco, Matteo Alberghini, Eliodoro Chiavazzo, Pietro Asinari. From GROMACS to LAMMPS: GRO2LAM
-   A converter for molecular dynamics software. Article submitted to Journal of Molecular Modeling (2018)
+   Hernan Chavez Thielemann, Annalisa Cardellini, Matteo Fasano, Gianmarco Ciorra, Luca Bergamasco, Matteo Alberghini, Eliodoro Chiavazzo, Pietro Asinari. From GROMACS to LAMMPS: GRO2LAM A converter for molecular dynamics software. Article submitted to Journal of Molecular Modeling (2018)
 
 ## Installation
    To download the latest version there are at least three ways:
