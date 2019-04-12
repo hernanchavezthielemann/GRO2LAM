@@ -400,10 +400,10 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                                    )
         ji_+=1
                     
-    #########################################################
-    '''----------   4th - Chemical topology   ------------'''
-    #=======================================================#
-    # BULDING AUXILIAR ATOM TAG_ DATA DICTIONARY
+    ###########################################################################
+    '''==========-----------   4th - Chemical topology   ---------=========='''
+    #=========================================================================#
+    ''' Building auxiliar atom tag1_tag2 data dictionary -/- OPLS Case '''
     aat_ddic = {}
     if len(atom_info[0]) - minr > 7:
         for i in range( n_atomtypes):
@@ -448,7 +448,15 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
             # better way to do this is trough corrds ---------  <WFS>
             for i in range( n_bonds - base_bonds_n):
                 # print sm_bonds[i]
-                _bond_ty_ = dicts[1][ sm_bonds[i][0]]
+                try:
+                    _bond_ty_ = dicts[1][ sm_bonds[i][0]]
+                except KeyError:
+                    # OPLS ??
+                    at1_tag, at2_tag = sm_bonds[i][0].split('-')
+                    at1_tag = aat_ddic[ at1_tag]
+                    at2_tag = aat_ddic[ at2_tag]
+                    _bond_ty_ = dicts[1][ at1_tag + '-'+ at2_tag]
+                        
                 _text_ += bond_shape.format(i+1 + base_bonds_n,
                                             _bond_ty_,
                                             sm_bonds[i][1],
@@ -488,8 +496,17 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
         if _sidemol_f_ == 1:
             
             for i in range( n_angles - base_angles_n):
-                _angle_ty_ = dicts[2][ sm_angles[i][0]]
                 
+                try:
+                    _angle_ty_ = dicts[2][ sm_angles[i][0]]
+                except KeyError:
+                    # OPLS ??
+                    at1_tag, at2_tag, at3_tag = sm_angles[i][0].split('-')
+                    at1_tag = aat_ddic[ at1_tag]
+                    at2_tag = aat_ddic[ at2_tag]
+                    at3_tag = aat_ddic[ at3_tag]
+                    _angle_ty_ = dicts[2][at1_tag + '-'+ at2_tag+ '-'+ at3_tag]
+                    
                 _text_ += angle_shape.format( i+1 + base_angles_n,
                                              _angle_ty_,
                                              sm_angles[i][1],
@@ -554,7 +571,16 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
             
         if _sidemol_f_ == 1:
             for i in range( n_dihedrals - base_dihedrals_n):
-                _dihe_ty_ = dicts[3][ sm_dihedrals[i][0]]
+                
+                try:
+                    _dihe_ty_ = dicts[3][ sm_dihedrals[i][0]]
+                    
+                except KeyError:
+                    # OPLS ??
+                    aux_here = sm_dihedrals[i][0].split('-')
+                    aux_here = [ aat_ddic[ at_tag] for at_tag in aux_here]
+                    _dihe_ty_ = dicts[3][ '-'.join( aux_here)]
+                
                 
                 _text_ += dihedral_shape.format( i+1 + base_dihedrals_n,
                                                  _dihe_ty_,
