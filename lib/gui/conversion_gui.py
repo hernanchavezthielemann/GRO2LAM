@@ -244,7 +244,10 @@ class Conversion(Frame):
         
         
         _autoload_ = self.objt_c[0]
-        
+        if not _autoload_:
+            pop_wrg_1('Proceeding without autoload.\nThis means that any '
+                      + 'internal address to files that are not specified '
+                      + 'as GUI input are going to be ignored.')
         if self.get_entriesvalues():
             
             data_cont = self.master._convert_['setup']
