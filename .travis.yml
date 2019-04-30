@@ -3,7 +3,7 @@ before_install: sudo apt-get install python-tk
 
 language: python
 python: 2.7
-install: python setup -t
+install: python2 setup -t
 
 before_script:
   - "export DISPLAY=:99.0"
