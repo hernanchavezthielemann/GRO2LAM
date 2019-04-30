@@ -28,8 +28,8 @@ except ImportError:
                            +' Please answer "yes" or "no": ')
         if su in ['y','yes']:
             system('sudo apt-get install python-tk')
-            exit('\nPlease run again the setup\n
-                  "./GRO2LAM-27ene19/python2 setup"')
+            exit('\nPlease run again the setup\n' +
+                  '"./GRO2LAM-27ene19/python2 setup"')
         else:
             _exit_txt_ += ('Without sudo rights you cannot install tkinter.'
                            +'\n - Please contact your system administrator\n')
