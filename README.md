@@ -1,5 +1,5 @@
  
-[![Build Status](https://travis-ci.org/hernanchavezthielemann/GRO2LAM.svg?branch=27ene19)](https://travis-ci.org/hernanchavezthielemann/GRO2LAM)
+python 2.7: [![Build Status](https://travis-ci.org/hernanchavezthielemann/GRO2LAM.svg?branch=27ene19)](https://travis-ci.org/hernanchavezthielemann/GRO2LAM)
 
 # GRO2LAM
    Gromacs to Lammps simulation converter
@@ -54,7 +54,7 @@
    This program was designed for easy conversion of solvated structures between 
    the GROningen MAchine for Chemical Simulations ([Gromacs]) and the 
    Large-scale Atomic Molecular Massively Parallel Simulator ([Lammps]). 
-   It is a python modular routine used to convert [Gromacs] input files to [Lammps] input files,
+   It is a python 2.7 modular routine used to convert [Gromacs] input files to [Lammps] input files,
    which include topology, force field coefficients and simulation commands.
    
 ## Licence
