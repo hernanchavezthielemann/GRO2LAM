@@ -57,14 +57,14 @@ python 2.7: [![Build Status](https://travis-ci.org/hernanchavezthielemann/GRO2LA
    It is a python 2.7 modular routine used to convert [Gromacs] input files to [Lammps] input files,
    which include topology, force field coefficients and simulation commands.
    
-## Licence
+## License
    [MIT](./LICENSE)
    Copyright 2018 Hernan Chavez Thielemann, Annalisa Cardellini, Matteo Fasano, Gianmarco Ciorra, Luca Bergamasco, Matteo Alberghini, Eliodoro Chiavazzo, Pietro Asinari
 
 ## Citation
-   The publication associated with this code is found here:
+   The publication associated with this code is found here: [s00894-019-4011-x]
    
-   Hernan Chavez Thielemann, Annalisa Cardellini, Matteo Fasano, Gianmarco Ciorra, Luca Bergamasco, Matteo Alberghini, Eliodoro Chiavazzo, Pietro Asinari. From GROMACS to LAMMPS: GRO2LAM A converter for molecular dynamics software. Article submitted to Journal of Molecular Modeling (2018)
+   Hernán Chávez Thielemann, Annalisa Cardellini, Matteo Fasano, Luca Bergamasco, Matteo Alberghini, Gianmarco Ciorra, Eliodoro Chiavazzo, Pietro Asinari. From GROMACS to LAMMPS: GRO2LAM A converter for molecular dynamics software.  Journal of Molecular Modeling (2019) 25: 147.
 
 ## Installation
    To download the latest version there are at least three ways:
@@ -618,6 +618,6 @@ FUNCTIONS
    https://github.com/hernanchavezthielemann/GRO2LAM
 
 
-
+[s00894-019-4011-x]: https://doi.org/10.1007/s00894-019-4011-x
 [Lammps]: http://lammps.sandia.gov/
 [Gromacs]: http://www.gromacs.org/
