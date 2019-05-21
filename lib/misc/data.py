@@ -213,3 +213,16 @@ def check_vars( _vars_, _varstype_, _endtext_ = 'Input script not created!'):
     
         
     return _flag_c_
+
+def isnot_num( _string_):
+    ''' return True if the string is not numeric
+    '''
+    _flag_ = True
+    try:
+        float( _string_)
+        _flag_ = False
+    except ValueError:
+        pass
+    return _flag_
+    
+# vim:tw=80
