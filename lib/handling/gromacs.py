@@ -6,6 +6,7 @@ __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 from lib.misc.warn import wrg_1, wrg_3, pop_err_1, pop_wrg_1
 from lib.misc.file import check_file, debugger_file, fileseeker
 from lib.misc.geometry import rotate, arcos, raiz
+from lib.misc.data import isnot_num
 from sys import exit
 
 
@@ -162,7 +163,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
     ###########################################################################
     section = '''----------  .SIDE MOLE FILES.   -------------'''
     #=========================================================================#
-    #### research in topology for new molecules / side molecules
+    #### re-search in topology for new molecules / side molecules
     if _autoload_:
         data_container, ok_flag, _sidemol_f_ = sidemol_data( filename_top,
                                                             data_container)
@@ -227,7 +228,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
     aux_here = {}
     
     if filename_nb <> filename_ff and filename_nb <> filename_bon:
-        # it is GROMOS there ??
+        # Is it GROMOS there ??
         aux_here = get_gromos_define( filename_bon)
         
     for key_ in aux_here.keys():
@@ -282,7 +283,8 @@ def extract_gromacs_data( _data_files_, _autoload_):
     
     if _sidemol_f_:
         
-        # A_02 maths
+        ###   A_02 maths
+        # "previewing / preallocating" // computing side mol size 
         sidemol = data_container['sidemol']
         side_bonds_n    = 0
         side_angles_n   = 0
@@ -301,30 +303,35 @@ def extract_gromacs_data( _data_files_, _autoload_):
             side_dihed_n    += sm_quantity * dihedr_x_mol
             side_improp_n   += sm_quantity * improp_x_mol
             
-        
-        contentkey = [ 'bond', 'angle', 'improper', 'dihedral']
-        for cont_k in contentkey:
-            cddd = data_container[ 'define'][ cont_k]
-            
-            if cddd.keys() <> []:
-                for sb in range( len( sidemol['tag'])):
-                    datacont = sidemol['data'][sb][cont_k+'s']
-                    for dc in range( len(datacont)):
-                        if not datacont[dc][-1].isdigit():
-                            aux = datacont[dc][:-1] + cddd[ datacont[dc][-1]]
-                            sidemol['data'][sb][cont_k+'s'][dc] = aux
-                        #elif 'gb_33' in datacont[dc]:
-                        #else:
-                            #print datacont[dc]
-        
         n_bondsnew  =   n_bonds + side_bonds_n
         n_anglesnew =   n_angles + side_angles_n
         n_dihednew  =   n_dihedrals + side_dihed_n
         n_impropnew =   n_impropers + side_improp_n
-        
         #print n_bonds, side_bonds_n, n_bonds + side_bonds_n
         #print n_angles, side_angles_n, n_angles + side_angles_n
         
+        ###   A_03
+        # tester in case is an asigment for define ore something like that
+        contentkey = [ 'bond', 'angle', 'improper', 'dihedral']
+        for cont_k in contentkey:
+            # memorandum:
+            # 'define' stores in a contentkey dictionary each define key:value
+            cddd = data_container[ 'define'][ cont_k]
+            if cddd.keys() <> []:
+                for sb in range( len( sidemol['tag'])): # in each side mol
+                    datacont = sidemol['data'][sb][cont_k+'s']# in its cont-key
+                    for dc in range( len( datacont)):# lets look their content
+                        if isnot_num( datacont[dc][-1]):#
+                            #print( '{} {} {}'.format( cont_k+'s', dc,
+                            #                         datacont[dc][-1])) 
+                            aux = datacont[dc][:-1] + cddd[ datacont[dc][-1]]
+                            sidemol['data'][sb][cont_k+'s'][dc] = aux
+                        #else:
+                            #print datacont[dc]
+        
+        #######################################################################
+        ###   A_04
+        # I think that this part is deprecated... however I am not sure
         # Regarding the itp format:
         #   charges index 6 in data-atoms
         #   opls names in index 1
@@ -344,9 +351,11 @@ def extract_gromacs_data( _data_files_, _autoload_):
         
         data_container['S_charge'] = _charge_
         data_container['S_translation'] = _conv_dict_
+        
         #######################################################################
+        ###   A_05
         ############               Esoteric part ;)             ###############
-        ####----------- DEFINING BONDED INTERACTIONS     ----------####
+        ####    ----------- DEFINING BONDED INTERACTIONS     ----------    ####
         # load the side molecules data if exist
         #sidemol = _topodata_['sidemol']
         smol_extra_bondtypes        =   []
@@ -460,7 +469,13 @@ def extract_gromacs_data( _data_files_, _autoload_):
     return data_container, [ ok_flag, _sidemol_f_]
 
 def sidemol_data( _file_top_, data_container):
-    ''' getter of the side molecules data'''
+    ''' -- getter of the side molecules data --
+        Per each side mole returns a dictionary with:
+            tag : side mole tag
+            num : number in this instance of this kind of side mol
+            data : dictionary with topology data
+                {atoms bonds angles dihedrals impropers}
+    '''
     
     sidemol = {'tag': [],'num':[], 'data':[] }# Tag # mol_number
     sm_flag = False
@@ -473,7 +488,7 @@ def sidemol_data( _file_top_, data_container):
         non_sm = [non_sm[i][0] for i in range(len(non_sm))]
         _buffer_ = ''
     else:
-        # non conventional case
+        # non conventional case // the one in the main top
         non_sm = ['']
         _buffer_ = '0'
         
@@ -536,10 +551,11 @@ def sidemol_data_gatherer( _sm_files_, _sm_):
     ''' collects all the data related with one kind of side molecule
         the data types are specified in startstrings
     '''
-    print 'Search for: ', _sm_, ' in: ' ,_sm_files_
+    print( '\nSearching for: {}'.format( _sm_ ))#, ' in: ' ,_sm_files_
     _flag_ = True
     _file_ = ''
     _sm_data_c_ = {}
+    
     # is sm in sm_file?? in cases with more than one file
     for smfile in _sm_files_:
         with open( smfile, 'r')  as sm_data:
@@ -570,6 +586,7 @@ def sidemol_data_gatherer( _sm_files_, _sm_):
         pop_err_1('Error!! side molecule {} not found in itp -- '.format( _sm_))
         _flag_ = False
     else:
+        print( 'Succes!, found in : {}\n'.format( _file_))
         tag_str = [ 'atoms', 'bonds', 'angles', 'dihedrals','fin']
         _sm_data_c_ = { x:[] for x in tag_str if x <> 'fin'}
         read_flag = False
@@ -591,6 +608,7 @@ def sidemol_data_gatherer( _sm_files_, _sm_):
                                 i = tag_str.index( j_line[1])
                                 cd_tag = tag_str[i]
                                 iner_flag = True
+                                print( '** Gathering {} data'.format( cd_tag))
                             elif j_line[1] == 'moleculetype':
                                 break
                             else:
@@ -599,6 +617,7 @@ def sidemol_data_gatherer( _sm_files_, _sm_):
                                 iner_flag = False
                         else :
                             cd_tag = tag_str[i]
+                            print( '* Gathering {} data'.format( cd_tag))
                             iner_flag = True
                             
                     elif iner_flag:
