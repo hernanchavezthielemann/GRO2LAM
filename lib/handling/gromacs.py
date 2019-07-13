@@ -586,7 +586,7 @@ def sidemol_data_gatherer( _sm_files_, _sm_):
         pop_err_1('Error!! side molecule {} not found in itp -- '.format( _sm_))
         _flag_ = False
     else:
-        print( 'Succes!, found in : {}\n'.format( _file_))
+        print( 'Success!, found in : {}\n'.format( _file_))
         tag_str = [ 'atoms', 'bonds', 'angles', 'dihedrals','fin']
         _sm_data_c_ = { x:[] for x in tag_str if x <> 'fin'}
         read_flag = False
