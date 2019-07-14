@@ -221,14 +221,14 @@ def extract_gromacs_data( _data_files_, _autoload_):
                 ok_flag = True
     
     ###########################################################################
-    '''----------------        #define &  Impropers          ---------------'''
+    section = '''------------     .#define & Impropers.       ------------'''
     #=========================================================================#
     gromosff_flag = False
     data_container[ 'define'][ 'improper'] = {}
     aux_here = {}
-    
+    print( section.split('.')[1])
     if filename_nb <> filename_ff and filename_nb <> filename_bon:
-        # Is it GROMOS there ??
+        print(" Is it GROMOS there ?? ")
         aux_here = get_gromos_define( filename_bon)
         
     for key_ in aux_here.keys():
@@ -271,7 +271,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
     
         #print data_container['define']['bond']['gb_33']
     # Search for impropers in TOP and BON, using crossreference if needed
-    data_container = split_dihedral_improper( data_container)
+    data_container = split_define_dihe_impr( data_container)
     
     n_dihedrals     =   len( data_container['dihedrals'])
     n_impropers     =   len( data_container['impropers'])
@@ -630,84 +630,84 @@ def sidemol_data_gatherer( _sm_files_, _sm_):
                     
         # todo add a new check in case of empty container
         #print _sm_data_c_
+        
         ######### Split impropers and dihedrals
-        # to do make this a function and use it also in split_dihedral_improper
-        # GROMOS improper dihedrals
-        ImproperKind = '2' 
-        sm_im_data_ = []
-        sm_dh_data_ = []
-        _dihedrals_data_ = _sm_data_c_['dihedrals']
-        for i in range( len ( _dihedrals_data_)):
-            if _dihedrals_data_[i][4] == ImproperKind:
-                sm_im_data_.append( _dihedrals_data_[i])
-            else:
-                sm_dh_data_.append( _dihedrals_data_[i])
-                
-        # Save/overwriting point
-        _sm_data_c_['impropers'] = sm_im_data_
-        _sm_data_c_['dihedrals'] = sm_dh_data_
+        _sm_data_c_ = split_dihedral_improper( _sm_data_c_)
         
         #if _sm_data_c_['impropers'] <>[]:
         #    print _sm_data_c_['impropers']
         
     return _sm_data_c_, _flag_
 
-def split_dihedral_improper( _data_container_, smt_flag = False):
-    ''' Seems that in GROMACS, impropers are present as a kind of 
+def split_dihedral_improper( _data_container_):
+    ''' New function to neat just the split
+    
+        Seems that in GROMACS, impropers are present as a kind of 
         dihedral type, so this function is meant to pick the dihedral
         data and split it resizing the original container and creating
         a new improper-container.
-        
-        Creates #define data in dihedrals
-        
-        Also creates the data regarding kinds of functions. Useful when
-        '1' and '3' are used in the same file
-        
     '''
+    ###              ////////////////////\\\\\\\\\\\\\\\\\\\\\              ###
     
-    DihedralKind = '1'
-    ImproperKind = '2'
-    RyckBellKind = '3'
+    dh_dict_kind = {'1':"Proper dihedral", '2':"Improper dihedral",
+                    '3':"Ryckaert-Bellemans dihedral",
+                    '4':"Periodic improper dihedral", '5':"Fourier dihedral",
+                    '8':"Tabulated dihedral", '9':"Proper dihedral (multiple)",
+                    '10':"Restricted dihedral", '11':"Combined bending-torsion"}
     
     _dihedrals_data_ = _data_container_[ 'dihedrals']
-    ###              =========================================              ###
-    ''' =============             Dihedral TOP data           ============= ''' 
+    _admitted_dihe_ = ['1', '3']#['1', '3', '9']
+    _admitted_impr_ = ['2']# ['2', '4']
+    
     im_data_ = []
     dh_data_ = []
     
-    def_dihe_extra = [] # ---------------------------------CanBDel?
-    def_impr_extra = []
+    dh_bf_err = ""
     
-    ##def_dihe_type_set = set()
-    #def_impr_type_set = set()
-    #dihe_kind_name = set()
-    #impr_kind_name = set()
     for i in range( len ( _dihedrals_data_)):
         #  Dihedral line format in :
         #  ai  aj  ak  al  funct   c0  c1  c2  c3  c4  c5
-        #print _dihedrals_data_[i]
-        if _dihedrals_data_[i][4] in [ DihedralKind, RyckBellKind]:
+        dihe_funct = _dihedrals_data_[i][4]
+        
+        if dihe_funct in _admitted_dihe_:
             dh_data_.append( _dihedrals_data_[i])
-            #dihe_kind_name.add( _dihedrals_data_[i][4])
-            
-            if len (_dihedrals_data_[i])>5:
-                def_dihe_extra.append( _dihedrals_data_[i])
-                #def_dihe_type_set.add( str(_dihedrals_data_[i][5:]))
                 
-                
-        elif _dihedrals_data_[i][4] == ImproperKind:
+        elif dihe_funct in _admitted_impr_:
             im_data_.append( _dihedrals_data_[i])
-            #impr_kind_name.add( _dihedrals_data_[i][4])
-            
-            if len (_dihedrals_data_[i])>5:
-                def_impr_extra.append( _dihedrals_data_[i])
-                #def_impr_type_set.add( str(_dihedrals_data_[i][5:]))
+                
         else:
-            print 'Problem #008 here\n #split_dihedral_improper'
+            print 'Problem #008 here #split_dihedral_improper'
+            dihe_err = "#008_" + dh_dict_kind[ dihe_funct]
+            
+            if dihe_err <> dh_bf_err:
+                if dihe_funct in dh_dict_kind.keys():
+                    pop_err_1( dh_dict_kind[ dihe_funct] + 
+                              ' not implemented yet')
+                    dh_bf_err = dihe_err
+                else:
+                    exit( dihe_funct + ' is not a valid dihedral function')
+            
     
     # Save/overwriting point
     _data_container_['impropers'] = im_data_
     _data_container_['dihedrals'] = dh_data_
+    
+    return _data_container_
+
+def split_define_dihe_impr( _data_container_, smt_flag = False):
+    ''' This picks the dihedral data and splits it 
+        Creates #define data in dihedrals
+        
+        Also creates the data regarding kinds of functions. Useful when
+        '1' and '3' are used in the same file
+    '''
+    
+    ###              =========================================              ###
+    ''' =============             Dihedral TOP data           ============= ''' 
+    # Save/overwriting point
+    
+    _data_container_ = split_dihedral_improper( _data_container_)
+    
     #====================================================
     ''' ======== "Type" Dihedral BONDED data  ======= '''
     _dihe_type_data_ = _data_container_['dihedraltypes']
@@ -717,7 +717,7 @@ def split_dihedral_improper( _data_container_, smt_flag = False):
     for i in range( len ( _dihe_type_data_)):
         #  Dihedral line format:
         #  ai  aj  ak  al  funct   c0  c1  c2  c3  c4  c5
-        if _dihe_type_data_[i][4] == ImproperKind:
+        if _dihe_type_data_[i][4] in [ '2', '4']:
             im_type_.append( _dihe_type_data_[i])
         else:
             dh_type_.append( _dihe_type_data_[i])
