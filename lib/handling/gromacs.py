@@ -632,7 +632,7 @@ def sidemol_data_gatherer( _sm_files_, _sm_):
         #print _sm_data_c_
         
         ######### Split impropers and dihedrals
-        _sm_data_c_ = split_dihedral_improper( _sm_data_c_)
+        _sm_data_c_, _ = split_dihedral_improper( _sm_data_c_)
         
         #if _sm_data_c_['impropers'] <>[]:
         #    print _sm_data_c_['impropers']
@@ -657,11 +657,12 @@ def split_dihedral_improper( _data_container_):
     
     _dihedrals_data_ = _data_container_[ 'dihedrals']
     _admitted_dihe_ = ['1', '3']#['1', '3', '9']
-    _admitted_impr_ = ['2']# ['2', '4']
+    _admitted_impr_ = ['2', '4']# ['2']
     
     im_data_ = []
     dh_data_ = []
-    
+    define_dihe_extra = []
+    def_impr_extra = []
     dh_bf_err = ""
     
     for i in range( len ( _dihedrals_data_)):
@@ -671,10 +672,14 @@ def split_dihedral_improper( _data_container_):
         
         if dihe_funct in _admitted_dihe_:
             dh_data_.append( _dihedrals_data_[i])
-                
+            if len (_dihedrals_data_[i])>5:
+                define_dihe_extra.append( _dihedrals_data_[i])
+            
         elif dihe_funct in _admitted_impr_:
             im_data_.append( _dihedrals_data_[i])
-                
+            if len (_dihedrals_data_[i])>5:
+                def_impr_extra.append( _dihedrals_data_[i])
+            
         else:
             print 'Problem #008 here #split_dihedral_improper'
             dihe_err = "#008_" + dh_dict_kind[ dihe_funct]
@@ -692,7 +697,7 @@ def split_dihedral_improper( _data_container_):
     _data_container_['impropers'] = im_data_
     _data_container_['dihedrals'] = dh_data_
     
-    return _data_container_
+    return _data_container_, define_dihe_extra
 
 def split_define_dihe_impr( _data_container_, smt_flag = False):
     ''' This picks the dihedral data and splits it 
@@ -706,7 +711,7 @@ def split_define_dihe_impr( _data_container_, smt_flag = False):
     ''' =============             Dihedral TOP data           ============= ''' 
     # Save/overwriting point
     
-    _data_container_ = split_dihedral_improper( _data_container_)
+    _data_container_, define_dh_ex = split_dihedral_improper( _data_container_)
     
     #====================================================
     ''' ======== "Type" Dihedral BONDED data  ======= '''
@@ -738,8 +743,8 @@ def split_define_dihe_impr( _data_container_, smt_flag = False):
     if define_dic <> {}:
         
         known_atoms = _data_container_['atoms']
-        for dh in range( len( def_dihe_extra)):
-            _dhi_ = def_dihe_extra[ dh]
+        for dh in range( len( define_dh_ex)):
+            _dhi_ = define_dh_ex[ dh]
             
             a_tag = ['',]*4
             for at1 in range( 4): # at1 0 1 2 3
