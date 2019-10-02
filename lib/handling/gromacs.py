@@ -526,7 +526,7 @@ def sidemol_data( _file_top_, data_container):
                         po_file = fileseeker( root_dir, new_filename)
                         if po_file <> []:
                             _sm_files_.append( po_file[0])
-                            print _sm_files_[-1]
+                            print( 'SM_file : {}'.format(_sm_files_[-1]))
                             ok_flag *= check_file( po_file[0],
                                                   content='[ atoms ]')
                     else:
@@ -1004,6 +1004,10 @@ def get_ffldfiles( _topfile_):
             file_cont.append( seek_for_directive( aux_file_cont, _di_))
             if file_cont[-1] == '':
                 pop_wrg_1('Directive ' + _di_ + ' not found!')
+                
+                if _di_ == _directives_[-1]:
+                    file_cont[-1] = file_cont[0] 
+                
             else:
                 print ('Using :' +file_cont[-1]+' for ' + _di_) 
     else:
