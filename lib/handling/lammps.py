@@ -27,7 +27,7 @@ def write_lammps_data( _topodata_, df_name, _config_):
         nam = ''.join([ chr( ord(l) - 32) for l in atomstyle])
         print_dec_g(style_str.format(nam))
         
-        print '\n'+'='*10+' Still in BETA here '+'='*10+'\n'
+        print '\n'+'='*14+'  Still in BETA here  '+'='*14+'\n'
         _content_, _flag_ = write_lammps_data_auto( _topodata_,
                                                     df_name,
                                                     _config_[:-1]
@@ -68,6 +68,11 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     
     if _sidemol_f_:
         sidemol = _topodata_['sidemol']
+        
+    #======================-------------------------==========================#
+    #####------                    Force field                       ------####
+    aux_forcefield_cont = write_lammps_potentials( _topodata_, atomstyle)
+    aux_pot_txt, dicts, _flag_, rg_sgep, n_dihedraltypes = aux_forcefield_cont
         
     _asty_d_ ={ 'atomic':1, 'charge':1, 'bond':2, 'angle':3,
                 'full':4, 'molecular':4}
@@ -157,9 +162,6 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
         
     #======================-------------------------==========================#
     #####------                    Force field                       ------####
-    
-    aux_pot_txt, dicts, _flag_, rg_sgep = write_lammps_potentials( _topodata_,
-                                                                   atomstyle)
     _text_ += aux_pot_txt
     
     #########################################################
@@ -179,11 +181,12 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     elif atomstyle =='atomic':
         atom_shape = ' {0} {2} {4:7.4f} {5:7.4f} {6:7.4f} # {7}\n'
         
+    print( dicts[ 0])
     base_atoms_n = len( known_atoms)
     for i in range( base_atoms_n):
         aty = known_atoms[i][1]
         _text_ += atom_shape.format( i+1, _mol_[i],
-                                    dicts[0][ aty],
+                                    dicts[ 0][ aty],
                                     float(known_atoms[ i][6]), # charge?? WF
                                     _x_[i]*10, _y_[i]*10, _z_[i]*10,
                                     aty
@@ -404,25 +407,26 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     '''==========-----------   4th - Chemical topology   ---------=========='''
     #=========================================================================#
     ''' Building auxiliar atom tag1_tag2 data dictionary -/- OPLS Case '''
+    xf = 1
     aat_ddic = {}
     if len(atom_info[0]) - minr > 7:
         for i in range( n_atomtypes):
             aat_ddic[ atom_info[i][0]] = atom_info[i][1]
     
     ####################        ------BONDS------          ####################
-    if _asty_d_[atomstyle]>=2:
+    if _asty_d_[ atomstyle] >= 2:
         known_bonds = _topodata_['bonds']
         base_bonds_n = len (known_bonds)
         _text_ +='\n Bonds\n\n'
         bond_shape = ' {}'*4+'\n'
-        xf = 1
+        
         a_g_d = {} #aux_goofy_dic
         for i in range(base_bonds_n):
             # print known_bonds[i][0], known_bonds[i][1]
             at1 = int(known_bonds[i][0])
             at2 = int(known_bonds[i][1])
             #print at1, at2
-            to_print = known_bonds[i][0] +' '+ known_bonds[i][1] +'\n'
+            to_print = '{} {}'.format(at1, at2)
             try:
                 at1_tag = known_atoms[at1-1][xf]
                 at2_tag = known_atoms[at2-1][xf]
@@ -436,10 +440,11 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                     _bond_ty_ = dicts[1][ at1_tag + '-'+ at2_tag]
                     
                 except KeyError:
-                    print to_print
+                    print at1_tag + '-'+ at2_tag
+                    print('Bond type not found for: ' + to_print)
                     print 'Exception {}-{}\n'.format( known_atoms[at1-1][4], 
                                                known_atoms[at2-1][4])
-                
+                    _bond_ty_ = 0
             
             _text_ += bond_shape.format( i+1, _bond_ty_, at1, at2)
                         
@@ -464,8 +469,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     
     
     ####################        ------ANGLES------      #######################
-    xf = 1
-    if _asty_d_[ atomstyle]>=3:
+    if _asty_d_[ atomstyle] >= 3:
         known_angles = _topodata_['angles']
         base_angles_n = len(known_angles)
         _text_ +='\n Angles\n\n'
@@ -516,7 +520,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     
     
     ####################        ------DIHEDRAL------       ####################
-    if _asty_d_[atomstyle] >= 4:
+    if _asty_d_[ atomstyle] >= 4:
         known_dihedrals = _topodata_['dihedrals']
         base_dihedrals_n = len(known_dihedrals)
         if base_dihedrals_n or ( n_dihedrals > base_dihedrals_n):
@@ -525,10 +529,10 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
         for i in range( base_dihedrals_n):
             err_str = ''
             _dihe_ty_ = '0'
-            at1 = int(known_dihedrals[i][0])
-            at2 = int(known_dihedrals[i][1])
-            at3 = int(known_dihedrals[i][2])
-            at4 = int(known_dihedrals[i][3])
+            at1 = int( known_dihedrals[i][0])
+            at2 = int( known_dihedrals[i][1])
+            at3 = int( known_dihedrals[i][2])
+            at4 = int( known_dihedrals[i][3])
             
             try:
                 at1_tag = known_atoms[at1-1][xf]
@@ -592,29 +596,63 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     
     ###################        ------IMPROPERS------       ####################
     # TODO SECTION
-    if _asty_d_[atomstyle] >= 4:
+    if _asty_d_[ atomstyle] >= 4:
         known_impropers = _topodata_['impropers']
         base_impropers_n = len( known_impropers)
         if base_impropers_n or ( n_impropers > base_impropers_n):
             _text_ +='\n Impropers\n\n'
         improper_shape = ' {}'*6+'\n'
         for i in range( base_impropers_n):
+            err_str = ''
+            _impr_ty_ = '0'
+            at1 = int( known_impropers[i][0])
+            at2 = int( known_impropers[i][1])
+            at3 = int( known_impropers[i][2])
+            at4 = int( known_impropers[i][3])
             
-            at1 = int(known_impropers[i][0])
-            at2 = int(known_impropers[i][1])
-            at3 = int(known_impropers[i][2])
-            at4 = int(known_impropers[i][3])
+            try:
+                at1_tag = known_atoms[ at1-1][xf]
+                at2_tag = known_atoms[ at2-1][xf]
+                at3_tag = known_atoms[ at3-1][xf]
+                at4_tag = known_atoms[ at4-1][xf]
+                _impr_ty_ = dicts[4][at1_tag + '-'+ at2_tag+ '-'+
+                                     at3_tag + '-'+ at4_tag]
+            except KeyError:
+                try:
+                    at1_tag = aat_ddic[ at1_tag]
+                    at2_tag = aat_ddic[ at2_tag]
+                    at3_tag = aat_ddic[ at3_tag]
+                    at4_tag = aat_ddic[ at4_tag]
+                    _impr_ty_ = dicts[4][ at1_tag + '-'+ at2_tag+ '-'+
+                                          at3_tag + '-'+ at4_tag]
+                except KeyError:
+                    options = ['X-' + at2_tag + '-' + at3_tag + '-' + at4_tag,
+                               'X-X-' + at3_tag + '-' + at4_tag,
+                               at1_tag + '-X-X-' + at4_tag,
+                              ]
+                    
+                    for _opt_ in options:
+                        try:
+                            _impr_ty_ = dicts[4][ _opt_]
+                            break
+                        except KeyError as Er_here:
+                            if _opt_ == options[-1]:
+                                err_str = Er_here.args[0]
+
+            if _impr_ty_ == '0' and err_str <> '':
+                print 'Atoms {}-{}-{}-{} : '.format( at1, at2, at3, at4),
+                print (at1_tag +'-'+ at2_tag+'-'+ at3_tag+'-'+ at4_tag)
+                print ( 'Error improper dihedral ---- '+ err_str +' not found!')
+                
             
-            _impr_ty_ = dicts[4][known_atoms[at1-1][1]+'-'
-                                 +known_atoms[at2-1][1]+'-'
-                                 +known_atoms[at3-1][1]+'-'
-                                 +known_atoms[at4-1][1]
-                                ]
             _text_+= improper_shape.format( i+1, _impr_ty_, at1, at2, at3, at4)
             
         if _sidemol_f_ == 1:
             for i in range( n_impropers - base_impropers_n):
-                _impr_ty_ = dicts[4][ sm_impropers[i][0]]
+                try:
+                    _impr_ty_ = dicts[4][ sm_impropers[i][0]]
+                except KeyError as Er_here:
+                    exit( 'Error improper dihedral ----- '+ err_str)
                 
                 _text_ += improper_shape.format( i+1 + base_impropers_n,
                                                  _impr_ty_,
@@ -720,7 +758,7 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
                 wr_str = ('Using pair style lennard/mdf!!\nThis style can '
                           + 'only be used if LAMMPS was built with the '
                           + 'USER-MISC package')
-                pop_wrg_1( wr_str.format( pairtypename) )
+                pop_wrg_1( wr_str.format( pairtypename) ) ## ?? TOChecK
                 break
     
     for x in range( n_atomtypes):
@@ -866,29 +904,31 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
                          float(aty[i][5])/ 4.186/2,
                          float(aty[i][4]) ]
             
-        elif _ai_ == 5:
-            extra_end_str = ' {:.4f} {:.4f}\n'
+        elif _ai_ == 5:## Urey-Bradley
+            extra_end_str = ' {:.5f} {:.5f}\n'
             info_cont = [ i+1, _adb_[ _ai_ - 1],
-                         float(aty[i][5])/ 4.186/2,
-                         float(aty[i][4]),
-                         float(aty[i][7])/ 4.186/2,
-                         float(aty[i][6])*10 ]
+                         float(aty[i][5])/ 4.186/2, #  k_theta (kJ mol-1rad-2)
+                         float(aty[i][4]),          #  theta_0 (deg)
+                         float(aty[i][7])/ 4.186/2/100, #  kUB (kJ mol-1 nm-2)
+                         float(aty[i][6])*10 ]      #  r13 (nm)
         else:
             wr_str = 'Angle type {} not implemented yet!'
             pop_wrg_1( wr_str.format( angletypename) )
             info_cont = [ i+1, _adb_[ _ai_ - 1], 0, 0 ]
             _flag_ = False
-        txt_p_a += ( ' {}{} {:.4f} {:.4f}' + extra_end_str).format( *info_cont)
+        txt_p_a += ( ' {}{} {:.5f} {:.5f}' + extra_end_str).format( *info_cont)
     
     # >===========================================================< #
     ########    -----------     DIHEDRAL      ----------     ########
-    DihedralDataBase = [ 'charmm', 'improper', 'opls', # opls<RyckaertBellemans
+    # TODO: improve this "DataBase" thing - maybe with a dictionary?
+    # opls=RyckaertBellemans // fourier=Proper dihedral (multiple)
+    DihedralDataBase = [ 'charmm', 'improper_1', 'opls', 'improper_2', 
     # Not implemented ones:
-                         'periodic','tabulated'] 
+                          'ex1','periodic','tabulated', 'ex2', 'fourier'] 
     # asuming that impropers can not be here, purged previously in gromacs.py
     dty = _topodata_['dihedraltypes']
     dihe_kind_names = _topodata_['dihe_kinds'] # set with numbers as string
-    
+    type9_flag = False
     dihedtypename = []
     if len( dihe_kind_names) > 1:
         dihedtypename.append( 'hybrid')
@@ -899,6 +939,8 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
         _ddb_  = ['',]*len( DihedralDataBase)
     for di in dihe_kind_names:
         dihedtypename.append( DihedralDataBase[ int( di)- 1])
+        if int( di) == 9:
+            type9_flag = True
     
     txt_p_d = ''
     if dihedtypename <> []:
@@ -907,7 +949,36 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
     rb_warning = (' Ryckaert-Bellemans angle style conversion in Fourier form' +
                   ' can only be used if LAMMPS was built with the MOLECULE' +
                   ' package!!! quite a base, so this is not printed')
-            
+    ###== Type 9 > Proper dihedral (multiple) // <
+    if type9_flag:
+        # Warn and re-Pack the potentials - multiplexing potentials ;)
+        pop_wrg_1(' Type 9 Proper dihedral (multiple) angle style conversion'
+                  + ' in Fourier form can only be used if LAMMPS was built'
+                  + ' with the USER-MISC package!!')
+        print( '='*20 + '  MuXInG  ' + '='*20 )
+        aux_type9 = []
+        aux_type9_types = []
+        new_dty = []
+        print('Dihedrals before muxing: {}'.format( n_dihedraltypes))
+        for i in range( n_dihedraltypes):
+            if int( dty[i][4]) == 9:
+                aux_tag = '{}-{}-{}-{}'.format( *dty[i][:4])
+                if aux_tag not in aux_type9_types:
+                    aux_type9_types.append( aux_tag)
+                    aux_type9.append( dty[i][:5] + [[dty[i][5:], ]]) 
+                else:
+                    j = aux_type9_types.index( aux_tag)
+                    aux_type9[ j][5].append( dty[i][5:])
+                
+            else:
+                new_dty.append( dty[i])
+                
+        dty = new_dty + aux_type9
+        n_dihedraltypes = len( dty) #########Check cases when this is not valid?
+        
+        print('Dihedrals after muxing: {}'.format( n_dihedraltypes))
+    ###== end Type 9
+    
     dihedraltypes_d = {} # types dictionary
     i=0
     info_cont = ''
@@ -924,26 +995,46 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
         # Charmm / Amber -> coeff_4 = 0.0
         if _di_ == 1:
             info_cont = ( i+1, _ddb_[ _di_ - 1],
-                         float(dty[i][6])/4.186/2,
-                         int(float(dty[i][7])),
-                         int(float(dty[i][5])),
+                         '{:.5f}'.format( float( dty[i][6])/4.186), # k_phi(kJ mol-1)
+                         int(float(dty[i][7])),                     # multiplicity
+                         '{:.2f}'.format( float(dty[i][5])),        # phi_s(deg);
                          '0.0'
                         )
         # Ryckaert-Bellemans
         elif _di_ == 3:
-            C0 = float(dty[i][5])
-            C1 = float(dty[i][6])
-            C2 = float(dty[i][7])
-            C3 = float(dty[i][8])
-            C4 = float(dty[i][9])
-            C5 = float(dty[i][10])
+            C0 = float(dty[i][5])    # (kJ mol-1)
+            C1 = float(dty[i][6])    # (kJ mol-1)
+            C2 = float(dty[i][7])    # (kJ mol-1)
+            C3 = float(dty[i][8])    # (kJ mol-1)
+            C4 = float(dty[i][9])    # (kJ mol-1)
+            C5 = float(dty[i][10])   # (kJ mol-1)
             
             info_cont = ( i+1, _ddb_[ _di_ - 1],
-                         ( -2*C1 - (3/2)*C3)/4.186,#K1
-                         '{:.4f}'.format( (-C2 - C4)/4.186),#K2
-                         '{:.4f}'.format( (-(1/2)*C3)/4.186),#K3
-                         '{:.4f}'.format( (-(1/4)*C4)/4.186) #K4
+                         '{:.5f}'.format( ( -2*C1 - (3/2)*C3) /4.186),#K1
+                         '{:.5f}'.format( ( -C2 - C4) /4.186),#K2
+                         '{:.5f}'.format( ( -(1/2)*C3) /4.186),#K3
+                         '{:.5f}'.format( ( -(1/4)*C4) /4.186) #K4
                         )
+        # Amber03
+        elif _di_ == 9:
+            # Here 
+            _m_ = len( dty[i][5])
+            _K1_ = '{:.5f}'.format( float( dty[i][5][0][1]) /4.186) # k_phi(kJ mol-1)
+            _n1_ = dty[i][5][0][2]                                  # multiplicity
+            _d1_ = '{:.2f}'.format( float( dty[i][5][0][0]))        # phi_s(deg);
+            
+            multispace = '' + _d1_
+            for _ei in range( _m_)[1:]:
+                _K_ei_ = '{:.5f}'.format( float( dty[i][5][ _ei][1]) /4.186)
+                _n_ei_ = dty[i][5][ _ei][2]
+                _d_ei_ = '{:.2f}'.format( float( dty[i][5][ _ei][0] ))
+                
+                multispace += ' {} {} {}'.format( _K_ei_, _n_ei_, _d_ei_)
+                
+            info_cont = ( i+1, _ddb_[ _di_ - 1],
+                         _m_, _K1_, _n1_, multispace,
+                        )
+            
         else:
             wr_str = 'Dihedral type {} not implemented yet!'
             pop_wrg_1( wr_str.format( DihedralDataBase[ _di_- 1]))
@@ -951,15 +1042,12 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
             _flag_ = False
             break
             
-        ### TODO :
-        #       Optimize here and there, special care with the string handling.
-        #       Create a ordered type list if there is more than one kind_
-        #       of dihedral.
-        txt_p_d += ' {}{} {:.4f} {} {} {}\n'.format( *info_cont)
+        txt_p_d += ' {}{} {} {} {} {}\n'.format( *info_cont)
         
     ########    -----------     IMPROPER      ----------     ########
-    # improper comes with type number "2", TODO: correct that
-    ImproperDataBase = ['not_here', 'harmonic','cossq','class2'] 
+    # TODO: correct also here this 
+    # improper comes with type number "2", 
+    ImproperDataBase = ['not_here', 'harmonic', 'cossq', 'cvff','class2'] 
     ity = _topodata_['impropertypes']
     impr_kind_names = _topodata_['impr_kinds'] # set with numbers as string
     
@@ -982,29 +1070,48 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
     impropertypes_d = {} # types dictionary
     i=0
     info_cont = ''
+    cosine_dic = {180:-1, -180:-1, 0:1}
+    
     for i in range( n_impropertypes):
         # tag creation
         _type_forward_ = ity[i][0]+'-'+ity[i][1]+'-'+ity[i][2]+'-'+ity[i][3]
         # FIFO type number asigment IJKL
         impropertypes_d[ _type_forward_ ] = i+1
-        ##  need also in backward direction in the lysozyme case
-        #_type_backward_ = dty[i][3]+'-'+dty[i][2]+'-'+dty[i][1]+'-'+dty[i][0]
-        #impropertypes_d[ _type_backward_] = i+1
+        ##  need also in other direction LJKI in silk case
+        _type_backward_ = ity[i][3]+'-'+ity[i][2]+'-'+ity[i][1]+'-'+ity[i][0]
+        impropertypes_d[ _type_backward_] = i+1
         
-        _ii_ = int(ity[i][4])
+        _ii_ = int( ity[i][4])
         if _ii_ == 2:
             info_cont = ( i+1, _idb_[ _ii_ - 1],
-                         float(ity[i][6])/4.186/2,
-                         int(float(ity[i][5])),
+                         float(ity[i][6]) /4.186/2,
+                         # what would be better here? warn or int(float ?
+                         '{:.2f}'.format( float( ity[i][5]) ), 
+                         '','',
                         )
-            
+        
+        elif _ii_ == 4:
+            try:
+                cosine_phi_s = cosine_dic[ float( ity[i][5])]
+            except KeyError:
+                pop_wrg_1( 'Phi_s in the improper periodic should be 0 or 180,'
+                          + 'instead {} was received,'.format(ity[i][5])
+                          + ' using default value -1 for cos(phi_s)!')
+                cosine_phi_s = -1
+                
+            info_cont = ( i+1, _idb_[ _ii_ - 1],
+                         float(ity[i][6])/4.186,
+                         cosine_phi_s,
+                         ' ', int(ity[i][7]),
+                        )
+        
         else:
             wr_str = 'Improper type {} not implemented yet!'
             pop_wrg_1( wr_str.format( ImproperDataBase[ _ii_- 1]))
             info_cont = ( i+1, _idb_[ _ii_ - 1],0,0,0,0)
             _flag_ = False
             break
-        txt_p_i += ' {}{} {:.4f} {}\n'.format( *info_cont)
+        txt_p_i += ' {}{} {:.5f} {}{}{}\n'.format( *info_cont)
         
     # === for cycle end
     
@@ -1028,7 +1135,7 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
         _flag_ = False
         
         
-    return txt_p_, dicts, _flag_, regular_se
+    return txt_p_, dicts, _flag_, regular_se, n_dihedraltypes
 
 
 def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
