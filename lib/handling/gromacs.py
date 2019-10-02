@@ -231,6 +231,9 @@ def extract_gromacs_data( _data_files_, _autoload_):
         print(" Is it GROMOS there ?? ")
         aux_here = get_gromos_define( filename_bon)
         
+    else:
+        print('no gromos check')
+        
     for key_ in aux_here.keys():
         if aux_here[ key_] <> {}:
             print ( 'GROMOS ' + key_ + ' kind detected!')
@@ -656,7 +659,7 @@ def split_dihedral_improper( _data_container_):
                     '10':"Restricted dihedral", '11':"Combined bending-torsion"}
     
     _dihedrals_data_ = _data_container_[ 'dihedrals']
-    _admitted_dihe_ = ['1', '3']#['1', '3', '9']
+    _admitted_dihe_ = ['1', '3', '9']#['1', '3', '9']
     _admitted_impr_ = ['2', '4']# ['2']
     
     im_data_ = []
@@ -710,9 +713,8 @@ def split_define_dihe_impr( _data_container_, smt_flag = False):
     ###              =========================================              ###
     ''' =============             Dihedral TOP data           ============= ''' 
     # Save/overwriting point
-    
     _data_container_, define_dh_ex = split_dihedral_improper( _data_container_)
-    
+    _admitted_impr_ = ['2', '4']
     #====================================================
     ''' ======== "Type" Dihedral BONDED data  ======= '''
     _dihe_type_data_ = _data_container_['dihedraltypes']
@@ -722,13 +724,14 @@ def split_define_dihe_impr( _data_container_, smt_flag = False):
     for i in range( len ( _dihe_type_data_)):
         #  Dihedral line format:
         #  ai  aj  ak  al  funct   c0  c1  c2  c3  c4  c5
-        if _dihe_type_data_[i][4] in [ '2', '4']:
-            im_type_.append( _dihe_type_data_[i])
-        else:
-            dh_type_.append( _dihe_type_data_[i])
-    # Save/overwriting point
-    _data_container_['impropertypes'] = im_type_
-    #_data_container_['dihedraltypes'] = dh_type_
+        try:
+            if _dihe_type_data_[i][4] in _admitted_impr_:
+                im_type_.append( _dihe_type_data_[i])
+            else:
+                dh_type_.append( _dihe_type_data_[i])
+        except IndexError as _err:
+            print( _err)
+            exit( _dihe_type_data_[i] )
     #====================================================
     ''' ========  Dihedral "#define" data  ========== ''' 
     def_dihe_dic = {}
@@ -762,25 +765,29 @@ def split_define_dihe_impr( _data_container_, smt_flag = False):
                 if '' == a_tag[at1]:
                     _string_ = 'Error!! atom number {} not found in .top -- '
                     pop_err_1( _string_.format( atnum))
+                    
             #### TODO Flag
             ## First case with coefs in the top file... c0  c1  c2  c3  c4  c5
             if len( _dhi_) > 6:
                 print ('Coefficients in the top file are not supported yet' +
                         '... or maybe they are '+ u'\u00AC'*2)
-                
                 new_dihedraltypes['-'.join(a_tag)] = (a_tag + _dhi_[4:])
+            
             ## Second case with #define
             elif len( _dhi_) == ( 4 + 1 + 1):
                 dh_kind_, dihedral_tag = _dhi_[4:]
                 _content_ = a_tag + [dh_kind_] + define_dic[ dihedral_tag]
-                # with a dictionary instead a set because, sets does not allow
+                # with a dictionary instead a set because, sets do not allow
                 # unhashable lists as items
                 new_dihedraltypes[ '-'.join( a_tag)] = _content_
                 
         for key in new_dihedraltypes.keys():
-                dh_type_.append( new_dihedraltypes[key])
-        _data_container_['dihedraltypes'] = dh_type_
+            dh_type_.append( new_dihedraltypes[key])
+        
     
+    # Save/overwriting point
+    _data_container_['impropertypes'] = im_type_
+    _data_container_['dihedraltypes'] = dh_type_
     
     return _data_container_
 
