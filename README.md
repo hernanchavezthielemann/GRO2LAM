@@ -10,7 +10,7 @@ python 2.7: [![Build Status](https://travis-ci.org/hernanchavezthielemann/GRO2LA
 
 
 ## Version
-   GRO2LAM version 1.21 (27 Jan 2019) - BETA
+   GRO2LAM version 1.22 (27 Jan 2019) - BETA
    
    :new:New features : 
 <!--ts-->
@@ -20,7 +20,9 @@ python 2.7: [![Build Status](https://travis-ci.org/hernanchavezthielemann/GRO2LA
    * Accepts #define tag in dihedrals in the 'top' file.
    * :soon: Accepts improper dihedral type. (under tests)
    * :soon: Accepts G96 bond and angle types. (under tests) 
-   * :soon: Accepts GROMOS force field define. (under tests) 
+   * :soon: Accepts GROMOS force field define. (under tests)
+   * :soon: Accepts AMBER Periodic improper dihedral. (under tests) 
+   * :soon: Accepts AMBER Proper dihedral (multiple). (under tests) 
 <!--te-->
 ## Table of contents
 
