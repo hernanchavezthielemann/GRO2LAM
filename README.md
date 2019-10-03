@@ -18,11 +18,11 @@ python 2.7: [![Build Status](https://travis-ci.org/hernanchavezthielemann/GRO2LA
    * Works with more than one side molecule (eg. water + ions +...).
    * Accepts Ryckaert-Bellemans dihedral, direct conversion to opls dihedral Lammps style.
    * Accepts #define tag in dihedrals in the 'top' file.
-   * :soon: Accepts improper dihedral type. (under tests)
-   * :soon: Accepts G96 bond and angle types. (under tests) 
-   * :soon: Accepts GROMOS force field define. (under tests)
-   * :soon: Accepts AMBER Periodic improper dihedral. (under tests) 
-   * :soon: Accepts AMBER Proper dihedral (multiple). (under tests) 
+   * Accepts improper dihedral type. (:warning:under tests:wrench:)
+   * Accepts G96 bond and angle types. (:warning:under tests:wrench:) 
+   * Accepts GROMOS force field define. (:warning:under tests:wrench:)
+   * :new: Accepts AMBER Periodic improper dihedral. (:warning:under tests:wrench:) 
+   * :new: Accepts AMBER Proper dihedral (multiple). (:warning:under tests:wrench:) 
 <!--te-->
 ## Table of contents
 
