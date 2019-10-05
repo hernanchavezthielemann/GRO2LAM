@@ -997,7 +997,7 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
             info_cont = ( i+1, _ddb_[ _di_ - 1],
                          '{:.5f}'.format( float( dty[i][6])/4.186), # k_phi(kJ mol-1)
                          int(float(dty[i][7])),                     # multiplicity
-                         '{:.2f}'.format( float(dty[i][5])),        # phi_s(deg);
+                         '{}'.format( int( float(dty[i][5]))),        # phi_s(deg);
                          '0.0'
                         )
         # Ryckaert-Bellemans
@@ -1021,13 +1021,13 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
             _m_ = len( dty[i][5])
             _K1_ = '{:.5f}'.format( float( dty[i][5][0][1]) /4.186) # k_phi(kJ mol-1)
             _n1_ = dty[i][5][0][2]                                  # multiplicity
-            _d1_ = '{:.2f}'.format( float( dty[i][5][0][0]))        # phi_s(deg);
+            _d1_ = '{}'.format( int( float( dty[i][5][0][0])))        # phi_s(deg);
             
             multispace = '' + _d1_
             for _ei in range( _m_)[1:]:
                 _K_ei_ = '{:.5f}'.format( float( dty[i][5][ _ei][1]) /4.186)
                 _n_ei_ = dty[i][5][ _ei][2]
-                _d_ei_ = '{:.2f}'.format( float( dty[i][5][ _ei][0] ))
+                _d_ei_ = '{}'.format( int( float( dty[i][5][ _ei][0] )))
                 
                 multispace += ' {} {} {}'.format( _K_ei_, _n_ei_, _d_ei_)
                 
