@@ -107,7 +107,7 @@ def make_dir( _path_, _name_):
         path_dir = _path_ + _name_
     else:
         path_dir = _path_ + '/' + _name_
-        
+    print( 'Creating folder {}'.format( path_dir))
     # TODO: hadle the case in which the folder already exists
     #try:
     #    write_file( 'test.txt', content=' ', path_dir):
@@ -115,7 +115,8 @@ def make_dir( _path_, _name_):
     #    out_file.close()
     #    
     #except IOError:
-        
+    if len(path_dir.split(' ')) > 1:
+        path_dir = '"' + path_dir + '"'
     system( 'mkdir ' + path_dir)
     return path_dir + '/'
 
