@@ -10,7 +10,7 @@ python 2.7: [![Build Status](https://travis-ci.org/hernanchavezthielemann/GRO2LA
 
 
 ## Version
-   GRO2LAM version 1.23 (27 Jan 2019) - BETA
+   GRO2LAM version 1.24 (27 Jan 2019) - BETA
    
    :new:New features : 
 <!--ts-->
