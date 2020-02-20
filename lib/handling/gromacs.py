@@ -521,7 +521,12 @@ def sidemol_data( _file_top_, data_container):
                         if _sm_files_ == []:
                             ok_flag = True
                         
-                        new_filename = k_line.split('"')[1].lstrip('.')
+                        try:
+                            new_filename = k_line.split('"')[1].lstrip('.')
+                        except IndexError:
+                            auxt = wrg_1( 'Format error with {}')
+                            print( auxt.format( k_line.split()[-1] ) ) 
+                        
                         new_filename = new_filename.lstrip('/').split('/')[-1]
                         po_file = fileseeker( root_dir, new_filename)
                         if po_file <> []:
@@ -1061,7 +1066,7 @@ def seek_for_directive( _list_of_files_, _directive_):
         try:
             with open( file_, 'r')  as indata:
                 for j_line in indata:
-                    line_c = j_line.split(' ]')[0].split('[ ')
+                    line_c = j_line.split(';')[0].split(' ]')[0].split('[ ')
                     if len( line_c) > 1:
                         if line_c[1] == _directive_:
                             content_file = file_
