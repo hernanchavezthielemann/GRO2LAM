@@ -252,6 +252,7 @@ class Conversion(Frame):
             
             data_cont = self.master._convert_['setup']
             root_folder = '/'.join(data_cont[1].split('/')[:-1]+[''])
+            print( 'Root folder: {}'.format( root_folder) )
             
             sim_data, _flags_ = extract_gromacs_data( data_cont[1:-1],
                                                      _autoload_)
