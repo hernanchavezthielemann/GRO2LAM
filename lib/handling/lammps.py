@@ -406,6 +406,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     ###########################################################################
     '''==========-----------   4th - Chemical topology   ---------=========='''
     #=========================================================================#
+    print('> Checking chemical topology-coefficients/n')
     ''' Building auxiliar atom tag1_tag2 data dictionary -/- OPLS Case '''
     xf = 1
     aat_ddic = {}
@@ -575,17 +576,27 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
             
         if _sidemol_f_ == 1:
             for i in range( n_dihedrals - base_dihedrals_n):
+                err_str = ''
+                _dihe_ty_ = '0'
                 
                 try:
                     _dihe_ty_ = dicts[3][ sm_dihedrals[i][0]]
                     
                 except KeyError:
                     # OPLS ??
-                    aux_here = sm_dihedrals[i][0].split('-')
-                    aux_here = [ aat_ddic[ at_tag] for at_tag in aux_here]
-                    _dihe_ty_ = dicts[3][ '-'.join( aux_here)]
-                
-                
+                    try:
+                        aux_here = sm_dihedrals[i][0].split('-')
+                        aux_here = [ aat_ddic[ at_tag] for at_tag in aux_here]
+                        _dihe_ty_ = dicts[3][ '-'.join( aux_here)]
+                    except KeyError as Er_here:
+                        err_str = Er_here.args[0]
+                        
+                if _dihe_ty_ == '0' and err_str <> '':
+                    print( 'Atoms {}-{}-{}-{} : '.format( *aux_here) + ' '
+                           + sm_dihedrals[i][0] + '-'*5 + '   ' + 
+                           wrg_1( ' - Dihedral > '+ err_str +' < not found!')
+                         )
+                    
                 _text_ += dihedral_shape.format( i+1 + base_dihedrals_n,
                                                  _dihe_ty_,
                                                  sm_dihedrals[i][1],
@@ -649,10 +660,13 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
             
         if _sidemol_f_ == 1:
             for i in range( n_impropers - base_impropers_n):
+                _impr_ty_ = '0'
                 try:
                     _impr_ty_ = dicts[4][ sm_impropers[i][0]]
                 except KeyError as Er_here:
-                    exit( 'Error improper dihedral ----- '+ err_str)
+                    print( wrg_1(' -- Improper dihedral > ' + Er_here.args[0] 
+                                 + ' < not found!') 
+                         )
                 
                 _text_ += improper_shape.format( i+1 + base_impropers_n,
                                                  _impr_ty_,
