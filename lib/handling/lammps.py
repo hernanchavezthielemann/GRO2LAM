@@ -406,7 +406,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     ###########################################################################
     '''==========-----------   4th - Chemical topology   ---------=========='''
     #=========================================================================#
-    print('> Checking chemical topology-coefficients/n')
+    print('\n> Checking chemical topology-coefficients')
     ''' Building auxiliar atom tag1_tag2 data dictionary -/- OPLS Case '''
     xf = 1
     aat_ddic = {}
@@ -415,6 +415,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
             aat_ddic[ atom_info[i][0]] = atom_info[i][1]
     
     ####################        ------BONDS------          ####################
+    print('>> bonds')
     if _asty_d_[ atomstyle] >= 2:
         known_bonds = _topodata_['bonds']
         base_bonds_n = len (known_bonds)
@@ -470,6 +471,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     
     
     ####################        ------ANGLES------      #######################
+    print('>> angles')
     if _asty_d_[ atomstyle] >= 3:
         known_angles = _topodata_['angles']
         base_angles_n = len(known_angles)
@@ -521,6 +523,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     
     
     ####################        ------DIHEDRAL------       ####################
+    print('>> dihedrals')
     if _asty_d_[ atomstyle] >= 4:
         known_dihedrals = _topodata_['dihedrals']
         base_dihedrals_n = len(known_dihedrals)
@@ -592,9 +595,10 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                         err_str = Er_here.args[0]
                         
                 if _dihe_ty_ == '0' and err_str <> '':
-                    print( 'Atoms {}-{}-{}-{} : '.format( *aux_here) + ' '
-                           + sm_dihedrals[i][0] + '-'*5 + '   ' + 
-                           wrg_1( ' - Dihedral > '+ err_str +' < not found!')
+                    print( 'Atoms {}-{}-{}-{} '.format( *aux_here) + ' '
+                           + err_str + '  //  ' + 
+                           wrg_1( 'Dihedral > '+ sm_dihedrals[i][0] +
+                                 ' < not found!')
                          )
                     
                 _text_ += dihedral_shape.format( i+1 + base_dihedrals_n,
@@ -606,6 +610,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                                                )
     
     ###################        ------IMPROPERS------       ####################
+    print('>> impropers')
     # TODO SECTION
     if _asty_d_[ atomstyle] >= 4:
         known_impropers = _topodata_['impropers']
@@ -664,7 +669,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                 try:
                     _impr_ty_ = dicts[4][ sm_impropers[i][0]]
                 except KeyError as Er_here:
-                    print( wrg_1(' -- Improper dihedral > ' + Er_here.args[0] 
+                    print( wrg_1('Improper dihedral > ' + Er_here.args[0] 
                                  + ' < not found!') 
                          )
                 
