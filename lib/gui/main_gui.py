@@ -31,7 +31,7 @@ class Gro2Lam_GUI(Frame):
     def __init__(self, master=None, test = False):
         Frame.__init__(self, master)
         _ver= __version__.split()
-        self.master.title(" "*25+"{}    {}".format(_ver[0],_ver[2]))#.master
+        self.master.title(" "*5+"{}    {}".format(_ver[0],_ver[2]))#.master
         
         self.pack() # ... why I'm packing here?? coords?
         self.test = test
