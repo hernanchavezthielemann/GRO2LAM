@@ -45,7 +45,7 @@ class Run_GUI(Frame):
         row2fill_l = Frame( row2fill)
         
         _def_inname_ = 'in.gro2lam'
-        if self.master._convertdata_ <> []:
+        if self.master._convertdata_ not in [[], None] :
             _def_dataname_ = self.master._convertdata_['filename']
             _folder_ = '/'.join( _def_dataname_.split('/')[:-1]+[''])
             _def_inname_ =  _folder_ + _def_inname_
