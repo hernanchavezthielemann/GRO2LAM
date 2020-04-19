@@ -101,7 +101,7 @@ def create_entry( _main_row_, _desc_txt, _def_txt_, t_len, ckbc=None, fn=None):
         aux_ddl.pack(side='left', expand=True, fill=X)
         
     finalspace.pack(side='right', padx=0)
-    _row_.pack(side='top', fill=X, pady=3)
+    _row_.pack(side='top', fill=X, pady=1)
     
     # For tracing purposes list appending
     return Ent_It
