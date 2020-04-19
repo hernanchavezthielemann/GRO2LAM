@@ -63,7 +63,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
         k = 0
         for i in range(3):
             for j in range(3):
-                if i <> j:
+                if i != j:
                     Ar[i][j] = b_xyz[ k + 3]
                     k += 1
                     
@@ -214,7 +214,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
         
         if not ok_flag:
             
-            if data_container[ aux_strings[ bi]] <> []:
+            if data_container[ aux_strings[ bi]] != []:
                 pop_err_1('Problem detected in :\n' + section.split('.')[1])
                 return {}, [ ok_flag, _sidemol_f_]
             else:
@@ -227,7 +227,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
     data_container[ 'define'][ 'improper'] = {}
     aux_here = {}
     print( section.split('.')[1])
-    if filename_nb <> filename_ff and filename_nb <> filename_bon:
+    if filename_nb != filename_ff and filename_nb != filename_bon:
         print(" Is it GROMOS there ?? ")
         aux_here = get_gromos_define( filename_bon)
         
@@ -235,13 +235,13 @@ def extract_gromacs_data( _data_files_, _autoload_):
         print('no gromos check')
         
     for key_ in aux_here.keys():
-        if aux_here[ key_] <> {}:
+        if aux_here[ key_] != {}:
             print ( 'GROMOS ' + key_ + ' kind detected!')
             data_container[ 'define'][ key_].update( aux_here[ key_])
             gromosff_flag = True
             
             dihe_g_data = data_container[ 'dihedraltypes']
-            if 'dihedraltypes' == key_+'types' and dihe_g_data <> []:
+            if 'dihedraltypes' == key_+'types' and dihe_g_data != []:
                 rewrite_flag = False
                 for gd_ in range( len( dihe_g_data)):
                     #print dihe_g_data[gd_][2]
@@ -320,7 +320,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
             # memorandum:
             # 'define' stores in a contentkey dictionary each define key:value
             cddd = data_container[ 'define'][ cont_k]
-            if cddd.keys() <> []:
+            if cddd.keys() != []:
                 for sb in range( len( sidemol['tag'])): # in each side mol
                     datacont = sidemol['data'][sb][cont_k+'s']# in its cont-key
                     for dc in range( len( datacont)):# lets look their content
@@ -515,7 +515,7 @@ def sidemol_data( _file_top_, data_container):
             for k_line in topdata:
                 if k_line.startswith('#'):
                     
-                    logic_test = ('#if' not in _buffer_ and _buffer_ <> '')
+                    logic_test = ('#if' not in _buffer_ and _buffer_ != '')
                     
                     if k_line.startswith('#include') and logic_test:
                         if _sm_files_ == []:
@@ -529,7 +529,7 @@ def sidemol_data( _file_top_, data_container):
                         
                         new_filename = new_filename.lstrip('/').split('/')[-1]
                         po_file = fileseeker( root_dir, new_filename)
-                        if po_file <> []:
+                        if po_file != []:
                             _sm_files_.append( po_file[0])
                             print( 'SM_file : {}'.format(_sm_files_[-1]))
                             ok_flag *= check_file( po_file[0],
@@ -596,7 +596,7 @@ def sidemol_data_gatherer( _sm_files_, _sm_):
     else:
         print( 'Success!, found in : {}\n'.format( _file_))
         tag_str = [ 'atoms', 'bonds', 'angles', 'dihedrals','fin']
-        _sm_data_c_ = { x:[] for x in tag_str if x <> 'fin'}
+        _sm_data_c_ = { x:[] for x in tag_str if x != 'fin'}
         read_flag = False
         iner_flag = False
         cd_tag = ''
@@ -611,7 +611,7 @@ def sidemol_data_gatherer( _sm_files_, _sm_):
                     if j_line[0][0] == '#':
                         pass
                     elif j_line[0][0] == '[':
-                        if  j_line[1]  <> tag_str[i] :
+                        if  j_line[1]  != tag_str[i] :
                             if j_line[1] in tag_str[i+1:]:
                                 i = tag_str.index( j_line[1])
                                 cd_tag = tag_str[i]
@@ -692,7 +692,7 @@ def split_dihedral_improper( _data_container_):
             print 'Problem #008 here #split_dihedral_improper'
             dihe_err = "#008_" + dh_dict_kind[ dihe_funct]
             
-            if dihe_err <> dh_bf_err:
+            if dihe_err != dh_bf_err:
                 if dihe_funct in dh_dict_kind.keys():
                     pop_err_1( dh_dict_kind[ dihe_funct] + 
                               ' not implemented yet')
@@ -748,7 +748,7 @@ def split_define_dihe_impr( _data_container_, smt_flag = False):
             position...'''
     new_dihedraltypes = {}
     define_dic = _data_container_['define']['dihedral']
-    if define_dic <> {}:
+    if define_dic != {}:
         
         known_atoms = _data_container_['atoms']
         for dh in range( len( define_dh_ex)):
@@ -829,7 +829,7 @@ def get_gro_fixed_line( _filename_):
                 if _buffer==[]:
                     _buffer = [ mtype, at]
                 ## TODO : Analyze if it is possible to improve here using sets
-                elif mtype<>_buffer[0]:
+                elif mtype != _buffer[0]:
                     
                     _buffer += [at-1]
                     g_names.append( _buffer)
@@ -852,7 +852,7 @@ def get_gro_fixed_line( _filename_):
                     _corrupt = False
                     
                 
-    if at_num <> len(_type_):
+    if at_num != len(_type_):
         pop_err_1('Atom number mismatch in .gro file')
         return False, 0 ,0
     elif _corrupt:
@@ -904,7 +904,7 @@ def get_topitp_line( _filename_, _ss_):
                         
                 elif _line_[0][0] == '[':
                     print( ' '.join(_line_) + 'Checked!')
-                    if  ' '.join(_line_)  <> _ss_ :
+                    if  ' '.join(_line_) != _ss_ :
                         read_flag = False
                     #print 'exit here 424'
                     
@@ -978,7 +978,7 @@ def get_ffldfiles( _topfile_):
     root_folder = '/'.join(_topfile_.split('/')[:-1]+[''])
     ff_file = ff_file.lstrip('.').lstrip('/')
     
-    if ff_file <> '':
+    if ff_file != '':
         # if there is at least one itp, lets parse it
         # first seek for further includes itp
         aux_file_cont = [_topfile_, '']
@@ -999,7 +999,8 @@ def get_ffldfiles( _topfile_):
                             break
                 
         except IOError:
-            exit('xx/0 Read error 030, file not found!!.\n')
+            pop_err_1('xx/0 Read error 030, file not found!!.\n')
+            nonerr_flag *= False
         # the first one is [ defaults ]
         # second nonbonded atomtypes
         # third bonded 
@@ -1047,7 +1048,7 @@ def ck_forcefield( _the_file_, _secondoption_ = None):
                 comb_rule= j_line.split()
                 print('---> comb_rule {}'.format(comb_rule[1]))
                 
-    if not _flag_ and _secondoption_ <> None:
+    if not _flag_ and _secondoption_ != None:
         comb_rule, _flag_, _the_file_ = ck_forcefield( _secondoption_)
         
     if comb_rule < 0 or not _flag_:
@@ -1074,7 +1075,7 @@ def seek_for_directive( _list_of_files_, _directive_):
         except IOError:
             exit('xx/0 Read error 030, file not found.\n' + file_)
             
-        if content_file <> '':
+        if content_file != '':
             break
     
     return content_file
@@ -1089,10 +1090,10 @@ def get_top_groups( _mtype_container_, _group_):
     for mt in range(len( _mtype_)):
         
         mtype = _mtype_[mt].strip(' ')
-        if _buffer==[] and mtype==_group_:
+        if _buffer == [] and mtype == _group_:
             buffer = [ mtype, mt+1]
             
-        elif _buffer<>[] and mtype<>_group_:
+        elif _buffer != [] and mtype != _group_:
             _buffer += [mt]
             break
             
