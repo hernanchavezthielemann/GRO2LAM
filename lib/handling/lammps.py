@@ -459,10 +459,18 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                     _bond_ty_ = dicts[1][ sm_bonds[i][0]]
                 except KeyError:
                     # OPLS ??
-                    at1_tag, at2_tag = sm_bonds[i][0].split('-')
-                    at1_tag = aat_ddic[ at1_tag]
-                    at2_tag = aat_ddic[ at2_tag]
-                    _bond_ty_ = dicts[1][ at1_tag + '-'+ at2_tag]
+                    try:
+                        at1_tag, at2_tag = sm_bonds[i][0].split('-')
+                        print(at1_tag, at2_tag)
+                        at1_tag = aat_ddic[ at1_tag]
+                        at2_tag = aat_ddic[ at2_tag]
+                        _bond_ty_ = dicts[1][ at1_tag + '-'+ at2_tag]
+                        
+                    except KeyError:
+                        
+                        print('Bond type not found for:' + sm_bonds[i][0])
+                        print('Or ' + at1_tag + '-'+ at2_tag)
+                        exit( dicts[1] )
                         
                 _text_ += bond_shape.format(i+1 + base_bonds_n,
                                             _bond_ty_,
@@ -591,8 +599,19 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                         aux_here = sm_dihedrals[i][0].split('-')
                         aux_here = [ aat_ddic[ at_tag] for at_tag in aux_here]
                         _dihe_ty_ = dicts[3][ '-'.join( aux_here)]
-                    except KeyError as Er_here:
-                        err_str = Er_here.args[0]
+                        
+                    except KeyError:
+                        options = [ 'X-{}-{}-X'.format( *aux_here[1:-1]),
+                                   'X-{}-{}-X'.format( *aux_here[2:0:-1]),
+                                    'X-{}-{}-{}'.format( *aux_here[1:]),
+                                    '{}-{}-{}-X'.format( *aux_here[:-1]),
+                              ]
+                        for _opt_ in options:
+                            try:
+                                _dihe_ty_ = dicts[3][ _opt_]
+                                break
+                            except KeyError as Er_here:
+                                err_str += ' // ' + Er_here.args[0]
                         
                 if _dihe_ty_ == '0' and err_str <> '':
                     print( 'Atoms {}-{}-{}-{} '.format( *aux_here) + ' '
@@ -666,12 +685,30 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
         if _sidemol_f_ == 1:
             for i in range( n_impropers - base_impropers_n):
                 _impr_ty_ = '0'
+                err_str = ''
                 try:
                     _impr_ty_ = dicts[4][ sm_impropers[i][0]]
+                    
                 except KeyError as Er_here:
-                    print( wrg_1('Improper dihedral > ' + Er_here.args[0] 
-                                 + ' < not found!') 
-                         )
+                    
+                    err_str += Er_here.args[0]
+                    
+                    aux_here = sm_impropers[i][0].split('-')
+                    options = [aux_here[0] + '-X-X-' + aux_here[3],
+                               aux_here[3] + '-X-X-' + aux_here[0],
+                              ]
+                    
+                    for _opt_ in options:
+                        try:
+                            _impr_ty_ = dicts[4][ _opt_]
+                        
+                        except KeyError as Er_here:
+                            err_str += Er_here.args[0]
+                
+                if _impr_ty_ == '0' and err_str <> '':
+                    print( wrg_1('Improper dihedral > ' + err_str
+                                             + ' < not found!') 
+                             )
                 
                 _text_ += improper_shape.format( i+1 + base_impropers_n,
                                                  _impr_ty_,
@@ -747,7 +784,7 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
     _numbers_ = _topodata_['numbers']
     n_atomtypes, n_bondtypes, n_angletypes = _numbers_['type'][:3]
     n_dihedraltypes, n_impropertypes = _numbers_['type'][3:]
-    
+    #exit(_numbers_)
     #n_bondstypes = len(data_container['bondtypes'])
     
     buckorlj = int( _topodata_[ 'defaults'][0]) # 1 -2 lj/buc
