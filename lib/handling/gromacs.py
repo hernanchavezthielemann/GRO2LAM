@@ -209,6 +209,24 @@ def extract_gromacs_data( _data_files_, _autoload_):
         
         _aux_here_ = get_topitp_line( filename_bon, startstrings[ bi])
         data_container[ s_str_], ok_flag, _data_define_ = _aux_here_
+        
+        
+        ################################################################################### flag
+        # Make a function like dihedral integrity check
+        if bi == 2:
+            for di in range( len(data_container[ s_str_])):
+                # isnot_num return true if is string
+                dih_pt_line = data_container[ s_str_][di]
+                if not isnot_num( dih_pt_line[2]):
+                    pop_wrg_1(   'Dihedral potential problem found!!\nAdopting'
+                               + ' X-A1-A2-X configuration for: '
+                               + ' {}-{}'.format( *dih_pt_line[:2]) ) 
+                    new_row = ['X'] + dih_pt_line[:2] + ['X'] + dih_pt_line[2:]
+                    data_container[ s_str_][di] = new_row
+                    
+                elif not isnot_num( dih_pt_line[3]):
+                    exit('Error 0031 undefined dihedral')
+        
         data_container['define'][s_str_[:-5]] = _data_define_
         #debugger_file(s_str_, data_container[s_str_])
         
@@ -301,11 +319,12 @@ def extract_gromacs_data( _data_files_, _autoload_):
             improp_x_mol = len( sidemol['data'][sb]['impropers'])
             
             sm_quantity = sidemol['num'][sb]
+            #print(sm_quantity, bonds_x_mol,sm_quantity * bonds_x_mol)
             side_bonds_n    += sm_quantity * bonds_x_mol
             side_angles_n   += sm_quantity * angles_x_mol
             side_dihed_n    += sm_quantity * dihedr_x_mol
             side_improp_n   += sm_quantity * improp_x_mol
-            
+        
         n_bondsnew  =   n_bonds + side_bonds_n
         n_anglesnew =   n_angles + side_angles_n
         n_dihednew  =   n_dihedrals + side_dihed_n
@@ -341,6 +360,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
         #   atom tags in index 4
         _charge_ = {}
         _conv_dict_ = {}
+        
         for sb in range( len( sidemol['tag'])):
             for at in range( len( sidemol['data'][sb]['atoms'])):
                 a_opls_tag = sidemol['data'][sb]['atoms'][at][1]
@@ -348,6 +368,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
                 a_charge = float( sidemol['data'][sb]['atoms'][at][6])
                 _charge_[a_opls_tag] = a_charge
                 _conv_dict_[ a_elem_tag] = a_opls_tag
+                
         print '='*45+'\n'+'='*5+'  Charges found: '
         print _charge_
         print _conv_dict_
@@ -452,7 +473,8 @@ def extract_gromacs_data( _data_files_, _autoload_):
             poss = 4
         for i in range( len ( data_container[ nice_list[it] ])):
             _aux_set_here.add( data_container[ nice_list[it] ][i][ poss ])
-        #print _aux_set_here
+        #print( nice_list[it][:4])
+        #print(_aux_set_here)
         data_container[ nice_list[it][:4]+'_kinds'] = _aux_set_here
     
     
@@ -465,6 +487,8 @@ def extract_gromacs_data( _data_files_, _autoload_):
     data_container['numbers']['total'] = [n_atomsnew, n_bondsnew,
                                           n_anglesnew, n_dihednew, n_impropnew
                                          ]
+    #print( 'here', data_container['numbers']['total'])
+    #exit('')
     data_container['numbers']['type'] = [n_atomtypes, n_bondstypes,
                                          n_anglestypes, n_dihedraltypes,
                                          n_impropertypes]
