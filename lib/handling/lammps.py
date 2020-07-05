@@ -461,7 +461,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                     # OPLS ??
                     try:
                         at1_tag, at2_tag = sm_bonds[i][0].split('-')
-                        print(at1_tag, at2_tag)
+                        #print(at1_tag, at2_tag)
                         at1_tag = aat_ddic[ at1_tag]
                         at2_tag = aat_ddic[ at2_tag]
                         _bond_ty_ = dicts[1][ at1_tag + '-'+ at2_tag]
