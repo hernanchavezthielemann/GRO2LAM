@@ -220,18 +220,19 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
         side_at_v       =   range( n_atoms)[ base_atoms_n:]
         multi_residue   =   0
         prev_mult_res   =   0
-        sms_tags        =   []
+        sms_tags        =   [] + ['']*base_atoms_n
         _sm_i           =   -1 # side molecule index
         sm_m            =   1 # side mol multiplier
         for i in range( len ( sidemol['tag'])): 
             sm_at_num = len(sidemol['data'][ i]['atoms'])
+            #print (sidemol['tag'][i],sidemol['num'][i],sm_at_num)
             sms_tags +=  [sidemol['tag'][i]]*sidemol['num'][i]*sm_at_num
             
         
         print( 'Sidemols: ' + str( sum(sidemol['num'][:] ) ) )
         
         
-
+    #print( len(sms_tags), len(side_at_v), side_at_v[-1])
         #print n_atoms, base_atoms_n, len( _mtype_), side_at_v, _atype_
     for i in side_at_v:
         _res_n_ = _mol_[i]
@@ -256,8 +257,9 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
             
             # New molecule kind test
             # entering here first time too
-            #print (sms_tags[ i], _mol_buffer_ )
+            
             if sms_tags[ i] <> _mol_buffer_:
+                #print (i, sms_tags[ i], _mol_buffer_ )
                 # I can change mol-buffer for sms_tags[i-1], but case = 0
                 _mol_buffer_ = sms_tags[i]
                 _sm_i += 1
