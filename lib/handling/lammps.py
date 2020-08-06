@@ -279,10 +279,6 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
             #print i+1, sms_tags[i], _mtype_[i], _smol_tag_
             #print '\n'+'here ', _sm_i
                 
-                
-                
-                
-                
             # meaning also a new type of molecule ???
             if _smol_tag_ not in sm_cont.keys():
                 
@@ -292,7 +288,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                 sm_data = sidemol['data'][  _sm_i]
                 ##############################################
                 first_atom_check = _atype_[i] == sm_data['atoms'][0][4]
-                print( sm_data['atoms'][0][4])
+                #print( sm_data['atoms'][0][4])
                 # In the weird case of a missing residue tag in the GRO file
                 # happens often
                 if _mtype_[i] == '':
@@ -497,7 +493,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                     # OPLS ??
                     try:
                         at1_tag, at2_tag = sm_bonds[i][0].split('-')
-                        print(at1_tag, at2_tag)
+                        #print(at1_tag, at2_tag)
                         at1_tag = aat_ddic[ at1_tag]
                         at2_tag = aat_ddic[ at2_tag]
                         _bond_ty_ = dicts[1][ at1_tag + '-'+ at2_tag]
