@@ -272,7 +272,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                     sm_m -= 1
                     multi_residue = prev_mult_res
                     if sm_m == 0:
-                        #print ('here 0')
+                        print ('here 0')
                         
             else:
                  exit('**** Unhandled case 001')
