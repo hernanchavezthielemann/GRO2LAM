@@ -240,7 +240,8 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
         #print _atype_[i], aty
         # meaning new residue or new molecule
         clause1 = (_res_n_ <> _residue_buffer_)
-        #print(clause1,_mol_[i], _residue_buffer_, multi_residue)
+        #if clause1:
+            #print(clause1,_mol_[i], _residue_buffer_, multi_residue,prev_mult_res,sm_m)
         if multi_residue and clause1: # mol number
             _residue_buffer_ = _res_n_
             multi_residue -= 1
@@ -257,20 +258,22 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
             
             # New molecule kind test
             # entering here first time too
-            
+            #print(sm_m)
             if sms_tags[ i] <> _mol_buffer_:
                 #print (i, sms_tags[ i], _mol_buffer_ )
                 # I can change mol-buffer for sms_tags[i-1], but case = 0
                 _mol_buffer_ = sms_tags[i]
                 _sm_i += 1
-                sm_m = sidemol['num'][_sm_i] - sm_m
+                sm_m = sidemol['num'][_sm_i] - 1
+                prev_mult_res = 0
             # enters here seccond time and first time of the seccod, third... repetition
             # side mol of the same kind
             elif sm_m:
                     sm_m -= 1
                     multi_residue = prev_mult_res
                     if sm_m == 0:
-                        prev_mult_res = 0
+                        #print ('here 0')
+                        
             else:
                  exit('**** Unhandled case 001')
             
