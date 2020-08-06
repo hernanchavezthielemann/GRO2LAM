@@ -319,7 +319,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
             improp_x_mol = len( sidemol['data'][sb]['impropers'])
             
             sm_quantity = sidemol['num'][sb]
-            print(sm_quantity, bonds_x_mol,sm_quantity * bonds_x_mol)
+            #print(sm_quantity, bonds_x_mol,sm_quantity * bonds_x_mol)
             side_bonds_n    += sm_quantity * bonds_x_mol
             side_angles_n   += sm_quantity * angles_x_mol
             side_dihed_n    += sm_quantity * dihedr_x_mol
