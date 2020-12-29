@@ -181,7 +181,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     elif atomstyle =='atomic':
         atom_shape = ' {0} {2} {4:7.4f} {5:7.4f} {6:7.4f} # {7}\n'
         
-    print( dicts[ 0])
+    #print( dicts[ 0])
     base_atoms_n = len( known_atoms)
     for i in range( base_atoms_n):
         aty = known_atoms[i][1]
@@ -204,73 +204,105 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                     option that probably is going to take longer rt
                  '''
     
-    _residue_buffer_    = '00'
-    _mol_buffer_ = 'nk_type'
-    solv_at_v           = []
+    _residue_buffer_    =   '00'
+    _mol_buffer_        =   'nk_type'
+    side_at_v           =   []
     #print dicts[0]
     if _sidemol_f_ == 1:
         
         #charge = _topodata_['S_charge']
         #conv_dict = _topodata_['S_translation'] # key s_tag : val l_tag
-        sm_cont = {}
-        sm_charge   = []
-        sm_aty      = []
-        sm_data     = {}
-        ji_ = 0
-        solv_at_v = range( n_atoms)[ base_atoms_n:]
-        multi_residue = 0
-        sidemols = 0
-        smc = -1
+        sm_cont         =   {}
+        sm_charge       =   []
+        sm_aty          =   []
+        sm_data         =   {}
+        ji_             =   0
+        side_at_v       =   range( n_atoms)[ base_atoms_n:]
+        multi_residue   =   0
+        prev_mult_res   =   0
+        sms_tags        =   [] + ['']*base_atoms_n
+        _sm_i           =   -1 # side molecule index
+        sm_m            =   1 # side mol multiplier
         for i in range( len ( sidemol['tag'])): 
-            sidemols +=  sidemol['num'][i] 
+            sm_at_num = len(sidemol['data'][ i]['atoms'])
+            #print (sidemol['tag'][i],sidemol['num'][i],sm_at_num)
+            sms_tags +=  [sidemol['tag'][i]]*sidemol['num'][i]*sm_at_num
+            
         
-        print( 'Sidemols: ' + str( sidemols) )
-
-        #print n_atoms, base_atoms_n, len( _mtype_), solv_at_v, _atype_
-    for i in solv_at_v:
+        print( 'Sidemols: ' + str( sum(sidemol['num'][:] ) ) )
         
+        
+    #print( len(sms_tags), len(side_at_v), side_at_v[-1])
+        #print n_atoms, base_atoms_n, len( _mtype_), side_at_v, _atype_
+    for i in side_at_v:
+        _res_n_ = _mol_[i]
         #aty = conv_dict[_atype_[i]] # _atype_ is the atag in TOP
         #print _atype_[i], aty
-        # meaning new molecule // maybe same type
-        clause1 = (_mol_[i] <> _residue_buffer_)
-        #print clause1
+        # meaning new residue or new molecule
+        clause1 = (_res_n_ <> _residue_buffer_)
+        #if clause1:
+            #print(clause1,_mol_[i], _residue_buffer_, multi_residue,prev_mult_res,sm_m)
         if multi_residue and clause1: # mol number
-            _residue_buffer_ = _mol_[i]
+            _residue_buffer_ = _res_n_
             multi_residue -= 1
-            if not multi_residue:
+            if not multi_residue and not sm_m:
                 _mol_buffer_ = 'nk_type'
+                
             #print ji_, sm_aty[ ji_], _residue_buffer_
             #print _mol_[i], bool(multi_residue)
                 
         elif clause1: # mol number
             
-            _residue_buffer_ = _mol_[i]
-            if _mtype_[i] <> _mol_buffer_:
-                _mol_buffer_ = _mtype_[i]
-                smc += 1
-                
-            #print '\n'+'here ', smc
-            _smol_tag_ = sidemol['tag'][ smc]
+            _residue_buffer_ = _res_n_
             
-            ji_ = 0 # j index
-            #print i+1, _mtype_[i], _smol_tag_
+            
+            # New molecule kind test
+            # entering here first time too
+            #print(sm_m)
+            if sms_tags[ i] <> _mol_buffer_:
+                #print (i, sms_tags[ i], _mol_buffer_ )
+                # I can change mol-buffer for sms_tags[i-1], but case = 0
+                _mol_buffer_ = sms_tags[i]
+                _sm_i += 1
+                sm_m = sidemol['num'][_sm_i] - 1
+                prev_mult_res = 0
+            # enters here seccond time and first time of the seccod, third... repetition
+            # side mol of the same kind
+            elif sm_m:
+                    sm_m -= 1
+                    multi_residue = prev_mult_res
+                    if sm_m == 0:
+                        print ('here 0')
+                        
+            else:
+                 exit('**** Unhandled case 001')
+            
+            ji_ = 0 # j index # atom index per side molecule
+            _smol_tag_ = sidemol['tag'][ _sm_i]
+            #sm_qty = sidemol['num'][ _sm_i]
+            
+            #print i+1, sms_tags[i], _mtype_[i], _smol_tag_
+            #print '\n'+'here ', _sm_i
+                
             # meaning also a new type of molecule ???
             if _smol_tag_ not in sm_cont.keys():
                 
                 new_smol_str = '** New side molecule : {} 1st atom : {} **'
                 print( '\n' + new_smol_str.format( _smol_tag_, _atype_[i]))
                 ###########     New side mol data     ########
-                sm_data = sidemol['data'][  smc]
+                sm_data = sidemol['data'][  _sm_i]
                 ##############################################
                 first_atom_check = _atype_[i] == sm_data['atoms'][0][4]
-                
+                #print( sm_data['atoms'][0][4])
                 # In the weird case of a missing residue tag in the GRO file
+                # happens often
                 if _mtype_[i] == '':
                     print ('\n')
                     pop_wrg_1('Missing residue tag in .gro file.\n'
                               + 'atom #'+ str( i+1)+ '. Asuming: ' +_smol_tag_)
-                    atom_x_ress = len( sm_data['atoms']) * sidemol['num'][ smc]
-                    #print atom_x_ress, len( sm_data['atoms']), sidemol['num'][ smc]
+                    
+                    atom_x_ress = len( sm_data['atoms']) * sidemol['num'][ _sm_i]
+                    #print atom_x_ress, len( sm_data['atoms']), sidemol['num'][ _sm_i]
                     _mol_buffer_ = _smol_tag_
                     
                     if first_atom_check:
@@ -289,7 +321,9 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                 if not first_atom_check:
                     print('xx/0   Atoms order mismatch '
                          +'between residue definition and gro file!')
+                    
                     exit('xx/0   Error /lammps.py 001!')
+                    
                 elif _mtype_[i] == sm_data['atoms'][0][3]:
                     for ath in sm_data['atoms']:
                         sm_charge.append(float( ath[6]))
@@ -307,6 +341,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                         print ( '** It is a multi residual structure.\n** '
                                +'With: '+str( multi_residue +1)+' residues.')
                         #multi_residue -= 1
+                        prev_mult_res = multi_residue
                     
                 else:
                     print('xx/0   Residue: ' + _mtype_[i])
@@ -327,6 +362,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                     exit( Err_here[0])
                 ######################################################
             else:
+                #print('-> {} +1'.format( _smol_tag_))
                 sm_data     = sm_cont[ _smol_tag_]['data']
                 sm_charge   = sm_cont[ _smol_tag_]['charge']
                 sm_aty      = sm_cont[ _smol_tag_]['aty']
@@ -339,9 +375,10 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
             dirtv_data = sm_data[ 'bonds']
             #print('here')
             #print dirtv_data
+            #print( ji_, len(sm_aty))
             for xx in range( len( dirtv_data)):
                 _row = dirtv_data[ xx]
-                #print sm_aty
+                
                 #print _row
                 i1 =    int( _row[0])
                 i2 =    int( _row[1])
@@ -395,7 +432,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
         
         #print ji_, sm_aty[ ji_]#, sm_aty
         #print sm_aty[ ji_]
-        _text_ += atom_shape.format(i+1, _mol_[i],
+        _text_ += atom_shape.format(i+1, _res_n_,
                                     dicts[0][ sm_aty[ ji_]],
                                     sm_charge[ ji_],
                                     _x_[i]*10, _y_[i]*10, _z_[i]*10,
