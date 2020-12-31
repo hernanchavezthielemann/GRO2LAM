@@ -3,6 +3,7 @@
 __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
 from tk_lib import Entry, Button, Frame, StringVar, format_dec
+from lib.misc.display import show
 from popup import FilePopUp
 
 
@@ -84,8 +85,8 @@ class File_Entry(Frame):
         '''Browse a file <button> action binder'''
         
         pop = FilePopUp( master = self)
-        if ext<>None and isinstance(ext, tuple):
-            #print '--- ', ext, type(ext)
+        if ext != None and isinstance(ext, tuple):
+            #show( '--- ', ext, type(ext)
             pop.filetypes['filetypes'] = ext #(("All","*"),) # 
         filepath = pop.getfilepath()
         
@@ -97,8 +98,8 @@ class File_Entry(Frame):
             entry.xview_moveto(1)
         except:
             if filepath not in [ '', ()]:
-                print "Could not open File: ", filepath
-                print exc_info()[1]
+                show( "Could not open File: ", filepath)
+                show( exc_info()[1])
     
     def setter(self, value):
         

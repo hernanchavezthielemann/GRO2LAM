@@ -3,7 +3,7 @@
 #    this is a blend of warn and vervose 
 
 from sys import stdout
-#from lib.gui.popup import message_box
+from lib.gui.popup import message_box
 
 __verbose__ = [True]*2
 

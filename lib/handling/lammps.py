@@ -3,7 +3,7 @@
 __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
 from lib.misc.file import write_file, make_dir
-from lib.misc.warn import print_dec_g, pop_wrg_1, pop_err_1, wrg_1
+from lib.misc.display import print_dec_g, pop_wrg_1, pop_err_1, wrg_1, show
 
 from sys import exit
 
@@ -27,7 +27,7 @@ def write_lammps_data( _topodata_, df_name, _config_):
         nam = ''.join([ chr( ord(l) - 32) for l in atomstyle])
         print_dec_g(style_str.format(nam))
         
-        print '\n'+'='*14+'  Still in BETA here  '+'='*14+'\n'
+        show( '\n' + '='*14 + '  Still in BETA here  ' + '='*14 + '\n' ) #   !!
         _content_, _flag_ = write_lammps_data_auto( _topodata_,
                                                     df_name,
                                                     _config_[:-1]
@@ -43,7 +43,7 @@ def write_lammps_data( _topodata_, df_name, _config_):
         else:
             pop_err_1(errmsg)
     else: #if atomstyle == 'Angle':
-        print '\n\nExit'
+        show( '\n\nExit')
         exit(('Error 037!!  -  Atom style {} '
               +'not implemented yet').format(atomstyle))
     
@@ -104,7 +104,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     _text_ +=(' {:.4f} {:.4f} xlo xhi\n {:.4f} {:.4f} ylo yhi\n'
               +' {:.4f} {:.4f} zlo zhi\n').format(*_box_)
     
-    if _box_apend <> [0,0,0]:
+    if _box_apend != [0,0,0]:
         _text_ +=(' {:.4f} {:.4f} {:.4f} xy xz yz\n').format( *_box_apend)
     
     
@@ -124,16 +124,16 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
         if not float( _atom_mass_) and _sidemol_f_: #meaning that is 0
             
             smols = sidemol['tag']
-            #print 'here1', smols
+            #show( 'here1', smols
             for ad in range( len(smols)):
                 _smda_ = sidemol['data'][ad]['atoms']
-                #print _smda_
+                #show( _smda_
                 at_ = 0
                 for at_ in range( len( _smda_)):
-                    #print _smda_[at_], at_
+                    #show( _smda_[at_], at_
                     if _smda_[at_][1] == _atom_type_ and len(_smda_[at_]) == 8:
                         _atom_mass_ = _smda_[at_][7]
-                        print ( ('Mass for {} not found in atomtypes, taking' 
+                        show( ('Mass for {} not found in atomtypes, taking' 
                                  + ' {} as substitute').format( _atom_type_, 
                                                                 _atom_mass_)
                               )
@@ -181,7 +181,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     elif atomstyle =='atomic':
         atom_shape = ' {0} {2} {4:7.4f} {5:7.4f} {6:7.4f} # {7}\n'
         
-    #print( dicts[ 0])
+    #show(( dicts[ 0])
     base_atoms_n = len( known_atoms)
     for i in range( base_atoms_n):
         aty = known_atoms[i][1]
@@ -207,7 +207,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     _residue_buffer_    =   '00'
     _mol_buffer_        =   'nk_type'
     side_at_v           =   []
-    #print dicts[0]
+    #show( dicts[0]
     if _sidemol_f_ == 1:
         
         #charge = _topodata_['S_charge']
@@ -225,31 +225,31 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
         sm_m            =   1 # side mol multiplier
         for i in range( len ( sidemol['tag'])): 
             sm_at_num = len(sidemol['data'][ i]['atoms'])
-            #print (sidemol['tag'][i],sidemol['num'][i],sm_at_num)
+            #show( (sidemol['tag'][i],sidemol['num'][i],sm_at_num)
             sms_tags +=  [sidemol['tag'][i]]*sidemol['num'][i]*sm_at_num
             
         
-        print( 'Sidemols: ' + str( sum(sidemol['num'][:] ) ) )
+        show( 'Sidemols: ' + str( sum(sidemol['num'][:] ) ) )
         
         
-    #print( len(sms_tags), len(side_at_v), side_at_v[-1])
-        #print n_atoms, base_atoms_n, len( _mtype_), side_at_v, _atype_
+    #show(( len(sms_tags), len(side_at_v), side_at_v[-1])
+        #show( n_atoms, base_atoms_n, len( _mtype_), side_at_v, _atype_
     for i in side_at_v:
         _res_n_ = _mol_[i]
         #aty = conv_dict[_atype_[i]] # _atype_ is the atag in TOP
-        #print _atype_[i], aty
+        #show( _atype_[i], aty
         # meaning new residue or new molecule
-        clause1 = (_res_n_ <> _residue_buffer_)
+        clause1 = (_res_n_ != _residue_buffer_)
         #if clause1:
-            #print(clause1,_mol_[i], _residue_buffer_, multi_residue,prev_mult_res,sm_m)
+            #show((clause1,_mol_[i], _residue_buffer_, multi_residue,prev_mult_res,sm_m)
         if multi_residue and clause1: # mol number
             _residue_buffer_ = _res_n_
             multi_residue -= 1
             if not multi_residue and not sm_m:
                 _mol_buffer_ = 'nk_type'
                 
-            #print ji_, sm_aty[ ji_], _residue_buffer_
-            #print _mol_[i], bool(multi_residue)
+            #show( ji_, sm_aty[ ji_], _residue_buffer_
+            #show( _mol_[i], bool(multi_residue)
                 
         elif clause1: # mol number
             
@@ -258,9 +258,9 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
             
             # New molecule kind test
             # entering here first time too
-            #print(sm_m)
-            if sms_tags[ i] <> _mol_buffer_:
-                #print (i, sms_tags[ i], _mol_buffer_ )
+            #show((sm_m)
+            if sms_tags[ i] != _mol_buffer_:
+                #show( (i, sms_tags[ i], _mol_buffer_ )
                 # I can change mol-buffer for sms_tags[i-1], but case = 0
                 _mol_buffer_ = sms_tags[i]
                 _sm_i += 1
@@ -272,7 +272,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                     sm_m -= 1
                     multi_residue = prev_mult_res
                     if sm_m == 0:
-                        print ('here 0')
+                        show( 'here 0')
                         
             else:
                  exit('**** Unhandled case 001')
@@ -281,28 +281,28 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
             _smol_tag_ = sidemol['tag'][ _sm_i]
             #sm_qty = sidemol['num'][ _sm_i]
             
-            #print i+1, sms_tags[i], _mtype_[i], _smol_tag_
-            #print '\n'+'here ', _sm_i
+            #show( i+1, sms_tags[i], _mtype_[i], _smol_tag_
+            #show( '\n'+'here ', _sm_i
                 
             # meaning also a new type of molecule ???
             if _smol_tag_ not in sm_cont.keys():
                 
                 new_smol_str = '** New side molecule : {} 1st atom : {} **'
-                print( '\n' + new_smol_str.format( _smol_tag_, _atype_[i]))
+                show( '\n' + new_smol_str.format( _smol_tag_, _atype_[i]))
                 ###########     New side mol data     ########
                 sm_data = sidemol['data'][  _sm_i]
                 ##############################################
                 first_atom_check = _atype_[i] == sm_data['atoms'][0][4]
-                #print( sm_data['atoms'][0][4])
+                #show(( sm_data['atoms'][0][4])
                 # In the weird case of a missing residue tag in the GRO file
                 # happens often
                 if _mtype_[i] == '':
-                    print ('\n')
+                    show( '\n')
                     pop_wrg_1('Missing residue tag in .gro file.\n'
                               + 'atom #'+ str( i+1)+ '. Asuming: ' +_smol_tag_)
                     
                     atom_x_ress = len( sm_data['atoms']) * sidemol['num'][ _sm_i]
-                    #print atom_x_ress, len( sm_data['atoms']), sidemol['num'][ _sm_i]
+                    #show( atom_x_ress, len( sm_data['atoms']), sidemol['num'][ _sm_i]
                     _mol_buffer_ = _smol_tag_
                     
                     if first_atom_check:
@@ -319,8 +319,8 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                 
                 aux_buffer = ''
                 if not first_atom_check:
-                    print('xx/0   Atoms order mismatch '
-                         +'between residue definition and gro file!')
+                    show( ('xx/0   Atoms order mismatch '
+                         +'between residue definition and gro file!') )
                     
                     exit('xx/0   Error /lammps.py 001!')
                     
@@ -331,38 +331,38 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                         
                         # multiple residues per side mol???
                         #lets see how many
-                        if ath[2] <> aux_buffer:
-                            #print ath[2]
-                            if aux_buffer <> '':
+                        if ath[2] != aux_buffer:
+                            #show( ath[2]
+                            if aux_buffer != '':
                                 multi_residue += 1
                             aux_buffer = ath[2]
                         
                     if multi_residue:
-                        print ( '** It is a multi residual structure.\n** '
-                               +'With: '+str( multi_residue +1)+' residues.')
+                        show( ( '** It is a multi residual structure.\n** '
+                               +'With: '+str( multi_residue +1)+' residues.') )
                         #multi_residue -= 1
                         prev_mult_res = multi_residue
                     
                 else:
-                    print('xx/0   Residue: ' + _mtype_[i])
+                    show( 'xx/0   Residue: ' + _mtype_[i] )
                     fst_line = (' ').join( sm_data['atoms'][0]) 
-                    print('xx/0   First line: ' + fst_line)
-                    print('xx/0   Molecules order mismatch '
-                         +'between [ molecules ] definition and gro file!')
-                    exit('xx/0   Error /lammps.py 002!')
+                    show( 'xx/0   First line: ' + fst_line )
+                    show( ('xx/0   Molecules order mismatch '
+                         +'between [ molecules ] definition and gro file!') )
+                    exit( 'xx/0   Error /lammps.py 002!')
                 try:
-                    print 'hop!',sm_data['atoms'][0][3]
+                    show( 'hop!', sm_data['atoms'][0][3] )
                     sm_cont[ _smol_tag_] = {}
                     sm_cont[ _smol_tag_]['data']    = sm_data
                     sm_cont[ _smol_tag_]['charge']  = sm_charge
                     sm_cont[ _smol_tag_]['aty']     = sm_aty
                     
                 except UnboundLocalError as Err_here:
-                    print('Upa mala cosa!')
+                    show( 'Upa mala cosa!')
                     exit( Err_here[0])
                 ######################################################
             else:
-                #print('-> {} +1'.format( _smol_tag_))
+                #show(('-> {} +1'.format( _smol_tag_))
                 sm_data     = sm_cont[ _smol_tag_]['data']
                 sm_charge   = sm_cont[ _smol_tag_]['charge']
                 sm_aty      = sm_cont[ _smol_tag_]['aty']
@@ -371,22 +371,22 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
             ''' \\\\\\\\\\\-------------------------------------////////// '''
             # This should be done in gromacs.py?? , in a near future
             # changes acording to the molecule kind topology
-            #print sm_data
+            #show( sm_data
             dirtv_data = sm_data[ 'bonds']
-            #print('here')
-            #print dirtv_data
-            #print( ji_, len(sm_aty))
+            #show(('here')
+            #show( dirtv_data
+            #show(( ji_, len(sm_aty))
             for xx in range( len( dirtv_data)):
                 _row = dirtv_data[ xx]
                 
-                #print _row
+                #show( _row
                 i1 =    int( _row[0])
                 i2 =    int( _row[1])
                 aty1 = sm_aty[ i1 - 1 ] 
                 aty2 = sm_aty[ i2 - 1 ]
                 
                 sm_bonds.append([ aty1 + '-' + aty2, i + i1, i + i2])
-                #print sm_bonds[-1]
+                #show( sm_bonds[-1]
                 #if sm_bonds[-1][0]=='HC-HC':
                 #    exit('opls_116-opls_116')
             dirtv_data = sm_data[ 'angles']
@@ -430,8 +430,8 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                 sm_impropers.append([ imp_str, i + i1, i + i2, i + i3, i + i4])
         
         
-        #print ji_, sm_aty[ ji_]#, sm_aty
-        #print sm_aty[ ji_]
+        #show( ji_, sm_aty[ ji_]#, sm_aty
+        #show( sm_aty[ ji_]
         _text_ += atom_shape.format(i+1, _res_n_,
                                     dicts[0][ sm_aty[ ji_]],
                                     sm_charge[ ji_],
@@ -443,7 +443,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     ###########################################################################
     '''==========-----------   4th - Chemical topology   ---------=========='''
     #=========================================================================#
-    print('\n> Checking chemical topology-coefficients')
+    show( '\n> Checking chemical topology-coefficients')
     ''' Building auxiliar atom tag1_tag2 data dictionary -/- OPLS Case '''
     xf = 1
     aat_ddic = {}
@@ -452,7 +452,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
             aat_ddic[ atom_info[i][0]] = atom_info[i][1]
     
     ####################        ------BONDS------          ####################
-    print('>> bonds')
+    show( '>> bonds')
     if _asty_d_[ atomstyle] >= 2:
         known_bonds = _topodata_['bonds']
         base_bonds_n = len (known_bonds)
@@ -461,10 +461,10 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
         
         a_g_d = {} #aux_goofy_dic
         for i in range(base_bonds_n):
-            # print known_bonds[i][0], known_bonds[i][1]
+            # show( known_bonds[i][0], known_bonds[i][1]
             at1 = int(known_bonds[i][0])
             at2 = int(known_bonds[i][1])
-            #print at1, at2
+            #show( at1, at2
             to_print = '{} {}'.format(at1, at2)
             try:
                 at1_tag = known_atoms[at1-1][xf]
@@ -479,34 +479,34 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                     _bond_ty_ = dicts[1][ at1_tag + '-'+ at2_tag]
                     
                 except KeyError:
-                    print at1_tag + '-'+ at2_tag
-                    print('Bond type not found for: ' + to_print)
-                    print 'Exception {}-{}\n'.format( known_atoms[at1-1][4], 
-                                               known_atoms[at2-1][4])
+                    show( at1_tag + '-'+ at2_tag)
+                    show( 'Bond type not found for: ' + to_print)
+                    show( 'Exception {}-{}\n'.format( known_atoms[at1-1][4], 
+                                               known_atoms[at2-1][4]) )
                     _bond_ty_ = 0
             
             _text_ += bond_shape.format( i+1, _bond_ty_, at1, at2)
                         
         if _sidemol_f_ == 1:
-            #print dicts[1]
+            #show( dicts[1]
             # better way to do this is trough corrds ---------  <WFS>
             for i in range( n_bonds - base_bonds_n):
-                # print sm_bonds[i]
+                # show( sm_bonds[i]
                 try:
                     _bond_ty_ = dicts[1][ sm_bonds[i][0]]
                 except KeyError:
                     # OPLS ??
                     try:
                         at1_tag, at2_tag = sm_bonds[i][0].split('-')
-                        #print(at1_tag, at2_tag)
+                        #show((at1_tag, at2_tag)
                         at1_tag = aat_ddic[ at1_tag]
                         at2_tag = aat_ddic[ at2_tag]
                         _bond_ty_ = dicts[1][ at1_tag + '-'+ at2_tag]
                         
                     except KeyError:
                         
-                        print('Bond type not found for:' + sm_bonds[i][0])
-                        print('Or ' + at1_tag + '-'+ at2_tag)
+                        show( 'Bond type not found for:' + sm_bonds[i][0] )
+                        show( 'Or ' + at1_tag + '-'+ at2_tag )
                         exit( dicts[1] )
                         
                 _text_ += bond_shape.format(i+1 + base_bonds_n,
@@ -516,7 +516,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     
     
     ####################        ------ANGLES------      #######################
-    print('>> angles')
+    show( '>> angles')
     if _asty_d_[ atomstyle] >= 3:
         known_angles = _topodata_['angles']
         base_angles_n = len(known_angles)
@@ -540,9 +540,9 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                     at3_tag = aat_ddic[ at3_tag]
                     _angle_ty_ = dicts[2][at1_tag + '-'+ at2_tag+ '-'+ at3_tag]
                 except KeyError as Er_here:
-                    print 'Error ----- '+Er_here.args[0]
+                    show( 'Error ----- '+Er_here.args[0] )
                     
-            #print angle_t, _angle_ty_
+            #show( angle_t, _angle_ty_
             _text_ += angle_shape.format( i+1, _angle_ty_, at1, at2, at3)
             
         if _sidemol_f_ == 1:
@@ -568,7 +568,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     
     
     ####################        ------DIHEDRAL------       ####################
-    print('>> dihedrals')
+    show( '>> dihedrals')
     if _asty_d_[ atomstyle] >= 4:
         known_dihedrals = _topodata_['dihedrals']
         base_dihedrals_n = len(known_dihedrals)
@@ -615,10 +615,10 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                                                          'X-X']
                                 except KeyError as Er_here:
                                     err_str = Er_here.args[0]
-            if _dihe_ty_ == '0' and err_str <> '':
-                print 'Atoms {}-{}-{}-{} : '.format( at1, at2, at3, at4),
-                print (at1_tag +'-'+ at2_tag+'-'+ at3_tag+'-'+ at4_tag)
-                print ( 'Error dihedral ----- '+ err_str +' not found!')
+            if _dihe_ty_ == '0' and err_str != '':
+                show( 'Atoms {}-{}-{}-{} : '.format( at1, at2, at3, at4),
+                     ( at1_tag + '-' + at2_tag + '-' + at3_tag + '-'+ at4_tag))
+                show( 'Error dihedral ----- ' + err_str +' not found!')
             
             _text_+= dihedral_shape.format( i+1, _dihe_ty_, at1, at2, at3, at4)
             
@@ -650,8 +650,8 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                             except KeyError as Er_here:
                                 err_str += ' // ' + Er_here.args[0]
                         
-                if _dihe_ty_ == '0' and err_str <> '':
-                    print( 'Atoms {}-{}-{}-{} '.format( *aux_here) + ' '
+                if _dihe_ty_ == '0' and err_str != '':
+                    show( 'Atoms {}-{}-{}-{} '.format( *aux_here) + ' '
                            + err_str + '  //  ' + 
                            wrg_1( 'Dihedral > '+ sm_dihedrals[i][0] +
                                  ' < not found!')
@@ -666,7 +666,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                                                )
     
     ###################        ------IMPROPERS------       ####################
-    print('>> impropers')
+    show( '>> impropers')
     # TODO SECTION
     if _asty_d_[ atomstyle] >= 4:
         known_impropers = _topodata_['impropers']
@@ -711,10 +711,10 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                             if _opt_ == options[-1]:
                                 err_str = Er_here.args[0]
 
-            if _impr_ty_ == '0' and err_str <> '':
-                print 'Atoms {}-{}-{}-{} : '.format( at1, at2, at3, at4),
-                print (at1_tag +'-'+ at2_tag+'-'+ at3_tag+'-'+ at4_tag)
-                print ( 'Error improper dihedral ---- '+ err_str +' not found!')
+            if _impr_ty_ == '0' and err_str != '':
+                show( 'Atoms {}-{}-{}-{} : '.format( at1, at2, at3, at4),
+                     (at1_tag +'-'+ at2_tag+'-'+ at3_tag+'-'+ at4_tag) )
+                show( ( 'Error improper dihedral ---- '+ err_str +' not found!')
                 
             
             _text_+= improper_shape.format( i+1, _impr_ty_, at1, at2, at3, at4)
@@ -742,10 +742,10 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                         except KeyError as Er_here:
                             err_str += Er_here.args[0]
                 
-                if _impr_ty_ == '0' and err_str <> '':
-                    print( wrg_1('Improper dihedral > ' + err_str
+                if _impr_ty_ == '0' and err_str != '':
+                    show( wrg_1('Improper dihedral > ' + err_str
                                              + ' < not found!') 
-                             )
+                         )
                 
                 _text_ += improper_shape.format( i+1 + base_impropers_n,
                                                  _impr_ty_,
@@ -763,20 +763,20 @@ def side_mol_topology_builder( data_in):
     # This should be done in gromacs.py?? , in a near future
     # changes acording to the molecule kind topology
     tag_str = [ 'bonds', 'angles', 'dihedrals', 'impropers']
-    print conv_dict
+    show( conv_dict, v = 2 )
     for _st_ in tag_str:# range( len( tag_str)):
-        #print _st_, i
+        #show( _st_, i
         
         for xx in range( len( sm_data[ _st_])):
             index_c = sm_data[ _st_][ xx]
-            #print index_c
+            #show( index_c
             i1 = int(index_c[0])
             i2 = int(index_c[1])
-            print _atype_[ i + i1-1],  _atype_[ i + i2-1]
+            show( _atype_[ i + i1-1],  _atype_[ i + i2-1] )
             
             aty1 = conv_dict[ _atype_[ i + i1-1]]
             aty2 = conv_dict[ _atype_[ i + i2-1]]
-            print aty1, aty2
+            show( aty1, aty2 )
             
             if _st_ == 'bonds':
                 sm_bonds.append([ aty1+'-'+aty2, i1, i2])
@@ -809,7 +809,7 @@ def side_mol_topology_builder( data_in):
                 sm_impropers.append( [ impr_str, i1, i2, i3, i4])
                 
             else:
-                print aty, _mol_[i], _residue_buffer_, len( _atype_)
+                show( aty, _mol_[i], _residue_buffer_, len( _atype_) )
                 exit('')
         
     
@@ -845,7 +845,7 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
         for x in range( n_atomtypes):
             _A_ = float( atom_info[x][ -1 + minr])
             _B_ = float( atom_info[x][ -2 + minr])
-            if _A_ <> 0 and _B_ == 0 or _A_ == 0 and _B_ <> 0:
+            if _A_ != 0 and _B_ == 0 or _A_ == 0 and _B_ != 0:
                 regular_se = False
                 pairtypename = 'hybrid/overlay'
                 wr_str = ('Using pair style lennard/mdf!!\nThis style can '
@@ -855,7 +855,7 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
                 break
     
     for x in range( n_atomtypes):
-        #print atom_info[x]
+        #show( atom_info[x]
         atom_type_d[atom_info[x][0]] = x+1
         
         _A_ = float( atom_info[x][ -1 + minr])
@@ -918,7 +918,7 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
         bondtypename.append( BondDataBase[ int( bo)- 1])
     
     txt_p_b = ''
-    if bondtypename <> []:
+    if bondtypename != []:
         txt_p_b ='\n Bond Coeffs #{}\n\n'.format( bondtypename[0]) # bond_style hybrid
     
     bondtypes_d = {}
@@ -935,7 +935,7 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
                           float( bty[i][3])*10 ]
             
         elif _bi_ == 2: # bond_style  G96 in gromacs
-            print bty[i]
+            show( bty[i] )
             info_cont = [ i+1, _bdb_[ _bi_ - 1],
                           float( bty[i][4])/ 100/ 4.186/4,
                           float( bty[i][3])*10 ]
@@ -975,7 +975,7 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
         angletypename.append( AngleDataBase[ int( an)- 1])
     
     txt_p_a = ''
-    if angletypename <> []:
+    if angletypename != []:
         txt_p_a ='\n Angle Coeffs #{}\n\n'.format( angletypename[0]) 
     
     angletypes_d = {}
@@ -1036,7 +1036,7 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
             type9_flag = True
     
     txt_p_d = ''
-    if dihedtypename <> []:
+    if dihedtypename != []:
         txt_p_d ='\n Dihedral Coeffs #{}\n\n'.format( dihedtypename[0])
     
     rb_warning = (' Ryckaert-Bellemans angle style conversion in Fourier form' +
@@ -1048,11 +1048,11 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
         pop_wrg_1(' Type 9 Proper dihedral (multiple) angle style conversion'
                   + ' in Fourier form can only be used if LAMMPS was built'
                   + ' with the USER-MISC package!!')
-        print( '='*20 + '  MuXInG  ' + '='*20 )
+        show( '='*20 + '  MuXInG  ' + '='*20 )
         aux_type9 = []
         aux_type9_types = []
         new_dty = []
-        print('Dihedrals before muxing: {}'.format( n_dihedraltypes))
+        show( 'Dihedrals before muxing: {}'.format( n_dihedraltypes))
         for i in range( n_dihedraltypes):
             if int( dty[i][4]) == 9:
                 aux_tag = '{}-{}-{}-{}'.format( *dty[i][:4])
@@ -1069,7 +1069,7 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
         dty = new_dty + aux_type9
         n_dihedraltypes = len( dty) #########Check cases when this is not valid?
         
-        print('Dihedrals after muxing: {}'.format( n_dihedraltypes))
+        show( 'Dihedrals after muxing: {}'.format( n_dihedraltypes))
     ###== end Type 9
     
     dihedraltypes_d = {} # types dictionary
@@ -1157,7 +1157,7 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
         imprtypename.append( ImproperDataBase[ int( im)- 1])
     
     txt_p_i = ''
-    if imprtypename <> []:
+    if imprtypename != []:
         txt_p_i ='\n Improper Coeffs #{}\n\n'.format( imprtypename[0])
             
     impropertypes_d = {} # types dictionary
@@ -1224,7 +1224,7 @@ def write_lammps_potentials( _topodata_, atomstyle = 'full'):
         dicts = [atom_type_d]
         txt_p_ = txt_p_p
     else:
-        print ('\nWeird thing, it is supposed impossible to reach this place\n')
+        show( '\nWeird thing, it is supposed impossible to reach this place\n')
         _flag_ = False
         
         
@@ -1252,7 +1252,7 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     npt_pstart, npt_pend = npt_pss.split(':')
     npt_tstart, npt_tend = npt_tss.split(':')
     
-    #print (data_file, timestep, nve_steps, nvt_steps, nvt_tstart, nvt_tend,
+    #show( (data_file, timestep, nve_steps, nvt_steps, nvt_tstart, nvt_tend,
     #nvt_tdamp, npt_steps, npt_pstart, npt_pend, npt_tdamp, npt_tdamp,
     #npt_ystart, npt_yend)
     
@@ -1271,9 +1271,9 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     group_lines = ''
     torestrain = []
     ens_af = []
-    if _simconfig_[2] <> []:
+    if _simconfig_[2] != []:
         g_names, g_aids, k_xyz_c, runs_c, ch_init = _simconfig_[2][0][:]
-        if _simconfig_[2][1] <> None:
+        if _simconfig_[2][1] != None:
             ####### ------------------------------------ Super interesante!!
             ##              este es uno de esos casos donde no es posible 
             ##              utilizar += a pesar de desligar con [:] ... 
@@ -1284,10 +1284,10 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
             k_xyz_c = k_xyz_c + aux3
             runs_c  = runs_c  + aux4
             ch_init = ch_init + aux5
-        print'\n'
+        show( '\n')
         for re in range(len(g_names)):
             if ch_init[re]==1:
-                print 'Restraining group '+g_names[re]+' in '+runs_c[re]
+                show( 'Restraining group ' + g_names[re] + ' in ' + runs_c[re])
                 groupinfo = [g_names[re], g_aids[re]]
                 group_lines += 'group {} id {}\n'.format( *groupinfo)
                 
@@ -1298,7 +1298,7 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
                     for e in ens:
                         if e not in ens_af:
                             ens_af.append(e)
-        if group_lines <> '':
+        if group_lines != '':
             group_lines +='\n'
     
     mix_value = {'1':'geometric', '2':'arithmetic',
@@ -1313,13 +1313,13 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     #===================================================
     ####------------      TOPO DATA         --------####
     
-    print '\n'+data_file + '\n'
-    if _topodata_ <> None:
+    show( '\n'+data_file + '\n')
+    if _topodata_ != None:
         atomstyle_o, _solvated_, _autoload_, root_folder = _topodata_['config']
         _, comb_rule, _, _, _ = _topodata_['defaults']
         
     else:
-        print '**** Without _topodata_ !!'
+        show( '**** Without _topodata_ !!')
         root_folder = './'
         atomstyle_o = ''
         comb_rule = ''
@@ -1328,17 +1328,17 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     _aux_her = get_style_info( data_file)
     
     atomstyle, pairstyle, bondstyle, anglstyle, dihestyle, imprstyle = _aux_her
-    if atomstyle_o <> '' and atomstyle_o <> atomstyle[0]:
+    if atomstyle_o != '' and atomstyle_o != atomstyle[0]:
         pop_wrg_1( 'Incongruence between atom styles!')
-        print atomstyle_o, atomstyle[0]
+        show( atomstyle_o, atomstyle[0])
     
     ## ---------------- MIXING RULE
     if f_comb_rule in mix_value.values():
-        mix_value_s=' mix '+f_comb_rule
-    elif f_comb_rule=='from_gromacs' and _topodata_<>None:
-        mix_value_s=' mix '+mix_value[comb_rule]
+        mix_value_s = ' mix ' + f_comb_rule
+    elif f_comb_rule == 'from_gromacs' and _topodata_ != None:
+        mix_value_s = ' mix ' + mix_value[comb_rule]
     else:
-        print 'Using default mixing rule'
+        show( 'Using default mixing rule')
         mix_value_s = ''
         
 
@@ -1348,7 +1348,7 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     _dtxt_= '# Generated with Gro2lam\n\n'+'units real\nboundary p p p\n'
     # as I understand lammps default is 3
     #_dtxt_+= '%s %d\n'.format('dimension',dimension)
-    _dtxt_+= 'atom_style '+atomstyle[0]+'\n'
+    _dtxt_ += 'atom_style ' + atomstyle[0] + '\n'
     if pairstyle[0] == '':
         if atomstyle[0] not in ['full', 'charge]']: # no charges
             if 'coul' in pairwiseint:
@@ -1375,13 +1375,13 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     # options like full and non bonded interactions could be asked by the user
     _dsc_txt=['pair_style {} {}'.format( pairwiseint, lj_rcutoff)]
     _dsc_txt.append(' {}\n'.format( c_rcutoff))
-    if bondstyle[0] <> '':
+    if bondstyle[0] != '':
         _dsc_txt.append( 'bond_style '+' '.join( bondstyle)+'\n')
-    if anglstyle[0] <> '':
+    if anglstyle[0] != '':
         _dsc_txt.append( 'angle_style '+' '.join( anglstyle)+'\n')
-    if dihestyle[0] <> '':
+    if dihestyle[0] != '':
         _dsc_txt.append( 'dihedral_style '+' '.join( dihestyle)+'\n')
-    if imprstyle[0] <> '':
+    if imprstyle[0] != '':
         _dsc_txt.append( 'improper_style '+' '.join( imprstyle)+'\n')
     _dtxt_+= ''.join(_dsc_txt[:_asty_d_[atomstyle[0]]])+'\n'
     
@@ -1396,7 +1396,7 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     
     _dtxt_+= '\nneighbor {} bin\n'.format( neighbordistance)
     
-    if lrsolver <> '' and atomstyle[0] in ['full','charge']:
+    if lrsolver != '' and atomstyle[0] in ['full','charge']:
         if 'long' in pairwiseint:
             _dtxt_+= 'kspace_style {} {}\n'.format( lrsolver, lrerror)
         
@@ -1409,11 +1409,11 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
             aux_txt = ' {} {} {} coul {}'.format( *aux_here1)
             sp_bon_3 = [ aux_txt] + aux_here2[1:]
                             
-    elif lrsolver <> '':
+    elif lrsolver != '':
         sp_bon_3 = lj12_13_14.split(':')
         
     
-    if lrsolver <> '':
+    if lrsolver != '':
         _dtxt_+= 'special_bonds lj{} {} {}\n'.format( *sp_bon_3)
         
     _dtxt_+= 'pair_modify shift no tail yes'+mix_value_s+'\n'
@@ -1442,16 +1442,16 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     ####---------------     SHAKE       ------------####
     shake_bn, shake_an
     shake_txt = 'fix shake_name1 all shake {} 20 0'.format( shake_tol)
-    print shake_bn, shake_an
-    if shake_bn <> '0' or shake_an <> '0':
+    show( shake_bn, shake_an)
+    if shake_bn != '0' or shake_an != '0':
         
-        if shake_bn <> '0':
+        if shake_bn != '0':
             shake_txt += ' b'
             shake_bn = shake_bn.split('-')
             for bn in range(len(shake_bn)):
                 shake_txt += ' '+shake_bn[bn]
 
-        if shake_an <> '0':
+        if shake_an != '0':
             shake_txt += ' a'
             shake_an = shake_an.split('-')
             for an in range(len(shake_an)):
@@ -1469,7 +1469,7 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     for en in range(len(ensembles)):
         
         
-        if ens_af<>[] and en in ens_af: #       RESTRAIN 
+        if ens_af != [] and en in ens_af: #       RESTRAIN 
             
             for re in range(len(torestrain)):
                 if en in torestrain[re][2]:
@@ -1488,13 +1488,13 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
                         tounfix= [ tounfix[0]+ [unr], tounfix[1]+ [name_2uf]]
             _dtxt_ += '\n'
             
-        if ensembles[en]=='NVE' and nve_steps <> '' and nve_steps.isdigit():
+        if ensembles[en]=='NVE' and nve_steps != '' and nve_steps.isdigit():
             steps = int(nve_steps)
             nve_frm = 'fix nve_name1 all nve\nrun {}\nunfix nve_name1\n\n'
             _dtxt_ += nve_frm.format(steps)
             curr_time += steps*timestep
         
-        elif ensembles[en]=='NPT' and npt_steps <> '' and npt_steps.isdigit():
+        elif ensembles[en]=='NPT' and npt_steps != '' and npt_steps.isdigit():
             steps = int(npt_steps)
             npt_frm = 'fix npt_name1 all npt temp {} {} {} {} {} {} {}\n'
             _dtxt_ += npt_frm.format( npt_tstart, npt_tend, npt_tdamp,
@@ -1502,7 +1502,7 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
             _dtxt_+= 'run {}\nunfix npt_name1\n\n'.format( steps)
             curr_time += steps*timestep
         
-        elif ensembles[en]=='NVT' and nvt_steps <> '' and nvt_steps.isdigit():
+        elif ensembles[en]=='NVT' and nvt_steps != '' and nvt_steps.isdigit():
             steps = int(nvt_steps)
             nvt_frm = 'fix nvt_name1 all nvt temp {} {} {}\n'
             _dtxt_ += nvt_frm.format( nvt_tstart, nvt_tend, nvt_tdamp )
@@ -1524,13 +1524,13 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
             _dtxt_+= emin_frm.format( e_min_tol, f_min_tol )
             
             
-        if tounfix <> [ [], []] and en in tounfix[0]: #       UNFIX RESTRAIN
+        if tounfix != [ [], []] and en in tounfix[0]: #       UNFIX RESTRAIN
             for unf in range( len( tounfix[0])):
                 if tounfix[0][unf] == en:
                     _dtxt_ += 'unfix ' + tounfix[1][unf] + '\n'
     
-    print ('Writing Lammps input script...')
-    if root_folder <> './':
+    show( 'Writing Lammps input script...')
+    if root_folder != './':
         _folder_ = '/'.join( data_file.split('/')[:-1]+[''])
     else:
         _folder_ = root_folder
@@ -1566,16 +1566,16 @@ def get_style_info( lammps_datafile):
                 elif len (line_c) > 3 and  line_c[2] == 'xlo':
                     break
             sty_qty[ 0] = sty_qty[ 5]
-            print 'Quantities : ',
+            show( 'Quantities : ', end = ' ')
             for st in range( len( styles)):
-                print styles[st] + ' : ' + str( sty_qty[st]),
-            print '\n'
+                show( styles[st] + ' : ' + str( sty_qty[st]), end = ' ')
+            show( '\n')
             read_flag = False
             reading_flag = False
             index = 0
             for k_line in indata:
                 line_c =  k_line.split()
-                #print line_c
+                #show( line_c
                 # in cases with hybrid type, it should read from the second 
                 # position in the data line of bond, angle, dihedral and impr
                 if read_flag:
@@ -1587,14 +1587,15 @@ def get_style_info( lammps_datafile):
                         while not sty_qty[ index]:
                             sty_container[ index].append( '')
                             index += 1
-                        print '... done!'
+                        show( '... done!')
                     elif len( line_c) < 1 or line_c[0][0] == '#':
                         pass
                     else:
                         reading_flag = True
                         new_sty = line_c[1]
                         if new_sty not in sty_container[ index]:
-                            print styles[ index] + 'Style : ' , new_sty,
+                            show( styles[ index] + 'Style : ' , new_sty,
+                                 end = ' ')
                             sty_container[ index].append( new_sty)
                     
                 # cutting out the crap, normal empty and commented lines
@@ -1604,7 +1605,7 @@ def get_style_info( lammps_datafile):
                 elif  ( styles[ index] == line_c[0] and 
                       ( index == 5 or 'Coeffs' == line_c[1]) ):
                     
-                    print index, styles[ index], k_line.rstrip()
+                    show( index, styles[ index], k_line.rstrip() )
                     aux_cont = k_line.split('#')
                     
                     if len( aux_cont) > 1:
@@ -1624,12 +1625,12 @@ def get_style_info( lammps_datafile):
                     
     except IOError:
         pop_wrg_1( 'Data file not found!')
-        print ( 'Maybe try performing a conversion first! ;)')
+        show( 'Maybe try performing a conversion first! ;)')
         _flag_ = False
     
-    print('\n')
+    show( '\n')
     sty_container = [sty_container[5],] + sty_container[:5]
-    print sty_container
+    show( sty_container, v = 2)
     return sty_container
 
 if __name__ == '__main__':

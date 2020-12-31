@@ -12,7 +12,7 @@ from tk_lib import bottom_hline_deco, format_dec, Drop_Down_List
 from tk_lib import createmenubar, create_entry, get_entriesvalue
 from custom_row import File_Entry
 
-from lib.misc.warn import print_dec_g, pop_wrg_1, pop_err_1
+from lib.misc.display import print_dec_g, pop_wrg_1, pop_err_1, show
 from lib.misc.file import check_file, check_in_file
 
 from lib.handling.gromacs import extract_gromacs_data, get_ffldfiles
@@ -58,7 +58,7 @@ class Conversion(Frame):
         _atomstyle_ = 'full'
         
         data_cont = self.master._convert_['setup']
-        if data_cont <> []:
+        if data_cont != []:
             _autoload_ = data_cont[0]
             eg_files = data_cont[1:-1]
             _atomstyle_ = data_cont[-1]
@@ -124,7 +124,7 @@ class Conversion(Frame):
         ######     END CONSTRUCTION SITE  -> PACK OUTSIDE #########
         
         if self.master.test:
-            print 'Seeing main gro2lam converter GUI'
+            show( 'Seeing main gro2lam converter GUI')
             self.after(2000, self.test_hook  )
 
     def atomstyle( self):
@@ -185,7 +185,7 @@ class Conversion(Frame):
         #_autoload_ = self.objt_c[0].get()
         main_top_file = self.objt_c[2].get()
 
-        if self.autoload_buffer <> main_top_file:
+        if self.autoload_buffer != main_top_file:
         #    self.autoload_buffer = _autoload_
             self.autoload_buffer = main_top_file
             aux_cont, nonerr_flag = get_ffldfiles( main_top_file )
@@ -218,9 +218,9 @@ class Conversion(Frame):
         in order to avoid the the waving experienced with a first "''"
         in the entry an if is inside 
         '''
-        #print args
-        if self.objt_c[2].get() <> '':
-            #print ( self.objt_c[2].get())
+        #show( args
+        if self.objt_c[2].get() != '':
+            #show( ( self.objt_c[2].get())
             
             self.autol_b.configure( state = 'normal')
             for i in [2, 3, 4]:
@@ -251,7 +251,7 @@ class Conversion(Frame):
             
             data_cont = self.master._convert_['setup']
             root_folder = '/'.join(data_cont[1].split('/')[:-1]+[''])
-            print( 'Root folder: {}'.format( root_folder) )
+            show( 'Root folder: {}'.format( root_folder) )
             
             sim_data, _flags_ = extract_gromacs_data( data_cont[1:-1],
                                                      _autoload_)

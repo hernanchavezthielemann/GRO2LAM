@@ -8,6 +8,7 @@ from tk_lib import create_entry, bottom_hline_deco, get_entriesvalue
 from tkFont import Font
 from webbrowser import open_new
 from lib.misc.version import __version__
+from lib.misc.display import show
 
 class Message_box(Frame):
     ''' It is a frame because at the end it is a message box launchpad'''
@@ -71,7 +72,7 @@ class FilePopUp(Frame):
         return self._options_
     @filetypes.setter
     def filetypes(self, **value):
-        print '-----------', value, type (value)
+        show( '-----------', value, type (value) )
         value += (("All","*"),)
         self._options_ = {'filetypes': ("All","*")}
         
@@ -97,7 +98,7 @@ class SaveAsPopUp():
     def __init__(self, master=None):
         self.master  = master
         self._options = {}
-        print 'Soon ...  but save what?'
+        show( 'Soon ...  but save what?')
         
     @property
     def options(self):
@@ -161,7 +162,7 @@ class PromptPopUp_old():
         
         x_pop = x_main + w_main - 30
         y_pop = y_main + h_main - h_pop
-        #print w_pop, h_pop, x_pop, y_pop
+        #show( w_pop, h_pop, x_pop, y_pop
         self._vertex_= [w_pop, h_pop, x_pop, y_pop]
 
     def create_content(self):
@@ -256,7 +257,7 @@ class PromptPopUp(Toplevel):
         self.set_self_vertex()
         
         self.wm_title(' '*5+title)
-        #print self._vertex_
+        #show( self._vertex_
         self.geometry('{:d}x{:d}+{:d}+{:d}'.format(*self._vertex_))
         
         self.ent_c = []
@@ -271,7 +272,7 @@ class PromptPopUp(Toplevel):
     def set_self_vertex(self ):
         
         ws, hs, w_main, h_main, x_main, y_main = self.master.MAINVERTEX
-        #print ws, hs, w_main, h_main, x_main, y_main
+        #show( ws, hs, w_main, h_main, x_main, y_main
         # calculate the greatness
         
         
@@ -282,7 +283,7 @@ class PromptPopUp(Toplevel):
         
         x_pop = x_main + w_main - 30
         y_pop = y_main + h_main - self._height_
-        #print w_pop, h_pop, x_pop, y_pop
+        #show( w_pop, h_pop, x_pop, y_pop
         self._vertex_= [self._width_, self._height_, x_pop, y_pop]
 
     def create_content(self):
@@ -295,7 +296,7 @@ class PromptPopUp(Toplevel):
         # lets create space to do some stuff ...
         self.entr_maxlen = int(len(max(self._entries_, key=len))*2.5/3.0)
         row2fill = Frame(self)
-        #print self._entries_,'\n', self._defvals_,
+        #show( self._entries_,'\n', self._defvals_,
         #'\n',len(self._entries_),'\n', len(self._defvals_)
         
         aline=0
@@ -303,7 +304,7 @@ class PromptPopUp(Toplevel):
             if self._entries_[e] == '---':
                 aline+=1
                 bottom_hline_deco(row2fill)
-                #print self._entries_[e]
+                #show( self._entries_[e]
             else:
                 self.ent_c.append(create_entry(row2fill,
                                                self._entries_[e],
@@ -393,7 +394,7 @@ class PromptPopUp_wck(Toplevel):
         self.set_self_vertex()
         
         self.wm_title(' '*5+title)
-        #print self._vertex_
+        #show( self._vertex_
         self.geometry('{:d}x{:d}+{:d}+{:d}'.format(*self._vertex_))
         
         self.ent_c = []
@@ -417,7 +418,7 @@ class PromptPopUp_wck(Toplevel):
         
         x_pop = x_main + w_main - 60
         y_pop = y_main + h_main - self._height_
-        #print w_pop, h_pop, x_pop, y_pop
+        #show( w_pop, h_pop, x_pop, y_pop
         self._vertex_= [self._width_, self._height_, x_pop, y_pop]
 
     def create_content(self):
@@ -450,7 +451,7 @@ class PromptPopUp_wck(Toplevel):
                 self.add_new_line()
                 self.ch_init+=[0]
             else:
-                #print self.extra_checkb
+                #show( self.extra_checkb
                 gr, ids, k_xyz, rns, cks =self.extra_checkb
                 
                 for _e_ in range( len( gr)):
@@ -574,7 +575,7 @@ class PromptPopUp_wck(Toplevel):
         # First detect wich one change, comparing the fresh value
         for v in range(ckbc_len):
             _ckvar_g_.append(self.ckb_c[v][0].get())
-            if self.ch_init[v]<>_ckvar_g_[v]:
+            if self.ch_init[v] != _ckvar_g_[v]:
                 auxi=v
         
         if auxi>=loc and auxi == ckbc_len-1:
@@ -607,7 +608,7 @@ class PromptPopUp_wck(Toplevel):
         for g_e in range(len(self.ent_c))[:lo]:
             gr, ids, k_xyz, rns = get_entriesvalue( self.ent_c[g_e])
             
-            #print gr, ids, k_xyz, self.ch_init[g_e]
+            #show( gr, ids, k_xyz, self.ch_init[g_e]
             
             g_names.append(gr)
             g_aids.append(ids)
@@ -677,7 +678,7 @@ class AboutPopUp():
         
         x_pop = x_main + w_main + 30
         y_pop = y_main + h_main - h_pop - 140
-        #print w_pop, h_pop, x_pop, y_pop
+        #show( w_pop, h_pop, x_pop, y_pop
         self._vertex_= [w_pop, h_pop, x_pop, y_pop]
 
     def create_content(self):
@@ -766,7 +767,7 @@ class AboutPopUp():
         
     def openlicence(self):
         
-        print 'opening licence file'
+        show( 'opening licence file')
 
     def exit_pop(self):
         self.pop.grab_release() # to return to normal

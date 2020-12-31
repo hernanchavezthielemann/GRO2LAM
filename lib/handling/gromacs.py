@@ -3,7 +3,7 @@
 __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
 
-from lib.misc.warn import wrg_1, wrg_3, pop_err_1, pop_wrg_1
+from lib.misc.display import wrg_1, wrg_3, pop_err_1, pop_wrg_1, show
 from lib.misc.file import check_file, debugger_file, fileseeker
 from lib.misc.geometry import rotate, arcos, raiz
 from lib.misc.data import isnot_num
@@ -24,10 +24,10 @@ def extract_gromacs_data( _data_files_, _autoload_):
     data_container  =   {}
     data_container['define'] = {}
     #_solvated_f_, _autoload_= _ck_buttons_
-    print 'Autoload: {}\n'.format( _autoload_)
+    show( 'Autoload: {}\n'.format( _autoload_))
     
     if not _autoload_:
-        print filename_ff # or not
+        show( filename_ff) # or not
         
     _sidemol_f_ = False
     
@@ -69,7 +69,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
                     
         cero = 1e-12
         if Ar[1][0] < cero or Ar[2][0] < cero or Ar[2][1] < cero:
-            print('Your triclinic cell will be rotated to make it!')
+            show( 'Your triclinic cell will be rotated to make it!')
             # y rotation
             a_tor_y = -arcos( (Ar[0][0])/(raiz(Ar[0][0]*Ar[0][0]+Ar[2][0]*Ar[2][0])) )
             Ar = rotate( Ar, a_tor_y, 'y')
@@ -129,7 +129,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
     
     if pure_side_mol_flag:
         startstrings = startstrings[-3:]
-        print wrg_3( 'Using pure side molecule scheme')
+        show( wrg_3( 'Using pure side molecule scheme'))
         #n_atoms     =   0
         #n_bonds     =   0
         #n_angles    =   0
@@ -149,8 +149,8 @@ def extract_gromacs_data( _data_files_, _autoload_):
         if not ok_flag:
             
             if startstrings[ti] not in exclusions_:
-                print wrg_3( 'Not ok flag in <extract_gromacs_data> top file' +
-                         'section, in ' + s_str_)
+                show( wrg_3( 'Not ok flag in <extract_gromacs_data> top file' +
+                         'section, in ' + s_str_) )
                 return {}, [ ok_flag, _sidemol_f_]
             else:
                 ok_flag = True
@@ -244,17 +244,17 @@ def extract_gromacs_data( _data_files_, _autoload_):
     gromosff_flag = False
     data_container[ 'define'][ 'improper'] = {}
     aux_here = {}
-    print( section.split('.')[1])
+    show( section.split('.')[1])
     if filename_nb != filename_ff and filename_nb != filename_bon:
-        print(" Is it GROMOS there ?? ")
+        show( " Is it GROMOS there ?? ")
         aux_here = get_gromos_define( filename_bon)
         
     else:
-        print('no gromos check')
+        show( 'no gromos check')
         
     for key_ in aux_here.keys():
         if aux_here[ key_] != {}:
-            print ( 'GROMOS ' + key_ + ' kind detected!')
+            show( 'GROMOS ' + key_ + ' kind detected!')
             data_container[ 'define'][ key_].update( aux_here[ key_])
             gromosff_flag = True
             
@@ -262,14 +262,14 @@ def extract_gromacs_data( _data_files_, _autoload_):
             if 'dihedraltypes' == key_+'types' and dihe_g_data != []:
                 rewrite_flag = False
                 for gd_ in range( len( dihe_g_data)):
-                    #print dihe_g_data[gd_][2]
+                    #show( dihe_g_data[gd_][2]
                     if dihe_g_data[gd_][2].isdigit():
                         if not rewrite_flag:
-                            print('Dihedral with 2 atoms re-formating to 4: ')
+                            show( 'Dihedral with 2 atoms re-formating to 4: ')
                         rewrite_flag = True
                         dihe_g_data[gd_] = ( [ 'X',] + dihe_g_data[ gd_][:2]
                                             + [ 'X',] + dihe_g_data[ gd_][2:])
-                        print (dihe_g_data[ gd_]) 
+                        show( dihe_g_data[ gd_]) 
                 if rewrite_flag:
                     data_container[ 'dihedraltypes'] = dihe_g_data
                 
@@ -285,12 +285,12 @@ def extract_gromacs_data( _data_files_, _autoload_):
                 if len( data_aux[i][-1].split('.')) < 2:
                     if  not data_aux[i][-1].isdigit():
                         aux = data_aux[i][:-1] + cddd[ data_aux[i][-1]]
-                        #print aux
+                        #show( aux
                         data_container[ s_str_][i] = aux
                     
     
     
-        #print data_container['define']['bond']['gb_33']
+        #show( data_container['define']['bond']['gb_33']
     # Search for impropers in TOP and BON, using crossreference if needed
     data_container = split_define_dihe_impr( data_container)
     
@@ -319,7 +319,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
             improp_x_mol = len( sidemol['data'][sb]['impropers'])
             
             sm_quantity = sidemol['num'][sb]
-            #print(sm_quantity, bonds_x_mol,sm_quantity * bonds_x_mol)
+            #show((sm_quantity, bonds_x_mol,sm_quantity * bonds_x_mol)
             side_bonds_n    += sm_quantity * bonds_x_mol
             side_angles_n   += sm_quantity * angles_x_mol
             side_dihed_n    += sm_quantity * dihedr_x_mol
@@ -329,8 +329,8 @@ def extract_gromacs_data( _data_files_, _autoload_):
         n_anglesnew =   n_angles + side_angles_n
         n_dihednew  =   n_dihedrals + side_dihed_n
         n_impropnew =   n_impropers + side_improp_n
-        #print n_bonds, side_bonds_n, n_bonds + side_bonds_n
-        #print n_angles, side_angles_n, n_angles + side_angles_n
+        #show( n_bonds, side_bonds_n, n_bonds + side_bonds_n
+        #show( n_angles, side_angles_n, n_angles + side_angles_n
         
         ###   A_03
         # tester in case is an asigment for define ore something like that
@@ -344,12 +344,12 @@ def extract_gromacs_data( _data_files_, _autoload_):
                     datacont = sidemol['data'][sb][cont_k+'s']# in its cont-key
                     for dc in range( len( datacont)):# lets look their content
                         if isnot_num( datacont[dc][-1]):#
-                            #print( '{} {} {}'.format( cont_k+'s', dc,
+                            #show(( '{} {} {}'.format( cont_k+'s', dc,
                             #                         datacont[dc][-1])) 
                             aux = datacont[dc][:-1] + cddd[ datacont[dc][-1]]
                             sidemol['data'][sb][cont_k+'s'][dc] = aux
                         #else:
-                            #print datacont[dc]
+                            #show( datacont[dc]
         
         #######################################################################
         ###   A_04
@@ -369,9 +369,9 @@ def extract_gromacs_data( _data_files_, _autoload_):
                 _charge_[a_opls_tag] = a_charge
                 _conv_dict_[ a_elem_tag] = a_opls_tag
                 
-        print '='*45+'\n'+'='*5+'  Charges found: '
-        print _charge_
-        print _conv_dict_
+        show( '='*45+'\n'+'='*5+'  Charges found: ')
+        show( _charge_)
+        show( _conv_dict_)
         
         data_container['S_charge'] = _charge_
         data_container['S_translation'] = _conv_dict_
@@ -437,12 +437,12 @@ def extract_gromacs_data( _data_files_, _autoload_):
                     smol_extra_impropertypes.append( aux_here + _smim_[4:])
                 
             if len( _smd_.keys()) > 5:
-                print ('Uuupa!! This thing is not implemented yet' +
-                       ' as side mol part')
+                show( ('Uuupa!! This thing is not implemented yet' +
+                       ' as side mol part'))
                 a_key = [ 'atoms', 'bonds', 'angles', 'dihedrals', 'impropers']
                 for ky in _smd_.keys():
                     if ky not in a_key:
-                        print ('-- > this key : ' + ky)
+                        show( '-- > this key : ' + ky)
                 
                 
             # ---------   !!!!    Update the info    !!!!
@@ -454,7 +454,7 @@ def extract_gromacs_data( _data_files_, _autoload_):
                                         data_container['dihedraltypes'])
         data_container['impropertypes'] = ( smol_extra_impropertypes + 
                                         data_container['impropertypes'])
-        #print(data_container['bondtypes'])
+        #show((data_container['bondtypes'])
     else:
         n_bondsnew  = n_bonds
         n_anglesnew = n_angles
@@ -473,8 +473,8 @@ def extract_gromacs_data( _data_files_, _autoload_):
             poss = 4
         for i in range( len ( data_container[ nice_list[it] ])):
             _aux_set_here.add( data_container[ nice_list[it] ][i][ poss ])
-        #print( nice_list[it][:4])
-        #print(_aux_set_here)
+        #show(( nice_list[it][:4])
+        #show((_aux_set_here)
         data_container[ nice_list[it][:4]+'_kinds'] = _aux_set_here
     
     
@@ -487,12 +487,12 @@ def extract_gromacs_data( _data_files_, _autoload_):
     data_container['numbers']['total'] = [n_atomsnew, n_bondsnew,
                                           n_anglesnew, n_dihednew, n_impropnew
                                          ]
-    #print( 'here', data_container['numbers']['total'])
+    #show(( 'here', data_container['numbers']['total'])
     #exit('')
     data_container['numbers']['type'] = [n_atomtypes, n_bondstypes,
                                          n_anglestypes, n_dihedraltypes,
                                          n_impropertypes]
-    print 'Ending gromacs data parsing\n'
+    show( 'Ending gromacs data parsing\n')
     return data_container, [ ok_flag, _sidemol_f_]
 
 def sidemol_data( _file_top_, data_container):
@@ -529,7 +529,7 @@ def sidemol_data( _file_top_, data_container):
     
     if sm_flag:
         #////////======= Side molecule >>> file <<< search   ==========////////
-        print ('\nLoading side molecule files: ' )
+        show( '\nLoading side molecule files: ' )
         _sm_files_ = []
         root_dir = '/'.join( _file_top_.split('/')[:-1]+[''])
         ok_flag = False
@@ -549,13 +549,13 @@ def sidemol_data( _file_top_, data_container):
                             new_filename = k_line.split('"')[1].lstrip('.')
                         except IndexError:
                             auxt = wrg_1( 'Format error with {}')
-                            print( auxt.format( k_line.split()[-1] ) ) 
+                            show( auxt.format( k_line.split()[-1] ) ) 
                         
                         new_filename = new_filename.lstrip('/').split('/')[-1]
                         po_file = fileseeker( root_dir, new_filename)
                         if po_file != []:
                             _sm_files_.append( po_file[0])
-                            print( 'SM_file : {}'.format(_sm_files_[-1]))
+                            show( 'SM_file : {}'.format(_sm_files_[-1]))
                             ok_flag *= check_file( po_file[0],
                                                   content='[ atoms ]')
                     else:
@@ -566,7 +566,7 @@ def sidemol_data( _file_top_, data_container):
         if ok_flag:
             for sm in sidemol['tag']:
                 aux_data, aux_flag = sidemol_data_gatherer( _sm_files_, sm)
-                #print aux_data
+                #show( aux_data
                 ok_flag *= aux_flag
                 sidemol['data'].append( aux_data)
                 
@@ -574,7 +574,7 @@ def sidemol_data( _file_top_, data_container):
         data_container['sidemol'] = sidemol
         
     else:
-        print ('No side molecule files detected!' )
+        show( 'No side molecule files detected!' )
         ok_flag = True
         
     return data_container, ok_flag, sm_flag
@@ -583,7 +583,7 @@ def sidemol_data_gatherer( _sm_files_, _sm_):
     ''' collects all the data related with one kind of side molecule
         the data types are specified in startstrings
     '''
-    print( '\nSearching for: {}'.format( _sm_ ))#, ' in: ' ,_sm_files_
+    show( '\nSearching for: {}'.format( _sm_ ))#, ' in: ' ,_sm_files_
     _flag_ = True
     _file_ = ''
     _sm_data_c_ = {}
@@ -596,7 +596,7 @@ def sidemol_data_gatherer( _sm_files_, _sm_):
             for j_line in sm_data:
                 j_line = j_line.split(';')[0].strip()
                 
-                #print j_line, read_flag, j_line.startswith(sm)
+                #show( j_line, read_flag, j_line.startswith(sm)
                 
                 if j_line.startswith('['):
                     if j_line.startswith('[ moleculetype ]'):
@@ -618,7 +618,7 @@ def sidemol_data_gatherer( _sm_files_, _sm_):
         pop_err_1('Error!! side molecule {} not found in itp -- '.format( _sm_))
         _flag_ = False
     else:
-        print( 'Success!, found in : {}\n'.format( _file_))
+        show( 'Success!, found in : {}\n'.format( _file_))
         tag_str = [ 'atoms', 'bonds', 'angles', 'dihedrals','fin']
         _sm_data_c_ = { x:[] for x in tag_str if x != 'fin'}
         read_flag = False
@@ -640,20 +640,20 @@ def sidemol_data_gatherer( _sm_files_, _sm_):
                                 i = tag_str.index( j_line[1])
                                 cd_tag = tag_str[i]
                                 iner_flag = True
-                                print( '** Gathering {} data'.format( cd_tag))
+                                show( '** Gathering {} data'.format( cd_tag))
                             elif j_line[1] == 'moleculetype':
                                 break
                             else:
                                 txt_s = '> {} not considered in {}'
-                                print txt_s.format( j_line[1], _sm_)
+                                show( txt_s.format( j_line[1], _sm_) )
                                 iner_flag = False
                         else :
                             cd_tag = tag_str[i]
-                            print( '* Gathering {} data'.format( cd_tag))
+                            show( '* Gathering {} data'.format( cd_tag))
                             iner_flag = True
                             
                     elif iner_flag:
-                        #print j_line
+                        #show( j_line
                         _sm_data_c_[ cd_tag].append( j_line)
                             
                             
@@ -661,13 +661,13 @@ def sidemol_data_gatherer( _sm_files_, _sm_):
                     read_flag = True
                     
         # todo add a new check in case of empty container
-        #print _sm_data_c_
+        #show( _sm_data_c_
         
         ######### Split impropers and dihedrals
         _sm_data_c_, _ = split_dihedral_improper( _sm_data_c_)
         
-        #if _sm_data_c_['impropers'] <>[]:
-        #    print _sm_data_c_['impropers']
+        #if _sm_data_c_['impropers'] != []:
+        #    show( _sm_data_c_['impropers']
         
     return _sm_data_c_, _flag_
 
@@ -713,7 +713,7 @@ def split_dihedral_improper( _data_container_):
                 def_impr_extra.append( _dihedrals_data_[i])
             
         else:
-            print 'Problem #008 here #split_dihedral_improper'
+            show( 'Problem #008 here #split_dihedral_improper')
             dihe_err = "#008_" + dh_dict_kind[ dihe_funct]
             
             if dihe_err != dh_bf_err:
@@ -749,7 +749,7 @@ def split_define_dihe_impr( _data_container_, smt_flag = False):
     _dihe_type_data_ = _data_container_['dihedraltypes']
     im_type_ = []
     dh_type_ = []
-    #print _dihe_type_data_
+    #show( _dihe_type_data_
     for i in range( len ( _dihe_type_data_)):
         #  Dihedral line format:
         #  ai  aj  ak  al  funct   c0  c1  c2  c3  c4  c5
@@ -759,7 +759,7 @@ def split_define_dihe_impr( _data_container_, smt_flag = False):
             else:
                 dh_type_.append( _dihe_type_data_[i])
         except IndexError as _err:
-            print( _err)
+            show( _err)
             exit( _dihe_type_data_[i] )
     #====================================================
     ''' ========  Dihedral "#define" data  ========== ''' 
@@ -798,7 +798,7 @@ def split_define_dihe_impr( _data_container_, smt_flag = False):
             #### TODO Flag
             ## First case with coefs in the top file... c0  c1  c2  c3  c4  c5
             if len( _dhi_) > 6:
-                print ('Coefficients in the top file are not supported yet' +
+                show( 'Coefficients in the top file are not supported yet' +
                         '... or maybe they are '+ u'\u00AC'*2)
                 new_dihedraltypes['-'.join(a_tag)] = (a_tag + _dhi_[4:])
             
@@ -904,15 +904,14 @@ def get_topitp_line( _filename_, _ss_):
         read_flag = False
         ok_flag = True
         tag_not_found = True
-        if _verbose_:
-            print  _ss_
+        show(  _ss_, v = 3)
         for j_line in indata:
             # I just whant to read once the flag is on
             j_line_s0 = j_line.split(';')[0].split()
             if read_flag and j_line_s0:
-                #if _verbose_: ### is beter to store and print outside the
+                #if _verbose_: ### is beter to store and show( outside the
                 # cycle with just one if 
-                #print j_line_s0
+                #show( j_line_s0
                 _line_ = j_line_s0
                 # getting out comments and empty lines
                 if len( _line_) <0: 
@@ -920,25 +919,25 @@ def get_topitp_line( _filename_, _ss_):
                     
                 elif _line_[0][0] == '#':
                     if _line_[0] == '#include':
-                        print( wrg_3( _line_[1] + ' skipped this time'))
+                        show( wrg_3( _line_[1] + ' skipped this time'))
                     elif _line_[0] == '#define':
                         _define_[_line_[1]] = _line_[2:]
                     else:
-                        print wrg_3( str(_line_) + '  ??')
+                        show( wrg_3( str(_line_) + '  ??') )
                         
                 elif _line_[0][0] == '[':
-                    print( ' '.join(_line_) + 'Checked!')
+                    show( ' '.join(_line_) + 'Checked!')
                     if  ' '.join(_line_) != _ss_ :
                         read_flag = False
-                    #print 'exit here 424'
+                    #show( 'exit here 424'
                     
                 elif len( _line_) > 0:
                     content_line.append( _line_)
                 else:
-                    print('Ups... please raise an issue at GitHub ;)')
+                    show( 'Ups... please raise an issue at GitHub ;)')
             elif j_line.lstrip().startswith( _ss_):
                 if _verbose_:
-                    print( _ss_+' found!')
+                    show( _ss_ + ' found!')
                 read_flag = True
                 tag_not_found = False
     
@@ -974,12 +973,12 @@ def get_gromos_define( _bondedfile_):
                             aux_dic = { _line_[1] : _line_[2:]}
                             _define_[ _dedic_[ _line_[1][1]]].update( aux_dic)
                         else:
-                            print('Whojojoooh...')
+                            show( 'Whojojoooh...')
                     
                 elif _line_[0] == '#include':
-                    print(wrg_3( _line_[1] + ' skipped!'))
+                    show( wrg_3( _line_[1] + ' skipped!'))
                 else:
-                    print(wrg_3( str(_line_) + '  ??'))
+                    show( wrg_3( str(_line_) + '  ??'))
     
     return _define_
 
@@ -1006,10 +1005,10 @@ def get_ffldfiles( _topfile_):
         # if there is at least one itp, lets parse it
         # first seek for further includes itp
         aux_file_cont = [_topfile_, '']
-        print '----- Loading :'
+        show( '----- Loading :')
         i = 1
         aux_file_cont[i] =  root_folder + ff_file
-        print aux_file_cont[i]
+        show( aux_file_cont[i])
         
         root_folder = '/'.join( aux_file_cont[i].split('/')[:-1]+[''])
         try:
@@ -1018,7 +1017,7 @@ def get_ffldfiles( _topfile_):
                     if k_line.startswith('#include'):
                         i+=1
                         aux_file_cont.append( root_folder+k_line.split('"')[1])
-                        print aux_file_cont[i]
+                        show( aux_file_cont[i] )
                         if i==3:
                             break
                 
@@ -1039,7 +1038,7 @@ def get_ffldfiles( _topfile_):
                     file_cont[-1] = file_cont[0] 
                 
             else:
-                print ('Using :' +file_cont[-1]+' for ' + _di_) 
+                show( 'Using :' + file_cont[-1] + ' for ' + _di_) 
     else:
         pop_err_1('Force field files #include not found!')
         nonerr_flag *= False
@@ -1070,7 +1069,7 @@ def ck_forcefield( _the_file_, _secondoption_ = None):
             if len(line_c)>1 and 'fudgeQQ'==line_c[-1]:
                 j_line = indata.next()
                 comb_rule= j_line.split()
-                print('---> comb_rule {}'.format(comb_rule[1]))
+                show( '---> comb_rule {}'.format(comb_rule[1]))
                 
     if not _flag_ and _secondoption_ != None:
         comb_rule, _flag_, _the_file_ = ck_forcefield( _secondoption_)
@@ -1104,9 +1103,7 @@ def seek_for_directive( _list_of_files_, _directive_):
     
     return content_file
     
-    
-    
-    
+
 def get_top_groups( _mtype_container_, _group_):
     
     _mtype_ = _mtype_container_
@@ -1125,8 +1122,9 @@ def get_top_groups( _mtype_container_, _group_):
             
             _buffer += [mt+1]
                 
-    print''
-    print 'Group characterized as: {} with ids {} to {}'.format(*_buffer)
+    show( '')
+    show( 'Group characterized as: {} with ids {} to {}'.format(*_buffer) )
+    
     return _buffer
 
 

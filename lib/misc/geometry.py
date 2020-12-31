@@ -3,6 +3,7 @@
 
 from math import pi, cos, sin, sqrt, acos
 from sys import exit
+from display import show
 
 def tensprod(T1, T2):
     
@@ -24,8 +25,8 @@ def tensprod(T1, T2):
     #for i in range( c):
     #    print T1[i]
     #print T1[0][0]*T2[0][0] + T1[0][2]*T2[2][0]
-    if len( T2) <> v:
-        print('Tensors length')
+    if len( T2) != v:
+        show( 'Tensors length')
         pT = [ [], [], []]
     else:
         for j in range( len( T2[0])):
@@ -69,7 +70,7 @@ def rotate( t2r, angle, axis = 'x'):
              [ sin(angle),  cos(angle), 0         ],
              [ 0         ,  0         , 1         ]]
     else:
-        print 'Error! invalid axis : {}'.format( axis)
+        show( 'Error! invalid axis : {}'.format( axis))
     
     return tensprod( R, t2r)
     
@@ -84,13 +85,13 @@ if __name__ == '__main__':
     index = range(3)
     for i in range(3):
         Ar[i][i] = tensorvec[i]
-        print Ar
+        show( Ar)
         for j in range(3):#.remove(i):
-            if i <> j:
+            if i != j:
                 #
                 Ar[i][j] = tensorvec[k+3]
                 k += 1
-    print Ar
+    show( Ar)
     #Ar = [ [4.0465, 0, 0],[-0.73454, 2.63083, 0], [-1.45599, -0.54283, 68.36656 ]]
     #A = [ 4.0465, -0.73454, -1.45599, 0, 2.63083, -0.54283, 0, 0, 68.36656 ]
     
@@ -114,7 +115,7 @@ if __name__ == '__main__':
     Ar = rotate( Ar, a_tor_x)
     
     for i in range( len( Ar)):
-        print Ar[i]
+        show( Ar[i])
     
     
 # vim:tw=80

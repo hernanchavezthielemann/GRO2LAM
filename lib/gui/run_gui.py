@@ -13,6 +13,7 @@ from tk_lib import create_entry, get_entriesvalue, bottom_hline_deco
 from custom_row import createfileentry
 from lib.misc.data import check_vars
 from lib.misc.file import check_file, run_command
+from lib.misc.display import show
 
 #------------------------------------------------------
 '''///////////////        Class       /////////////'''
@@ -83,7 +84,7 @@ class Run_GUI(Frame):
         
         if self.master.test:
             self.after(2000, self.master.master.destroy )
-            print '\n'+'-'*20 + '  Test ended  ' + '-'*20
+            show( '\n'+'-'*20 + '  Test ended  ' + '-'*20)
     
     def build_finalbuttons(self):
         '''    Final Buttons    '''
@@ -108,7 +109,7 @@ def run_script( _file_, machine='lammps', _cores_='1'):
     
     core_flag = min(check_vars([_cores_],['int'],'Run aborted!'))
     if check_file(_file_) and core_flag:
-        print _file_
+        show( _file_)
         command = '{} -echo both -in {}'.format( machine, _file_)
         if int(_cores_)>1:
             command = 'mpirun -np {} '.format( _cores_) + command
