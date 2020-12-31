@@ -1,49 +1,60 @@
 #!/usr/bin/python
+#    By Hernan Chavez Thielemann
+__author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>' 
 
+### My homemade setup
+# If you think/know that there is a better option for this please contact me.
+# I am positively sure that there is something that I am skipping here ;)
 
 from os import system, getcwd
 from sys import exit, argv
-
+from lib.misc.display import green, show
+from lib.misc.file import write_xfile, fileseeker, check_file
+from lib.misc.version import __version__, __python_version__
 
 _okflag_ = True
 _exit_txt_ = ''
 _test_ = False
 
-if len(argv)>1 and argv[1] == '-t':
+if len( argv) > 1 and argv[1] == '-t':
     _test_ = True
     
 try:
-    import Tkinter
+    if __python_version__ > 3:
+        tk_install_txt = 3
+        from tkinter import Tk
+    else:
+        tk_install_txt = ''
+        from Tkinter import Tk
+        
 except ImportError:
-    print 'Package python-tk not found!'
+    show( 'Package python-tk not found!' )
     sel = ''
-    print ('You need to install the python-tk package,'
+    show( 'You need to install the python-tk package,'
            +' would you like to do it now?')
     while sel not in ['yes','no','y','n']:
         sel = raw_input('Please write "yes" or "no": ')
     if sel in ['y','yes']:
-        su =''
+        su = ''
         while su not in ['yes','no','y','n']:
             su = raw_input('Do you possess sudo rights?,'
                            +' Please answer "yes" or "no": ')
         if su in ['y','yes']:
-            system('sudo apt-get install python-tk')
+            system('sudo apt-get install python{}-tk'.format( tk_install_txt))
+            
             exit('\nPlease run again the setup\n' +
-                  '"./GRO2LAM-27ene19/python2 setup"')
+                  '"./GRO2LAM-ddmmmYY/python setup"')
         else:
             _exit_txt_ += ('Without sudo rights you cannot install tkinter.'
                            +'\n - Please contact your system administrator\n')
             _okflag_ = False
     else:
-        _exit_txt_ += ( 'In order to use GRO2LAM GUI you need to install'
-                       +' the python-tk package first\n')
+        _exit_txt_ += ( 'In order to use GRO2LAM GUI you need to install the '
+                       + 'python{}-tk package first\n'.format( tk_install_txt))
         _okflag_ = False
 
 if _okflag_:
-    from lib.misc.file import write_xfile, fileseeker, check_file
-    from lib.misc.warn import green
-    from lib.grotolam import __version__
-    print 'Checking instalation files for {}'.format(__version__)
+    show( 'Checking instalation files for {}'.format( __version__) )
     
     commands_container = ['mkdir ./lib/docs','mv README.md ./lib/docs',
                           'mv setup ./lib', 'mv LICENSE ./lib/docs',
@@ -51,41 +62,41 @@ if _okflag_:
     
     for com_txt in commands_container:
         system( com_txt)
+        
+# The voodoo call *~* >o
+_run_s_ = ( ')(rehcnual_malotorg    \n:"__niam__" == __eman__ fi\n'
+           + 'rehcnual_malotorg tropmi malotorg.bil morf\n'
+           + 'nohtyp/nib/rsu/!#', 'just to play with the reader ;)')
     
-_run_s_ = (')(rehcnual_malotorg    \n:"__niam__" == __eman__ fi\n'
-           +'rehcnual_malotorg tropmi malotorg.bil morf\n'+
-           'nohtyp/nib/rsu/!#', 'just to play with the reader ;)')
-           
-    
-_run_t_ = (')(tset_rehcnual_malotorg\ntset_rehcnual_malotorg tropmi'
+_run_t_ = ( ')(tset_rehcnual_malotorg\ntset_rehcnual_malotorg tropmi'
            +' malotorg.bil morf\nnohtyp/nib/rsu/!#', 'same here ;)')
 
 
-files = {'./grotolam.py', './__init__.py', './setup',
-
-         './gui/popup.py', './gui/__init__.py', './gui/main_gui.py',
-         './gui/script_gui.py', './gui/run_gui.py','./gui/custom_row.py',
-         './gui/conversion_gui.py', './gui/tk_lib.py', '/gui/img/README.md',
+files = { './grotolam.py', './__init__.py', './setup',
+          
+          './gui/popup.py', './gui/__init__.py', './gui/main_gui.py',
+          './gui/script_gui.py', './gui/run_gui.py','./gui/custom_row.py',
+          './gui/conversion_gui.py', './gui/tk_lib.py', '/gui/img/README.md',
          
           './gui/img/logo.ppm', './gui/img/gear.ppm',
-         './gui/img/logo2.ppm', './gui/img/small_logo2.ppm', 
-         './gui/img/file.ppm', './gui/img/help.ppm',
+          './gui/img/logo2.ppm', './gui/img/small_logo2.ppm', 
+          './gui/img/file.ppm', './gui/img/help.ppm',
          
-         './docs/README.md', './docs/LICENSE',
+          './docs/README.md', './docs/LICENSE',
          
-         './misc/file.py', './misc/warn.py', './misc/version.py',
-         './misc/data.py', './misc/geometry.py', './misc/__init__.py',
+          './misc/file.py', './misc/display.py', './misc/version.py',
+          './misc/data.py', './misc/geometry.py', './misc/__init__.py',
          
-         './handling/lammps.py',
-         './handling/__init__.py', './handling/gromacs.py'}
+          './handling/lammps.py',
+          './handling/__init__.py', './handling/gromacs.py'}
 
 if _okflag_:
-    # This gathers all the files downstream /lib
-    act_files = fileseeker(getcwd()+'/lib', '', '.pyc')
+    # This gathers all the files downstream /lib, avoiding pyc extension
+    act_files = fileseeker( getcwd() + '/lib', '', '.pyc')
     
-    # so the we can compare
-    if len(files) == len(act_files):
-        print 'File check sum ok!'
+    # so then we can compare
+    if len( files) == len( act_files):
+        show( 'File check sum ok!')
         fi_o_flag = 1
         _eq_files_ = []
         for _fi_ in act_files:
@@ -93,36 +104,36 @@ if _okflag_:
                 #print _eq_files_[-1]
         for _fi_ in files:
             if _fi_.lstrip('./') in _eq_files_:
-                if check_file('./lib/'+_fi_):
-                    print ('File {} '+green('ok')).format(_fi_)
+                if check_file( './lib/'+_fi_):
+                    show( ( 'File {} ' + green('ok') ).format(_fi_) )
                 else:
                     fi_o_flag *= 0
             else:
-                print 'File {} not found'.format(_fi_)
+                show( 'File {} not found'.format(_fi_) )
                 fi_o_flag *= 0
                 
         if fi_o_flag:
-            print 'File check done!'
+            show( 'File check done!')
         else:
             _exit_txt_ += 'Warning!! some file not found!\n'
             _okflag_ = False
     else:
         _okflag_ = False
-        print len(files), len(act_files)
+        show(  len( files), len(act_files) )
         for fi in act_files:
-            print fi
+            show( fi)
         _exit_txt_ += 'Warning!! there is something rare in these files\n'
         
         
         
 if not _okflag_:
     for fi in act_files:
-        print fi
-    exit(_exit_txt_)
+        show( fi)
+    exit( _exit_txt_)
 
 if _test_:
-    write_xfile('run', _run_t_[0][::-1])
+    write_xfile( 'run', _run_t_[0][::-1])
 else:
-    write_xfile('run', _run_s_[0][::-1])
+    write_xfile( 'run', _run_s_[0][::-1])
 
-print 'Exit status OK!'
+show( 'Exit status OK!')

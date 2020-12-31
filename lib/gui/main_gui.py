@@ -9,14 +9,13 @@ __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 from os.path import dirname, realpath
 from sys import exit
 
-from Tkinter import Tk, Frame, Label, TclError, PhotoImage
+from tk_lib import Tk, Frame, Label, TclError, PhotoImage, createmenubar
 
 from conversion_gui import Conversion
 from script_gui import Script_GUI
 from run_gui import Run_GUI
 
 from popup import AboutPopUp
-from tk_lib import createmenubar
 
 from lib.misc.warn import wrg_3
 from lib.misc.file import run_command

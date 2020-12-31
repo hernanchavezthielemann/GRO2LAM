@@ -2,10 +2,29 @@
 #    By Hernan Chavez Thielemann
 __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
-from Tkinter import Entry, Button, Frame, Label, Scrollbar, StringVar, Menu
-from Tkinter import Listbox, IntVar, Checkbutton, Widget, Spinbox
-from Tkinter import X, Y, SUNKEN, VERTICAL, END
+from lib.misc.version import __python_version__
+from lib.misc.display import show
 
+if __python_version__ > 3:
+    '''between trying and knowing, I rather prefer the last one'''
+    from tkinter import Tk, Frame, Label, TclError, PhotoImage, Toplevel
+    from tkinter import Entry, Button, Scrollbar, StringVar, Menu
+    from tkinter import Listbox, IntVar, Checkbutton, Widget, Spinbox
+else:
+    from Tkinter import Tk, Frame, Label, TclError, PhotoImage, Toplevel
+    from Tkinter import Entry, Button, Scrollbar, StringVar, Menu
+    from Tkinter import Listbox, IntVar, Checkbutton, Widget, Spinbox
+
+'''     Home made ttk library     '''
+
+#================================
+#        Variables definition
+#================================
+X = 'x'
+Y = 'y'
+SUNKEN = 'sunken'
+VERTICAL = 'vertical'
+END = 'end'
 '''     Home made ttk library     '''
 
 #================================
@@ -261,9 +280,9 @@ def createmenubar( _root_window_, _listofentriesdicts_):
                 else:
                     sub_menu.add_separator(  )
         else:
-             print ' - incomplete data - '
+             show( ' - incomplete data - ')
 
 def testprint():
-    print '>command33<'
+    show( '>command33<')
 
 # vim:tw=80

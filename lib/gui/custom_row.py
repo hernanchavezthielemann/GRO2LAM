@@ -2,8 +2,7 @@
 #    By Hernan Chavez Thielemann
 __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
-from Tkinter import Entry, Button, Frame, StringVar
-from tk_lib import format_dec
+from tk_lib import Entry, Button, Frame, StringVar, format_dec
 from popup import FilePopUp
 
 

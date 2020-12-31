@@ -45,7 +45,7 @@ def check_vars( _vars_, _varstype_, _endtext_ = 'Input script not created!'):
             
         elif _varstype_[v] == 'int:':
             _aux_ = _vars_[v].split(':')
-            if len( _aux_) <> 2:
+            if len( _aux_) != 2:
                 err_txt = ( 'Please separate two integers with one colon (:)'
                            +' instead of {}'.format(_vars_[v]))
                 _flag_c_ += [0,0]
@@ -54,7 +54,7 @@ def check_vars( _vars_, _varstype_, _endtext_ = 'Input script not created!'):
             
         elif _varstype_[v] =='float:':
             _aux_ = _vars_[v].split(':')
-            if len( _aux_) <> 2:
+            if len( _aux_) != 2:
                 err_txt = ( 'Please separate two floats with one colon (:)'
                            +' instead of {}'.format(_vars_[v]))
                 _flag_c_ += [0,0]
@@ -64,7 +64,7 @@ def check_vars( _vars_, _varstype_, _endtext_ = 'Input script not created!'):
                         
         elif _varstype_[v] == 'float:xyz':
             _aux_ = _vars_[v].split(':')
-            if len( _aux_) <> 2:
+            if len( _aux_) != 2:
                 err_txt = ( 'Please separate the integer and "xyz" with one'
                            +'colon (:) instead of {}'.format(_vars_[v]))
                 _flag_c_ += [0,0]
@@ -86,7 +86,7 @@ def check_vars( _vars_, _varstype_, _endtext_ = 'Input script not created!'):
             
             _aux_v_ = [x.strip(' ') for x in _vars_[v].split(':')]
             _min, _max = _varstype_[v][1:]
-            if len( _aux_v_) <> 3:
+            if len( _aux_v_) != 3:
                 err_txt = ( 'Please separate three floats with two colons (:)'
                            +' instead of {}'.format(_vars_[v]))
                 _flag_c_ += [0,0,0]
@@ -139,7 +139,7 @@ def check_vars( _vars_, _varstype_, _endtext_ = 'Input script not created!'):
                 else:
                     err_txt += ( 'Unknown value <{}>.\n'.format( _v_))
                     _flag_c_.append(0)
-            if err_txt <> '':
+            if err_txt != '':
                 err_txt += '\nAllowed values are:\n'
                 for av in _varstype_[v][2:-1]:
                     err_txt += '"{}" or '.format(av)
@@ -204,12 +204,12 @@ def check_vars( _vars_, _varstype_, _endtext_ = 'Input script not created!'):
                 _flag_c_ += [0]
         else:
             #print _varstype_[v]
-            print 'Unhandled variable check for: ', _vars_[v]
+            show( 'Unhandled variable check for: ' , _vars_[v])
             _flag_c_.append(1)
         
         '''**** Message ****'''
-        if err_txt<>'':
-            pop_err_1( err_txt+'\n'+_endtext_)
+        if err_txt != '':
+            pop_err_1( err_txt + '\n' + _endtext_)
     
         
     return _flag_c_

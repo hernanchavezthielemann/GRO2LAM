@@ -7,12 +7,11 @@ __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 #///    Packages and globals definitions are here   ///
 #------------------------------------------------------
 
-from Tkinter import Frame, Button, Label
-
-from popup import PromptPopUp, PromptPopUp_wck
-
+from tk_lib import Frame, Button, Label
 from tk_lib import bottom_hline_deco, format_dec, Drop_Down_List
 from tk_lib import createmenubar, create_entry, get_entriesvalue
+
+from popup import PromptPopUp, PromptPopUp_wck
 
 from custom_row import File_Entry, createfileentry
 
