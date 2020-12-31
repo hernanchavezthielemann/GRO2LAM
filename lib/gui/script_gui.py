@@ -18,7 +18,8 @@ from custom_row import File_Entry, createfileentry
 from lib.handling.lammps import write_lammps_input
 
 from lib.misc.data import check_vars
-from lib.misc.display import show, print_dec_g, pop_wrg_1
+from lib.misc.display import show, show_in_green
+from lib.misc.warn import pop_wrg_1
 
 #------------------------------------------------------
 '''///////////////        Class       /////////////'''
@@ -204,7 +205,7 @@ class Script_GUI(Frame):
             _flag_ = write_lammps_input( _script_setup_, self._convertdata_)
             
             if _flag_:
-                print_dec_g( 'Lammps script done!')
+                show_in_green( 'Lammps script done!')
                 self.master.swapbody(3)
     
     def further_config_script( self ):
@@ -313,7 +314,7 @@ class Script_GUI(Frame):
                                      'Advanced settings not saved!'))
             if _flag_:
                 self._container_['advanced'][0] = _advanced_
-                print_dec_g('Advanced settings saved')
+                show_in_green('Advanced settings saved')
         self.fcb.config(bg = 'gray86')#, width = 145)
     
     def config_restrain( self ):
@@ -400,7 +401,7 @@ class Script_GUI(Frame):
                     
                     if max(max(_res_flag_)):
                         self._container_['restrain'] = _restrain_
-                        print_dec_g('Restrain data saved')
+                        show_in_green('Restrain data saved')
                     else:
                         show( 'Creating 0 groups, Restraining 0 atoms')
             self.resb.config(bg = 'gray86')#, width = 45)

@@ -3,7 +3,8 @@
 __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
 
-from lib.misc.display import wrg_1, wrg_3, pop_err_1, pop_wrg_1, show
+from lib.misc.warn import wrg_1, wrg_3, pop_err_1, pop_wrg_1
+from lib.misc.display import show
 from lib.misc.file import check_file, debugger_file, fileseeker
 from lib.misc.geometry import rotate, arcos, raiz
 from lib.misc.data import isnot_num

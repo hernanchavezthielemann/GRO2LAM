@@ -12,7 +12,8 @@ from tk_lib import bottom_hline_deco, format_dec, Drop_Down_List
 from tk_lib import createmenubar, create_entry, get_entriesvalue
 from custom_row import File_Entry
 
-from lib.misc.display import print_dec_g, pop_wrg_1, pop_err_1, show
+from lib.misc.display import show_in_green, show
+from lib.misc.warn import pop_wrg_1, pop_err_1
 from lib.misc.file import check_file, check_in_file
 
 from lib.handling.gromacs import extract_gromacs_data, get_ffldfiles
@@ -278,7 +279,7 @@ class Conversion(Frame):
                     flag_done_ = False
                     
             if flag_done_:
-                print_dec_g( 'Data file generated as "data.gro2lam"' )
+                show_in_green( 'Data file generated as "data.gro2lam"' )
                 
                 self._convertdata_ = sim_data
                 self._convertdata_['filename'] = data_fnam

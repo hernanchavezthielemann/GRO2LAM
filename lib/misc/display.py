@@ -1,76 +1,36 @@
 #!/usr/bin/python
 #    By Hernan Chavez Thielemann
-#    this is a blend of warn and vervose 
+#    this came out of a blend of warn and verbose 
 
 from sys import stdout
-from lib.gui.popup import message_box
 
-__verbose__ = [True]*2
+__verbose__ = [True,0,0]
+
+def in_red_(_text_):
+    return '\033[91m' + _text_ + '\033[0m'
+
+def in_green_(_text_):
+    return '\033[92m' + _text_ + '\033[0m'
+
+def in_yellow_(_text_):
+    return '\033[93m' + _text_ + '\033[0m'
 
 def yellow_deco(func):
     def func_wrapper(name):
         return "\033[93m{0}\033[0m".format(func(name))
     return func_wrapper
-
 #@yellow_deco
-def wrg_3(*text):
-    '''  yellow warning scheme'''
-    n_text = ''
-    if text != None:
-        for line in text[:-1]:
-            n_text += line +'\n'
-        n_text +=text[-1]
-    return '\033[93mWarning!!\033[0m -- '+ n_text
-    
-def wrg_2(*text):
-    '''  warning scheme'''
-    n_text = ''
-    if text != None:
-        for line in text[:-1]:
-            n_text += line +'\n'
-        n_text +=text[-1]
-    return '\033[92m'+'Warning!!'+'\033[0m -- ' + n_text
-    
-def wrg_1(*text):
-    '''  warning scheme'''
-    n_text = ''
-    if text != None:
-        for line in text[:-1]:
-            n_text += line +'\n'
-        n_text +=text[-1]
-    return '\033[91m'+'Warning!!'+'\033[0m -- ' + n_text
 
-def print_dec_g(*text):
-    '''  warning scheme'''
+def show_in_green(*text):
+    '''  this should be replaced with a colour_show with sep = "\n"
+        now this looks like nonsense ;)
+    '''
     n_text = ''
     if text != None:
         for line in text[:-1]:
             n_text += line +'\n'
-        n_text +=text[-1]
-    show(  '\033[92m'+n_text+'\033[0m ')
-    
-def green(_text_):
-    return '\033[92m'+_text_+'\033[0m '
-
-def pop_wrg_1(*_text_, **kwargs):
-    
-    if '_i_' in kwargs.keys():
-        _i_ = kwargs['_i_']
-    else:
-        _i_ = -1
-        
-    show( wrg_1(*_text_) )
-    message_box(_text_[_i_], 'Warning', icon='warning')
-    
-def pop_err_1(*_text_, **kwargs):
-    
-    if '_i_' in kwargs.keys():
-        _i_ = kwargs['_i_']
-    else:
-        _i_ = -1
-        
-    show( wrg_1(*_text_) )
-    message_box(_text_[_i_], 'Error', icon='error')
+        n_text += text[-1]
+    show(  in_green_( n_text ))
     
     
 def show( *multi_print, **kargs):
@@ -125,7 +85,6 @@ def test_show():
     show( a , b, c, end = ' - ')
     show( a , b, c, sep = ' - ', end = '\n')
     show( a , b, c, sep = ' & ', end = '\n', v=3)
-# vim:tw=80
 
 ## test
 if __name__ == '__main__':
@@ -135,3 +94,5 @@ if __name__ == '__main__':
     #print dec_g('deco')
     test_show()
     pass
+
+# vim:tw=80

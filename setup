@@ -84,8 +84,9 @@ files = { './grotolam.py', './__init__.py', './setup',
          
           './docs/README.md', './docs/LICENSE',
          
-          './misc/file.py', './misc/display.py', './misc/version.py',
+          './misc/file.py', './misc/warn.py', './misc/version.py', 
           './misc/data.py', './misc/geometry.py', './misc/__init__.py',
+          './misc/display.py',
          
           './handling/lammps.py',
           './handling/__init__.py', './handling/gromacs.py'}

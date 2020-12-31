@@ -3,7 +3,8 @@
 __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
 from lib.misc.file import write_file, make_dir
-from lib.misc.display import print_dec_g, pop_wrg_1, pop_err_1, wrg_1, show
+from lib.misc.display import show_in_green, show
+from lib.misc.warn import pop_wrg_1, pop_err_1, wrg_1 
 
 from sys import exit
 
@@ -16,7 +17,7 @@ def extract_lammps_data(_data_file_,_ck_buttons_, _forcefield_):
 
 def write_lammps_data( _topodata_, df_name, _config_):
     ''' Write a lammps data file'''
-    print_dec_g ('Writing Lammps data file...')
+    show_in_green('Writing Lammps data file...')
     ####---------------  Unpacking data  ----------------####
     atomstyle, _, _autoload_, root_folder = _config_
     atsty = [ 'atomic', 'angle', 'full', 'charge', 'bond', 'molecular']
@@ -25,7 +26,7 @@ def write_lammps_data( _topodata_, df_name, _config_):
     _content_=''
     if atomstyle in atsty:
         nam = ''.join([ chr( ord(l) - 32) for l in atomstyle])
-        print_dec_g(style_str.format(nam))
+        show_in_green(style_str.format(nam))
         
         show( '\n' + '='*14 + '  Still in BETA here  ' + '='*14 + '\n' ) #   !!
         _content_, _flag_ = write_lammps_data_auto( _topodata_,
@@ -37,7 +38,7 @@ def write_lammps_data( _topodata_, df_name, _config_):
         if _flag_:
             path_dir = make_dir( root_folder, 'g2l_dir')
             write_file( df_name, _content_, path_dir)
-            print_dec_g ('Successful writing!!')
+            show_in_green ('Successful writing!!')
         elif _autoload_:
             pop_err_1(errmsg + '\nAutoload failed!')
         else:
@@ -1535,7 +1536,7 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     else:
         _folder_ = root_folder
     write_file( in_name , _dtxt_, _folder_)
-    print_dec_g ('Successful writing!!')
+    show_in_green( 'Successful writing!!')
     
     
      #-------------------- here would be optimum some further check

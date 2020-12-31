@@ -3,7 +3,8 @@
 __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>' 
 
 
-from display import wrg_1, wrg_3, pop_wrg_1, show #
+from warn import wrg_1, wrg_3, pop_wrg_1
+from display import show #
 from os import getcwd, walk, system 
 from os.path import join
 from subprocess import Popen, PIPE

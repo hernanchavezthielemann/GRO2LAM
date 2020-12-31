@@ -17,7 +17,8 @@ from run_gui import Run_GUI
 
 from popup import AboutPopUp
 
-from lib.misc.display import show, wrg_3
+from lib.misc.display import show
+from lib.misc.warn import wrg_3
 from lib.misc.file import run_command
 from lib.misc.version import __version__
 
