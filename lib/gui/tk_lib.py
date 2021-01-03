@@ -10,10 +10,12 @@ if __python_version__ > 3:
     from tkinter import Tk, Frame, Label, TclError, PhotoImage, Toplevel
     from tkinter import Entry, Button, Scrollbar, StringVar, Menu
     from tkinter import Listbox, IntVar, Checkbutton, Widget, Spinbox
+    from tkinter import font as Font
 else:
     from Tkinter import Tk, Frame, Label, TclError, PhotoImage, Toplevel
     from Tkinter import Entry, Button, Scrollbar, StringVar, Menu
     from Tkinter import Listbox, IntVar, Checkbutton, Widget, Spinbox
+    from tkFont import Font
 
 '''     Home made ttk library     '''
 
@@ -59,7 +61,7 @@ def create_entry( _main_row_, _desc_txt, _def_txt_, t_len, ckbc=None, fn=None):
     ''' creates a tkinter entry '''
     _row_ = Frame(_main_row_)
     
-    if ckbc<>None and fn<>None:
+    if ckbc != None and fn != None:
         label0 = Label(_row_, width=3, text="  ", anchor='w')
         cvar = IntVar()
         label1 = Checkbutton(_row_, width=0
@@ -135,7 +137,7 @@ def get_entriesvalue(entries_container):
 
 def bottom_hline_deco(row, func=None):
     ''' adds a sunken line in the bottom of a tkinter function'''
-    if func <> None:
+    if func != None:
         func()
     line = Frame( row ,height=2, bd=1, relief= SUNKEN)
     line.pack(fill=X, padx=1, pady=5)

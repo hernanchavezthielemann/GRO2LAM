@@ -2,10 +2,10 @@
 #    By Hernan Chavez Thielemann
 __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
-from tk_lib import Frame, Toplevel, Label, Button, Checkbutton, Entry
-from tk_lib import SUNKEN, X, Y, PhotoImage, IntVar
-from tk_lib import create_entry, bottom_hline_deco, get_entriesvalue
-from tkFont import Font
+from lib.gui.tk_lib import Frame, Toplevel, Label, Button, Checkbutton, Entry
+from lib.gui.tk_lib import SUNKEN, X, Y, PhotoImage, IntVar, Font
+from lib.gui.tk_lib import create_entry, bottom_hline_deco, get_entriesvalue
+
 from webbrowser import open_new
 from lib.misc.version import __version__
 from lib.misc.display import show

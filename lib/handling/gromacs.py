@@ -371,8 +371,8 @@ def extract_gromacs_data( _data_files_, _autoload_):
                 _conv_dict_[ a_elem_tag] = a_opls_tag
                 
         show( '='*45+'\n'+'='*5+'  Charges found: ')
-        show( _charge_)
-        show( _conv_dict_)
+        show( repr(_charge_) )
+        show( repr(_conv_dict_) )
         
         data_container['S_charge'] = _charge_
         data_container['S_translation'] = _conv_dict_

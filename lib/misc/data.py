@@ -2,7 +2,7 @@
 #    By Hernan Chavez Thielemann
 __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>' 
 
-from warn import pop_err_1
+from lib.misc.warn import pop_err_1
 #from display import show
 
 def check_vars( _vars_, _varstype_, _endtext_ = 'Input script not created!'):

@@ -3,6 +3,7 @@
 from lib.misc.version import __version__
 from lib.misc.file import write_file
 from lib.gui.main_gui import launch_gui
+from lib.misc.display import show
 
 class Grotolam(object):
     def __init__(self, master=None):
@@ -27,14 +28,14 @@ def grotolam_launcher():
     ''' at this point this is just the name, quite deceptive ;) 
         maybe <run> can call directly the GUI in the future,
         but this handles the library'''
-    print '\n'+' '*20+__version__+'\n'
+    show( '\n' + ' '*20 + __version__ + '\n')
     
     launch_gui()
     
 def grotolam_launcher_test():
     
-    print '-'*21+'  TESTING  '+'-'*21+'\n\n'
-    print '\n'+' '*20+__version__+'\n'
+    show( '-'*21 + '  TESTING  ' + '-'*21 + '\n\n')
+    show( '\n' + ' '*20 + __version__ + '\n')
     launch_gui( True)
     
     #conv_data, ckbuttons, solva_tags,_quit_flag_ = launch_gui()

@@ -3,64 +3,80 @@
 __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>' 
 
 
-from warn import wrg_1, wrg_3, pop_wrg_1
-from display import show #
-from os import getcwd, walk, system 
-from os.path import join
+from lib.misc.warn import wrg_1, wrg_3, pop_wrg_1
+from lib.misc.display import show #
+from os import getcwd, walk, system, stat
+from os.path import join, sep
 from subprocess import Popen, PIPE
 
-def check_file(_in_file_, content = True, string = ''):
+
+p_sep = sep
+
+def check_file(_in_file_, content = True, string2chk = '', size = 0):
     '''Check the correctness of the given input file address'''
     
-    flag = False
+    ok_flag = False
+    show( _in_file_, v = 3)
     try:
-        _auxf = open(_in_file_,"r")
-        su = 0
-        strcheck = False
-        if content:
-            if string == '':
-                for line in _auxf:
-                    su += len(line.rstrip('\n'))
-            else:
-                for line in _auxf:
-                    line = line.rstrip('\n')
-                    if string in line:
-                        strcheck = True
-                    
-        _auxf.close()
+        with open( _in_file_, "r") as _auxf:
+            su = 0
+            strcheck = False
+            if content:
+                if string2chk == '':
+                    try:
+                        prev_line = ''
+                        for line in _auxf:
+                            su += len( line.rstrip('\n'))
+                            prev_line = line
+                    except UnicodeDecodeError:
+                        show( prev_line, line, sep = '\n', v = 3)
+                else:
+                    for line in _auxf:
+                        line = line.rstrip('\n')
+                        if string2chk in line:
+                            strcheck = True
         
-        if content and su == 0 and string == '':
+        if content and su < 2 and string2chk == '':
             pop_wrg_1(' File {} is empty -- '.format(_in_file_))
-        elif string != '' and content and not strcheck:
-            pop_wrg_1(' Section {} not found in file {} -- '.format( string, _in_file_))
+        elif content and string2chk != '' and not strcheck:
+            aux_txt = ' Section {} not found in file {} -- '
+            pop_wrg_1( aux_txt.format( string2chk, _in_file_))
         else:
-            flag = True
+            act_size = stat( _in_file_).st_size
+            if size:
+                if act_size == size:
+                    ok_flag = True
+            else:
+                show( "{ '", _in_file_, "': ", act_size, '}', sep='', v = 3)
+                ok_flag = True
             
     except IOError:
-        pop_wrg_1(' File {} not found -- '.format(_in_file_))
-    return flag
+        pop_wrg_1(' File {} not found -- '.format( _in_file_))
+        
+    return ok_flag
 
 def check_file_list(files_list, extensions=['*']):
     '''Check for input files integrity and extension'''
-    finam=''
+    finam = ''
+    _flag = True
     try:
         for x in range(len(files_list)):
-            finam= files_list[x].split('/')[-1]
-            fi= open (files_list[x],'r')
+            finam = files_list[x].split('/')[-1]
+            fi = open (files_list[x],'r')
             fi.close()
-            ext= finam.split('.')[-1]
+            ext = finam.split('.')[-1]
             if extensions != ['*'] and not ext in extensions:
                 show( extensions)
-                show( wrg_3(' Invalid format: < '+ext+' >') )
-                return False
-        return True
+                show( wrg_3( ' Invalid format: < ' + ext + ' >') )
+                _flag = False
+                break
     except IOError:
-        if finam== '':
-            show( wrg_3(" Select a file --- "))
+        if finam == '':
+            show( wrg_3( " Select a file --- "))
         else: 
-            show( wrg_3(' No such file or directory: '+ finam))
-        return False
-
+            show( wrg_3(' No such file or directory: ' + finam))
+        _flag = False
+    return _flag
 def check_in_file( _file_, *args, **kwargs):
     ''' Checks if some args are in a file or not '''
     

@@ -3,7 +3,7 @@
 
 from math import pi, cos, sin, sqrt, acos
 from sys import exit
-from display import show
+from lib.misc.display import show
 
 def tensprod(T1, T2):
     

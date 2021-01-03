@@ -8,8 +8,8 @@ __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
 from os import system, getcwd
 from sys import exit, argv
-from lib.misc.display import green, show
-from lib.misc.file import write_xfile, fileseeker, check_file
+from lib.misc.display import in_green_, show, set_verbose, in_red_
+from lib.misc.file import write_xfile, fileseeker, check_file, p_sep
 from lib.misc.version import __version__, __python_version__
 
 _okflag_ = True
@@ -18,6 +18,7 @@ _test_ = False
 
 if len( argv) > 1 and argv[1] == '-t':
     _test_ = True
+    set_verbose( 4)
     
 try:
     if __python_version__ > 3:
@@ -72,51 +73,78 @@ _run_t_ = ( ')(tset_rehcnual_malotorg\ntset_rehcnual_malotorg tropmi'
            +' malotorg.bil morf\nnohtyp/nib/rsu/!#', 'same here ;)')
 
 
-files = { './grotolam.py', './__init__.py', './setup',
+files = { 'grotolam.py', '__init__.py', 'setup',
           
-          './gui/popup.py', './gui/__init__.py', './gui/main_gui.py',
-          './gui/script_gui.py', './gui/run_gui.py','./gui/custom_row.py',
-          './gui/conversion_gui.py', './gui/tk_lib.py', '/gui/img/README.md',
+          'gui/img/README_img.md','gui/popup.py', 'gui/__init__.py',
+          'gui/script_gui.py', 'gui/run_gui.py','gui/custom_row.py',
+          'gui/conversion_gui.py', 'gui/tk_lib.py', 'gui/main_gui.py',
          
-          './gui/img/logo.ppm', './gui/img/gear.ppm',
-          './gui/img/logo2.ppm', './gui/img/small_logo2.ppm', 
-          './gui/img/file.ppm', './gui/img/help.ppm',
+          'gui/img/logo.ppm', 'gui/img/gear.ppm',
+          'gui/img/logo2.ppm', 'gui/img/small_logo2.ppm', 
+          'gui/img/file.ppm', 'gui/img/help.ppm',
          
-          './docs/README.md', './docs/LICENSE',
+          'docs/README.md', 'docs/LICENSE',
          
-          './misc/file.py', './misc/warn.py', './misc/version.py', 
-          './misc/data.py', './misc/geometry.py', './misc/__init__.py',
-          './misc/display.py',
+          'misc/file.py', 'misc/warn.py', 'misc/version.py', 
+          'misc/data.py', 'misc/geometry.py', 'misc/__init__.py',
+          'misc/display.py',
          
-          './handling/lammps.py',
-          './handling/__init__.py', './handling/gromacs.py'}
+          'handling/lammps.py',
+          'handling/__init__.py', 'handling/gromacs.py'}
+
+file_sizes = { '__init__.py': 45, 'file.ppm': 1861, 'setup': 6176,  
+              'README_img.md': 739, 'grotolam.py': 1407, 'logo2.ppm': 85389,
+              'logo.ppm': 153519, 'conversion_gui.py': 12385, 'file.py': 7433,
+              'data.py': 8895, 'LICENSE': 1081, 'README.md': 20738,
+              'custom_row.py': 4425, 'warn.py': 1363, 'gromacs.py': 45751,
+              'main_gui.py': 7074,'geometry.py': 3686, 'lammps.py': 69632,
+              'script_gui.py': 18583, 'tk_lib.py': 10583, 'gear.ppm': 1957,
+              'popup.py': 27274, 'version.py': 542, 'display.py': 3433,
+              'help.ppm': 1039, 'run_gui.py': 4549, 'small_logo2.ppm': 51134
+             }
 
 if _okflag_:
     # This gathers all the files downstream /lib, avoiding pyc extension
     act_files = fileseeker( getcwd() + '/lib', '', '.pyc')
+    show( act_files, v = 4)
     
     # so then we can compare
     if len( files) == len( act_files):
         show( 'File check sum ok!')
         fi_o_flag = 1
+        file_not_found = [] 
         _eq_files_ = []
-        for _fi_ in act_files:
-                _eq_files_.append(_fi_.split('/lib/')[-1])
+        for _fi_a in act_files:
+                _eq_files_.append( _fi_a.split('/lib/')[-1])
                 #print _eq_files_[-1]
-        for _fi_ in files:
-            if _fi_.lstrip('./') in _eq_files_:
-                if check_file( './lib/'+_fi_):
-                    show( ( 'File {} ' + green('ok') ).format(_fi_) )
+        
+        for _fi_l in files:
+            if _fi_l in _eq_files_:
+                c_flag = True
+                file_name = _fi_l.split( p_sep )[-1]
+                if file_name.split('.')[-1] == 'ppm':
+                    c_flag = False
+                try:
+                    fsz_ = file_sizes[ file_name]
+                except KeyError:
+                    fsz_ = 0
+                
+                f_f_name = './lib/'+ _fi_l #full_file_name
+                if check_file( f_f_name , content = c_flag, size = fsz_):
+                    show( ( 'File {} ' + in_green_('ok') ).format( f_f_name) )
                 else:
                     fi_o_flag *= 0
+                    file_not_found.append( _fi_l)
             else:
-                show( 'File {} not found'.format(_fi_) )
+                show( 'File {} not found'.format( f_f_name) )
                 fi_o_flag *= 0
+                file_not_found.append( _fi_l)
                 
         if fi_o_flag:
             show( 'File check done!')
         else:
             _exit_txt_ += 'Warning!! some file not found!\n'
+            _exit_txt_ += str( file_not_found)
             _okflag_ = False
     else:
         _okflag_ = False

@@ -3,7 +3,7 @@
 #    this came from a blend of warn and verbose 
 
 from lib.gui.popup import message_box
-from display import show
+from lib.misc.display import show
 
 def wrg_3(*text):
     '''  Yellow warning scheme'''

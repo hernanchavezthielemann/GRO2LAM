@@ -716,7 +716,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
                 show( 'Atoms {}-{}-{}-{} : '.format( at1, at2, at3, at4),
                      (at1_tag +'-'+ at2_tag+'-'+ at3_tag+'-'+ at4_tag) )
                 show( ( 'Error improper dihedral ---- '+ err_str +' not found!')
-                
+                    )
             
             _text_+= improper_shape.format( i+1, _impr_ty_, at1, at2, at3, at4)
             

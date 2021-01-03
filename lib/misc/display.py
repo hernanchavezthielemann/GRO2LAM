@@ -4,7 +4,7 @@
 
 from sys import stdout
 
-__verbose__ = [True,0,0]
+__verbose__ = [True,0,0,0]
 
 def in_red_(_text_):
     return '\033[91m' + _text_ + '\033[0m'
@@ -56,9 +56,20 @@ def show( *multi_print, **kargs):
             sep = kargs['sep']
         except KeyError:
             sep = ' '
-        
-        #ln = len(multi_print)
-        string = sep.join( multi_print )
+        try:
+            deep = kargs['deep']
+        except KeyError:
+            deep = 0
+        #ln = len( multi_print)
+        try:
+            string = sep.join( multi_print)
+        except TypeError:
+            #if not deep:
+            #    for item in multi_print:
+            #        show( item, str(type(item)), deep = 1 )
+            #    show( 'other', type(multi_print), deep = 1 )
+            multi_print = [ str( item ) for item in multi_print]
+            string = sep.join( multi_print)
         #string = '{}'.format( elem)
         
         stdout.write( string + end)
@@ -68,9 +79,14 @@ def show( *multi_print, **kargs):
 def set_verbose( degrees ):
     ''' three degrees of verbose deep should be more than enough'''
     global __verbose__
+    
+    def_max = 3
     if degrees < 1:
         degrees = 1
-    __verbose__ = [ True]*degrees + [ False]*( 3 - degrees)
+    elif degrees > def_max:
+        def_max = degrees
+    
+    __verbose__ = [ True]*degrees + [ False]*( def_max - degrees)
     
 def test_show():
     set_verbose( 2)
@@ -84,7 +100,20 @@ def test_show():
     show( a , b, c, sep = '\n')
     show( a , b, c, end = ' - ')
     show( a , b, c, sep = ' - ', end = '\n')
-    show( a , b, c, sep = ' & ', end = '\n', v=3)
+    show('-------------------')
+    
+    _in_file_ = './lib/./gui/main_gui.py'
+    act_size = 7074
+    show( ["{ '", _in_file_, "':", act_size, '}'])
+    show('-------------------')
+    show( "{ '", _in_file_, "':", act_size, '}', v = 2)
+    show('-------------------')
+    show( "{ '", _in_file_, "':", act_size, '}',sep='', v = 2)
+    
+    aux_dict = {'./lib/./gui/main_gui.py':7074,'./lib/i.py':7,'./lib/mobi.dic':1010}
+    show( aux_dict)
+    show( a , b, c, sep = ' & ', end = '\n', v = 3)
+    show('-------------------')
 
 ## test
 if __name__ == '__main__':
