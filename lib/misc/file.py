@@ -16,7 +16,7 @@ def check_file(_in_file_, content = True, string2chk = '', size = 0):
     '''Check the correctness of the given input file address'''
     
     ok_flag = False
-    show( _in_file_, v = 3)
+    show( _in_file_, v = 4)
     try:
         with open( _in_file_, "r") as _auxf:
             su = 0
@@ -46,6 +46,9 @@ def check_file(_in_file_, content = True, string2chk = '', size = 0):
             if size:
                 if act_size == size:
                     ok_flag = True
+                else:
+                    show( '<{}:{}-{}>'.format(_in_file_, act_size, size),
+                         sep='', v =3)
             else:
                 show( "{ '", _in_file_, "': ", act_size, '}', sep='', v = 3)
                 ok_flag = True

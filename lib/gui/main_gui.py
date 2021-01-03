@@ -189,8 +189,8 @@ def launch_gui( started = False):
 def showlicence():
     
     show( 'Opening licence file')
-    command = 'gedit ./lib/docs/COPYING'#
-    run_command(command)
+    command = 'gedit ./lib/docs/LICENSE'#
+    run_command( command)
 
 def launch_about( _master_window_):
     

@@ -77,10 +77,10 @@ def show( *multi_print, **kargs):
         
         
 def set_verbose( degrees ):
-    ''' three degrees of verbose deep should be more than enough'''
+    ''' four degrees of verbose deep should be more than enough'''
     global __verbose__
     
-    def_max = 3
+    def_max = 4
     if degrees < 1:
         degrees = 1
     elif degrees > def_max:

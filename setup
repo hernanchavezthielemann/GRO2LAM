@@ -92,14 +92,14 @@ files = { 'grotolam.py', '__init__.py', 'setup',
           'handling/lammps.py',
           'handling/__init__.py', 'handling/gromacs.py'}
 
-file_sizes = { '__init__.py': 45, 'file.ppm': 1861, 'setup': 6176,  
+file_sizes = { '__init__.py': 45, 'file.ppm': 1861, 'setup': 6411,  
               'README_img.md': 739, 'grotolam.py': 1407, 'logo2.ppm': 85389,
-              'logo.ppm': 153519, 'conversion_gui.py': 12385, 'file.py': 7433,
+              'logo.ppm': 153519, 'conversion_gui.py': 12385, 'file.py': 7568,
               'data.py': 8895, 'LICENSE': 1081, 'README.md': 20738,
               'custom_row.py': 4425, 'warn.py': 1363, 'gromacs.py': 45751,
-              'main_gui.py': 7074,'geometry.py': 3686, 'lammps.py': 69632,
+              'main_gui.py': 7075,'geometry.py': 3686, 'lammps.py': 69632,
               'script_gui.py': 18583, 'tk_lib.py': 10583, 'gear.ppm': 1957,
-              'popup.py': 27274, 'version.py': 542, 'display.py': 3433,
+              'popup.py': 27274, 'version.py': 542, 'display.py': 3432,
               'help.ppm': 1039, 'run_gui.py': 4549, 'small_logo2.ppm': 51134
              }
 
@@ -111,8 +111,9 @@ if _okflag_:
     # so then we can compare
     if len( files) == len( act_files):
         show( 'File check sum ok!')
-        fi_o_flag = 1
-        file_not_found = [] 
+        fi_o_flag = []
+        file_not_found = []
+        file_corrupt = []
         _eq_files_ = []
         for _fi_a in act_files:
                 _eq_files_.append( _fi_a.split('/lib/')[-1])
@@ -132,32 +133,35 @@ if _okflag_:
                 f_f_name = './lib/'+ _fi_l #full_file_name
                 if check_file( f_f_name , content = c_flag, size = fsz_):
                     show( ( 'File {} ' + in_green_('ok') ).format( f_f_name) )
+                    fi_o_flag.append( 1)
                 else:
-                    fi_o_flag *= 0
-                    file_not_found.append( _fi_l)
+                    fi_o_flag.append( 0)
+                    file_corrupt.append( { _fi_l : fsz_} )
+                    show( ( 'File {} ' + in_red_('corrupt') ).format( f_f_name) )
             else:
                 show( 'File {} not found'.format( f_f_name) )
-                fi_o_flag *= 0
+                fi_o_flag.append( 0)
                 file_not_found.append( _fi_l)
                 
-        if fi_o_flag:
+        if min( fi_o_flag):
             show( 'File check done!')
         else:
-            _exit_txt_ += 'Warning!! some file not found!\n'
-            _exit_txt_ += str( file_not_found)
             _okflag_ = False
+            _exit_txt_ += 'Warning!! some file not found or corrupt!\n'
+            _exit_txt_ += str( file_not_found) + '/corrupt:' + str( file_corrupt)
+            
     else:
         _okflag_ = False
         show(  len( files), len(act_files) )
         for fi in act_files:
             show( fi)
-        _exit_txt_ += 'Warning!! there is something rare in these files\n'
+        _exit_txt_ += 'Warning!! there is a mismatch in the files\n'
         
         
         
 if not _okflag_:
     for fi in act_files:
-        show( fi)
+        show( fi, v = 4)
     exit( _exit_txt_)
 
 if _test_:
