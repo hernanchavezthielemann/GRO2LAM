@@ -2,9 +2,9 @@
 #    By Hernan Chavez Thielemann
 __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
-from tk_lib import Entry, Button, Frame, StringVar, format_dec
+from lib.gui.tk_lib import Entry, Button, Frame, StringVar, format_dec
 from lib.misc.display import show
-from popup import FilePopUp
+from lib.gui.popup import FilePopUp
 
 
 class File_Entry(Frame):

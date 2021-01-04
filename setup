@@ -15,10 +15,15 @@ from lib.misc.version import __version__, __python_version__
 _okflag_ = True
 _exit_txt_ = ''
 _test_ = False
+_size_check_ = True
 
-if len( argv) > 1 and argv[1] == '-t':
-    _test_ = True
-    set_verbose( 4)
+if len( argv) > 1:
+    if argv[1] == '-t':
+        _test_ = True
+        set_verbose( 4)
+    if argv[1] == '-f':
+        _size_check_ = False
+        set_verbose( 4)
     
 try:
     if __python_version__ > 3:
@@ -99,10 +104,12 @@ file_sizes = { '__init__.py': 45, 'file.ppm': 1861, 'setup': 6411,
               'custom_row.py': 4425, 'warn.py': 1363, 'gromacs.py': 45751,
               'main_gui.py': 7075,'geometry.py': 3686, 'lammps.py': 69632,
               'script_gui.py': 18583, 'tk_lib.py': 10583, 'gear.ppm': 1957,
-              'popup.py': 27274, 'version.py': 542, 'display.py': 3432,
+              'popup.py': 28296, 'version.py': 542, 'display.py': 3432,
               'help.ppm': 1039, 'run_gui.py': 4549, 'small_logo2.ppm': 51134
              }
-
+if not _size_check_:
+    file_sizes = {}
+    
 if _okflag_:
     # This gathers all the files downstream /lib, avoiding pyc extension
     act_files = fileseeker( getcwd() + '/lib', '', '.pyc')

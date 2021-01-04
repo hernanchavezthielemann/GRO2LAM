@@ -5,12 +5,14 @@ __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 from lib.misc.version import __python_version__
 from lib.misc.display import show
 
+from webbrowser import open_new
+
 if __python_version__ > 3:
     '''between trying and knowing, I rather prefer the last one'''
     from tkinter import Tk, Frame, Label, TclError, PhotoImage, Toplevel
     from tkinter import Entry, Button, Scrollbar, StringVar, Menu
     from tkinter import Listbox, IntVar, Checkbutton, Widget, Spinbox
-    from tkinter import font as Font
+    from tkinter.font import Font
 else:
     from Tkinter import Tk, Frame, Label, TclError, PhotoImage, Toplevel
     from Tkinter import Entry, Button, Scrollbar, StringVar, Menu
@@ -283,6 +285,36 @@ def createmenubar( _root_window_, _listofentriesdicts_):
                     sub_menu.add_separator(  )
         else:
              show( ' - incomplete data - ')
+    
+
+def link_row( in_frame_, w_txt, link_fo, px=0, py=0):
+    
+    label_obj = Label( in_frame_, bg = "white", font = "Verdana 10",
+                 text = w_txt, fg="blue", cursor = "hand2")
+    font_here = Font( label_obj, label_obj.cget( "font"))
+    font_here.configure( underline = True)
+    label_obj.configure( font = font_here)
+    label_obj.pack( side = "top" , anchor = 'w', padx = px, pady = py)
+    label_obj.bind( "<Button-1>", link_fo)
+    
+    return label_obj
+
+def polito_callback( push_event):
+    open_new(r"http://www.polito.it/small")
+    
+
+def email_me( push_event):
+    ''' You can find this link in the About pop-up inn the help button'''
+    show( 'Writing an email to Hernan')
+    email_address = "herch{0:}vezt{1:}gm{0:}il{2:}com".format('a', '@', '.')
+    subject = "GRO2LAM email"
+    open2send_email( email_address, subject)
+    
+
+def open2send_email( email, subject):
+    open_new("mailto:?to=" + email  + "&subject=" + subject )
+        
+    
 
 def testprint():
     show( '>command33<')

@@ -864,11 +864,11 @@ def get_gro_fixed_line( _filename_):
                 if at == at_num:
                     read_flag = False
                     g_names.append(_buffer + [at])
-                    
+                
             elif j_line.startswith(';'):
                 pass
             elif at_num == 0:
-                j_line = indata.next()
+                j_line = next( indata)
                 at_num = int( j_line)
                 read_flag = True
             elif at == at_num:
@@ -1060,26 +1060,26 @@ def ck_forcefield( _the_file_, _secondoption_ = None):
     podria pedirse solo este archivo y 
     de aqui sacar la iformacion de los otros dos....
     '''
-    _flag_ = False
-    comb_rule = -1
+    found_flag_ = False
+    comb_rule = [ 0, -1]
     with open( _the_file_, 'r')  as indata:
         for j_line in indata:
             line_c = j_line.split()
             if j_line.startswith('[ defaults ]'):
-                _flag_ = True
-            if len(line_c)>1 and 'fudgeQQ'==line_c[-1]:
-                j_line = indata.next()
-                comb_rule= j_line.split()
-                show( '---> comb_rule {}'.format(comb_rule[1]))
+                found_flag_ = True
+            if len( line_c) > 1 and 'fudgeQQ'==line_c[-1]:
+                j_line = next( indata)
+                comb_rule = j_line.split()
+                show( '---> comb_rule {}'.format( comb_rule[1]))
                 
-    if not _flag_ and _secondoption_ != None:
-        comb_rule, _flag_, _the_file_ = ck_forcefield( _secondoption_)
+    if not found_flag_ and _secondoption_ != None:
+        comb_rule, found_flag_, _the_file_ = ck_forcefield( _secondoption_)
         
-    if comb_rule < 0 or not _flag_:
-        pop_err_1('forcefield.itp file is missing or incomplete')
-        comb_rule, _flag_, _the_file_ = [ 0, 0, '']
+    if int( comb_rule[1]) < 0 or not found_flag_:
+        pop_err_1( 'forcefield.itp file is missing or incomplete')
+        comb_rule, found_flag_, _the_file_ = [ [0,0], 0, '']
     
-    return comb_rule, _flag_, _the_file_
+    return comb_rule, found_flag_, _the_file_
 
 def seek_for_directive( _list_of_files_, _directive_):
     ''' search for a certain directive in a bunch of files

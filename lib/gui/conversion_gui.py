@@ -7,10 +7,10 @@ __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 #///    Packages and globals definitions are here   ///
 #------------------------------------------------------
 
-from tk_lib import Frame, Label, StringVar, Button # , IntVar
-from tk_lib import bottom_hline_deco, format_dec, Drop_Down_List
-from tk_lib import createmenubar, create_entry, get_entriesvalue
-from custom_row import File_Entry
+from lib.gui.tk_lib import Frame, Label, StringVar, Button # , IntVar
+from lib.gui.tk_lib import bottom_hline_deco, format_dec, Drop_Down_List
+from lib.gui.tk_lib import createmenubar, create_entry, get_entriesvalue
+from lib.gui.custom_row import File_Entry
 
 from lib.misc.display import show_in_green, show
 from lib.misc.warn import pop_wrg_1, pop_err_1

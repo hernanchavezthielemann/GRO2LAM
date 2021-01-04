@@ -7,10 +7,10 @@ __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 #///    Packages and globals definitions are here   ///
 #------------------------------------------------------
 
-from tk_lib import Frame, Button, Label
-from tk_lib import create_entry, get_entriesvalue, bottom_hline_deco
+from lib.gui.tk_lib import Frame, Button, Label
+from lib.gui.tk_lib import create_entry, get_entriesvalue, bottom_hline_deco
+from lib.gui.custom_row import createfileentry
 
-from custom_row import createfileentry
 from lib.misc.data import check_vars
 from lib.misc.file import check_file, run_command
 from lib.misc.display import show

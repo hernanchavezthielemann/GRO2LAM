@@ -50,7 +50,7 @@ def check_file(_in_file_, content = True, string2chk = '', size = 0):
                     show( '<{}:{}-{}>'.format(_in_file_, act_size, size),
                          sep='', v =3)
             else:
-                show( "{ '", _in_file_, "': ", act_size, '}', sep='', v = 3)
+                show( "Size of '", _in_file_, "': ", act_size, sep='', v = 3)
                 ok_flag = True
             
     except IOError:
