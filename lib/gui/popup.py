@@ -733,7 +733,7 @@ class AboutPopUp():
         b1.pack( side = "right", padx=10, pady=20)
         _row_.pack( side = "bottom")
         
-        rightcolumn.pack( side = "left", padx=20)
+        rightcolumn.pack( side = "left", padx=10)
 
     def exit_pop( self):
         self.pop.grab_release() # to return to normal
