@@ -1,5 +1,5 @@
  
-python 2.7: [![Build Status](https://travis-ci.org/hernanchavezthielemann/GRO2LAM.svg?branch=27ene19)](https://travis-ci.org/hernanchavezthielemann/GRO2LAM)
+python 2.7: [![Build Status](https://travis-ci.com/hernanchavezthielemann/GRO2LAM.svg?branch=27ene19)](https://travis-ci.com/hernanchavezthielemann/GRO2LAM)
 
 python 2.7 & 3.5-3.9: [![Build Status](https://travis-ci.org/hernanchavezthielemann/GRO2LAM.svg?branch=py3_compatibility)](https://travis-ci.org/hernanchavezthielemann/GRO2LAM)
 
