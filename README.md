@@ -30,8 +30,9 @@ python 2.7: [![Build Status](https://travis-ci.org/hernanchavezthielemann/GRO2LA
    * Accepts improper dihedral type. (:warning:under tests:wrench:)
    * Accepts G96 bond and angle types. (:warning:under tests:wrench:) 
    * Accepts GROMOS force field define. (:warning:under tests:wrench:)
-   * :new: Accepts AMBER Periodic improper dihedral. (:warning:under tests:wrench:) 
-   * :new: Accepts AMBER Proper dihedral (multiple). (:warning:under tests:wrench:) 
+   * Accepts AMBER Periodic improper dihedral. (:warning:under tests:wrench:) 
+   * Accepts AMBER Proper dihedral (multiple). (:warning:under tests:wrench:)
+   * :new: Python 3 compatible
 <!--te-->
 ## Table of contents
 
