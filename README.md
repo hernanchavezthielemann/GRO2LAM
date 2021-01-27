@@ -12,10 +12,10 @@ python 2.7: [![Build Status](https://travis-ci.org/hernanchavezthielemann/GRO2LA
 ## Version
 
    ### Stable
-   GRO2LAM version 1.24 (27 Jan 2019) - BETA
+   GRO2LAM version 1.25 (27 Jan 2019) - BETA
    
    ### Beta-Stable
-   GRO2LAM version 1.25 (27 Jan 2019) - BETA-beta
+   GRO2LAM version 1.3 (06 Jan 2021) - BETA-beta (Python 3 compatible)
    
     wget https://raw.githubusercontent.com/hernanchavezthielemann/utils/master/grotolam/G2L_iBeta && bash G2L_iBeta
    
