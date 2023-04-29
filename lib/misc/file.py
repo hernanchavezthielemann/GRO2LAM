@@ -135,9 +135,10 @@ def make_dir( _path_, _name_):
     #    out_file.close()
     #    
     #except IOError:
+    extrad  = ''
     if len(path_dir.split(' ')) > 1:
-        path_dir = '"' + path_dir + '"'
-    system( 'mkdir ' + path_dir)
+        extrad = '"'
+    system( 'mkdir ' + extrad + path_dir + extrad)
     return path_dir + '/'
 
 def write_xfile(filename='test.txt',  content=''):
@@ -146,7 +147,7 @@ def write_xfile(filename='test.txt',  content=''):
     system('chmod +x '+filename)
 
 def move_file( _file_, _folder_):
-    system('mv ' + _file_ + ' ' + _folder_)
+    system('mv ' + _file_ + ' ' + '"' + _folder_ + '"')
 
 def write_file( filename='test.txt', content='', _folder_ = None):
     '''classic file maker'''
