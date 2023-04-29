@@ -102,7 +102,7 @@ file_sizes = { '__init__.py': 45, 'file.ppm': 1861, 'setup': 6565,
               'logo.ppm': 153519, 'conversion_gui.py': 12417, 'file.py': 7597,
               'data.py': 8895, 'LICENSE': 1086, 'README.md': 20765,
               'custom_row.py': 4441, 'warn.py': 1363, 'gromacs.py': 45807,
-              'main_gui.py': 7177,'geometry.py': 3686, 'lammps.py': 69735,
+              'main_gui.py': 7177,'geometry.py': 3686, 'lammps.py': 69726,
               'script_gui.py': 18621, 'tk_lib.py': 11589, 'gear.ppm': 1957,
               'popup.py': 27086, 'version.py': 719, 'display.py': 3432,
               'help.ppm': 1039, 'run_gui.py': 4573, 'small_logo2.ppm': 51134
