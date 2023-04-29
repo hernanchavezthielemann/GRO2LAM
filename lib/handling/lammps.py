@@ -1387,10 +1387,10 @@ def write_lammps_input(  _simconfig_, _topodata_= None, in_name= 'in.gro2lam'):
     _dtxt_+= ''.join(_dsc_txt[:_asty_d_[atomstyle[0]]])+'\n'
     
     
-    if 'data' in data_file:
-        _dtxt_+= 'read_data {}\n'.format( data_file)
+    if 'restart' in data_file:
+        _dtxt_+= 'read_restart {}\n'.format( data_file.split('/')[-1])
     else:
-        _dtxt_+= 'read_restart {}\n'.format( data_file)
+        _dtxt_+= 'read_data {}\n'.format( data_file.split('/')[-1])
     
     #===================================================
     ####--------------   NEIGHBOR LIST   -----------####
