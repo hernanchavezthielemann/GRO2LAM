@@ -518,7 +518,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     
     ####################        ------ANGLES------      #######################
     show( '>> angles')
-    if _asty_d_[ atomstyle] >= 3:
+    if _asty_d_[ atomstyle] >= 3 and n_angles > 0:
         known_angles = _topodata_['angles']
         base_angles_n = len(known_angles)
         _text_ +='\n Angles\n\n'
@@ -570,7 +570,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     
     ####################        ------DIHEDRAL------       ####################
     show( '>> dihedrals')
-    if _asty_d_[ atomstyle] >= 4:
+    if _asty_d_[ atomstyle] >= 4 and n_dihedrals > 0:
         known_dihedrals = _topodata_['dihedrals']
         base_dihedrals_n = len(known_dihedrals)
         if base_dihedrals_n or ( n_dihedrals > base_dihedrals_n):
@@ -669,7 +669,7 @@ def write_lammps_data_auto( _topodata_, data_name, _config_):
     ###################        ------IMPROPERS------       ####################
     show( '>> impropers')
     # TODO SECTION
-    if _asty_d_[ atomstyle] >= 4:
+    if _asty_d_[ atomstyle] >= 4 and n_impropertypes > 0:
         known_impropers = _topodata_['impropers']
         base_impropers_n = len( known_impropers)
         if base_impropers_n or ( n_impropers > base_impropers_n):
