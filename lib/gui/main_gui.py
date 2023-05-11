@@ -9,15 +9,12 @@ __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 from os.path import dirname, realpath
 from sys import exit
 
-from Tkinter import Tk, Frame, Label, TclError, PhotoImage
-
-from conversion_gui import Conversion
-from script_gui import Script_GUI
-from run_gui import Run_GUI
-
-from popup import AboutPopUp
-from tk_lib import createmenubar
-
+from lib.gui.tk_lib import Tk, Frame, Label, TclError, PhotoImage, createmenubar
+from lib.gui.conversion_gui import Conversion
+from lib.gui.script_gui import Script_GUI
+from lib.gui.run_gui import Run_GUI
+from lib.gui.popup import AboutPopUp
+from lib.misc.display import show
 from lib.misc.warn import wrg_3
 from lib.misc.file import run_command
 from lib.misc.version import __version__
@@ -74,7 +71,7 @@ class Gro2Lam_GUI(Frame):
             this, because it is just a "small" overlapping I gess
         '''
         
-        if self.prevailing_body <> _pbody_:
+        if self.prevailing_body != _pbody_:
             if self.body == None:
                 self.body = self.create_conversion_gui()
                 
@@ -82,15 +79,15 @@ class Gro2Lam_GUI(Frame):
                 self.body.destroy()
                     
                 if _pbody_==1:
-                    print 'Swapping to gro2lam converter GUI'
+                    show( 'Swapping to gro2lam converter GUI')
                     self.body = self.create_conversion_gui()
                     
                 elif _pbody_==2:
-                    print 'Swapping to input script generator GUI'
+                    show( 'Swapping to input script generator GUI')
                     self.body = self.create_script_gui()
                     
                 elif _pbody_==3:
-                    print 'Swapping to run script GUI'
+                    show( 'Swapping to run script GUI')
                     self.body = self.create_run_gui()
                     
                 else:
@@ -136,9 +133,9 @@ def launch_gui( started = False):
         Main GUI constructor
     '''
     
-    print wrg_3('Before you start, make sure there are no comments',
+    show( wrg_3('Before you start, make sure there are no comments',
                 '(;) in the middle of a line of the input GROMACS files.',
-                'Data after this symbol are not taken into account.')
+                'Data after this symbol are not taken into account.') )
     
     MasterWin = Tk()
     prompt = Gro2Lam_GUI( master= MasterWin, test = started)# xl_App
@@ -165,15 +162,16 @@ def launch_gui( started = False):
     ws = MasterWin.winfo_screenwidth() # width of the screen
     hs = MasterWin.winfo_screenheight() # height of the screen
     # calculate x and y coordinates for the Tk root window
-    x = (ws/6) - (w/2)
-    if x <100:
+    x = int( (ws/6.0) - (w/2.0))
+    if x < 100:
         x = 100
-    y = (hs/3) - (h/2)
-    if y< 40:
+    y = int( (hs/3.0) - (h/2.0))
+    if y < 40:
         y = 40
-        
+    
+    #show([ws, hs, w, h, x, y] )
     prompt.MAINVERTEX = [ws, hs, w, h, x, y]
-    #print MAINVERTEX
+    show( prompt.MAINVERTEX, v = 4)
     # set the dimensions of the screen 
     # and where it is placed
     MasterWin.geometry('{:d}x{:d}+{:d}+{:d}'.format( *prompt.MAINVERTEX[2:]))
@@ -188,15 +186,15 @@ def launch_gui( started = False):
 
 def showlicence():
     
-    print 'Opening licence file'
-    command = 'gedit ./lib/docs/COPYING'#
-    run_command(command)
+    show( 'Opening licence file')
+    command = 'gedit ./lib/docs/LICENSE'#
+    run_command( command)
 
 def launch_about( _master_window_):
     
-    print 'Launching about'
+    show( 'Launching about')
     
-    title_txt = ' '*17+'ABOUT GROTOLAM'
+    title_txt = ' '*10+'ABOUT GROTOLAM'
     
     pop = AboutPopUp(master = _master_window_,
                      title = title_txt,
@@ -205,7 +203,7 @@ def launch_about( _master_window_):
 
 def showuserman():
                      
-    print 'Opening readme file'
+    show( 'Opening readme file')
     command = 'gedit ./lib/docs/README.md'#
     run_command(command)
 

@@ -7,19 +7,17 @@ __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 #///    Packages and globals definitions are here   ///
 #------------------------------------------------------
 
-from Tkinter import Frame, Button, Label
-
-from popup import PromptPopUp, PromptPopUp_wck
-
-from tk_lib import bottom_hline_deco, format_dec, Drop_Down_List
-from tk_lib import createmenubar, create_entry, get_entriesvalue
-
-from custom_row import File_Entry, createfileentry
+from lib.gui.tk_lib import Frame, Button, Label
+from lib.gui.tk_lib import bottom_hline_deco, format_dec, Drop_Down_List
+from lib.gui.tk_lib import createmenubar, create_entry, get_entriesvalue
+from lib.gui.popup import PromptPopUp, PromptPopUp_wck
+from lib.gui.custom_row import File_Entry, createfileentry
 
 from lib.handling.lammps import write_lammps_input
 
 from lib.misc.data import check_vars
-from lib.misc.warn import print_dec_g, pop_wrg_1
+from lib.misc.display import show, show_in_green
+from lib.misc.warn import pop_wrg_1
 
 #------------------------------------------------------
 '''///////////////        Class       /////////////'''
@@ -78,9 +76,9 @@ class Script_GUI(Frame):
                      '1000','10:1', '1000', '299:300', '100']
         _def_dataname_ = './data.gro2lam'
         
-        if self._convertdata_ <> None:
+        if self._convertdata_ != None:
             _def_dataname_ = self._convertdata_['filename']
-        elif _mainpage_ <> []:
+        elif _mainpage_ != []:
             _def_dataname_ = _mainpage_[0]
             _defvals_ = _mainpage_[1:] 
         
@@ -129,7 +127,7 @@ class Script_GUI(Frame):
             _comb_rl_ = 'No'
             lj_12_13_14_ = '0.0:0.0:0.0'
             co_12_13_14_ = '0.0:0.0:0.0'
-            if self._convertdata_ <> None:
+            if self._convertdata_ != None:
                 _aux_here_ = self._convertdata_['defaults']
                 buckorlj, comb_rule, _flg_, f14_LJ, f14_Co = _aux_here_
                 if int( buckorlj) == 2:
@@ -186,7 +184,7 @@ class Script_GUI(Frame):
         
     def write_script(self):
     
-        print 'Writing the lammps script'
+        show( 'Writing the lammps script')
         _mainpage_ = get_entriesvalue( self.s_entry_c)
         
         _flag_ = True # data ok flag
@@ -205,7 +203,7 @@ class Script_GUI(Frame):
             _flag_ = write_lammps_input( _script_setup_, self._convertdata_)
             
             if _flag_:
-                print_dec_g( 'Lammps script done!')
+                show_in_green( 'Lammps script done!')
                 self.master.swapbody(3)
     
     def further_config_script( self ):
@@ -251,7 +249,7 @@ class Script_GUI(Frame):
                         #, 'none',
                         'zero']
         
-        if self._convertdata_ <> None:
+        if self._convertdata_ != None:
             buckorlj = int( self._convertdata_['defaults'][0])
             if buckorlj == 1:
                 _pair_style_ = _pair_style_[ :3] + [_pair_style_[ -1]]
@@ -276,7 +274,7 @@ class Script_GUI(Frame):
         _defvals_ = []
         
         for _ad_ in range(len(self._container_['advanced'][0])):
-            if self._container_['advanced'][1][_ad_] <> '':
+            if self._container_['advanced'][1][_ad_] != '':
                 _def_ = self._container_['advanced'][0][_ad_]
                 _dfli_ = self._container_['advanced'][1][_ad_]
                 _defvals_.append([ _def_, _dfli_])
@@ -297,8 +295,8 @@ class Script_GUI(Frame):
         pop.wait_window()
         
         _, bnty_len, anty_len = self.check_datafile()
-        print bnty_len, anty_len
-        if self.master._aux_ <> []:
+        show( bnty_len, anty_len)
+        if self.master._aux_ != []:
             _advanced_ = self.master._aux_
             
             _entries_ = [ 'int', '', '', 'float', 'float', 'float', '',
@@ -314,7 +312,7 @@ class Script_GUI(Frame):
                                      'Advanced settings not saved!'))
             if _flag_:
                 self._container_['advanced'][0] = _advanced_
-                print_dec_g('Advanced settings saved')
+                show_in_green('Advanced settings saved')
         self.fcb.config(bg = 'gray86')#, width = 145)
     
     def config_restrain( self ):
@@ -337,7 +335,7 @@ class Script_GUI(Frame):
                 ck_init = [0]
                 second_c = None
                 
-                if self._convertdata_<> None:
+                if self._convertdata_!= None:
                     _mol_niifi_ = self._convertdata_['atomsdata'][1]
                     for mt in range(len( _mol_niifi_)):
                         g_names.append(_mol_niifi_[mt][0])
@@ -348,8 +346,8 @@ class Script_GUI(Frame):
                 
             else: 
                 g_names, d_ids, kxyz_c, rest_ens, ck_init = _defvals_[0]
-                #print g_names,'\n', d_ids,'\n', kxyz_c,'\n', ck_init 
-                if _defvals_[1]<> None:
+                #show( g_names,'\n', d_ids,'\n', kxyz_c,'\n', ck_init 
+                if _defvals_[1]!= None:
                     second_c = _defvals_[1]
                 else:
                     second_c = None
@@ -372,16 +370,16 @@ class Script_GUI(Frame):
             
             pop.wait_window()
             
-            if self.master._aux_ <> []:
+            if self.master._aux_ != []:
                 sim_len = 0
                 for x in  self._container_['advanced'][0][-4].split('-'):
-                    if x.strip(' ') <> 'R':
+                    if x.strip(' ') != 'R':
                         sim_len +=1
                 _res_flag_= [[],[]]
                 _restrain_ = self.master._aux_[:]
                 _, _d_ids, _kxyz_c, _runs_c, _res_flag_[0] = _restrain_[0]
                 
-                if _restrain_[1] <> None:
+                if _restrain_[1] != None:
                     _, au2, au3, au4, au5 = _restrain_[1][:] 
                     _restrain_aux = _d_ids+ au2+ _kxyz_c+ au3+ _runs_c+ au4
                     _res_flag_[1] = au5
@@ -395,15 +393,15 @@ class Script_GUI(Frame):
                 
                 _aux_ = check_vars( _restrain_aux, _entries_,
                                          'Restrain groups not saved!')
-                #print _aux_
+                #show( _aux_
                 _flag_ = min( _aux_)
                 if _flag_:
                     
                     if max(max(_res_flag_)):
                         self._container_['restrain'] = _restrain_
-                        print_dec_g('Restrain data saved')
+                        show_in_green('Restrain data saved')
                     else:
-                        print ('Creating 0 groups, Restraining 0 atoms')
+                        show( 'Creating 0 groups, Restraining 0 atoms')
             self.resb.config(bg = 'gray86')#, width = 45)
 
     def check_datafile(self, _bflag_=None):
@@ -413,7 +411,7 @@ class Script_GUI(Frame):
         '''
         max_at_index, bond_types, angle_types = 0, 0, 0
         _flag_ = True
-        if self._convertdata_<> None:
+        if self._convertdata_!= None:
             _numbers_ = self._convertdata_['numbers']
             max_at_index = _numbers_['total'][0]
             _, bond_types, angle_types, _, _ = _numbers_['type']
@@ -434,10 +432,10 @@ class Script_GUI(Frame):
                                     break
             except IOError:
                 pop_wrg_1('Data file not found!')
-                print ('Try performing a conversion first!')
+                show( 'Try performing a conversion first!')
                 _flag_ = False
                 
-        if _bflag_<>None:
+        if _bflag_ != None:
             return _flag_
         return max_at_index, bond_types, angle_types
         

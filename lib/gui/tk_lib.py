@@ -2,10 +2,33 @@
 #    By Hernan Chavez Thielemann
 __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
-from Tkinter import Entry, Button, Frame, Label, Scrollbar, StringVar, Menu
-from Tkinter import Listbox, IntVar, Checkbutton, Widget, Spinbox
-from Tkinter import X, Y, SUNKEN, VERTICAL, END
+from lib.misc.version import __python_version__
+from lib.misc.display import show
 
+from webbrowser import open_new
+
+if __python_version__ > 3:
+    '''between trying and knowing, I rather prefer the last one'''
+    from tkinter import Tk, Frame, Label, TclError, PhotoImage, Toplevel
+    from tkinter import Entry, Button, Scrollbar, StringVar, Menu
+    from tkinter import Listbox, IntVar, Checkbutton, Widget, Spinbox
+    from tkinter.font import Font
+else:
+    from Tkinter import Tk, Frame, Label, TclError, PhotoImage, Toplevel
+    from Tkinter import Entry, Button, Scrollbar, StringVar, Menu
+    from Tkinter import Listbox, IntVar, Checkbutton, Widget, Spinbox
+    from tkFont import Font
+
+'''     Home made ttk library     '''
+
+#================================
+#        Variables definition
+#================================
+X = 'x'
+Y = 'y'
+SUNKEN = 'sunken'
+VERTICAL = 'vertical'
+END = 'end'
 '''     Home made ttk library     '''
 
 #================================
@@ -40,7 +63,7 @@ def create_entry( _main_row_, _desc_txt, _def_txt_, t_len, ckbc=None, fn=None):
     ''' creates a tkinter entry '''
     _row_ = Frame(_main_row_)
     
-    if ckbc<>None and fn<>None:
+    if ckbc != None and fn != None:
         label0 = Label(_row_, width=3, text="  ", anchor='w')
         cvar = IntVar()
         label1 = Checkbutton(_row_, width=0
@@ -116,7 +139,7 @@ def get_entriesvalue(entries_container):
 
 def bottom_hline_deco(row, func=None):
     ''' adds a sunken line in the bottom of a tkinter function'''
-    if func <> None:
+    if func != None:
         func()
     line = Frame( row ,height=2, bd=1, relief= SUNKEN)
     line.pack(fill=X, padx=1, pady=5)
@@ -261,9 +284,39 @@ def createmenubar( _root_window_, _listofentriesdicts_):
                 else:
                     sub_menu.add_separator(  )
         else:
-             print ' - incomplete data - '
+             show( ' - incomplete data - ')
+    
+
+def link_row( in_frame_, w_txt, link_fo, px=0, py=0):
+    
+    label_obj = Label( in_frame_, bg = "white", font = "Verdana 10",
+                 text = w_txt, fg="blue", cursor = "hand2")
+    font_here = Font( label_obj, label_obj.cget( "font"))
+    font_here.configure( underline = True)
+    label_obj.configure( font = font_here)
+    label_obj.pack( side = "top" , anchor = 'w', padx = px, pady = py)
+    label_obj.bind( "<Button-1>", link_fo)
+    
+    return label_obj
+
+def polito_callback( push_event):
+    open_new(r"http://www.polito.it/small")
+    
+
+def email_me( push_event):
+    ''' You can find this link in the About pop-up inn the help button'''
+    show( 'Writing an email to Hernan')
+    email_address = "herch{0:}vezt{1:}gm{0:}il{2:}com".format('a', '@', '.')
+    subject = "GRO2LAM email"
+    open2send_email( email_address, subject)
+    
+
+def open2send_email( email, subject):
+    open_new("mailto:?to=" + email  + "&subject=" + subject )
+        
+    
 
 def testprint():
-    print '>command33<'
+    show( '>command33<')
 
 # vim:tw=80

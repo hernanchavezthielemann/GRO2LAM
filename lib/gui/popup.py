@@ -2,12 +2,13 @@
 #    By Hernan Chavez Thielemann
 __author__ = 'Hernan Chavez Thielemann <hchavezthiele at gmail dot com>'
 
-from Tkinter import Frame, Toplevel, Label, Button, Checkbutton, Entry
-from Tkinter import SUNKEN, X, Y, PhotoImage, IntVar
-from tk_lib import create_entry, bottom_hline_deco, get_entriesvalue
-from tkFont import Font
-from webbrowser import open_new
-from lib.misc.version import __version__
+from lib.gui.tk_lib import Frame, Toplevel, Label, Button, Checkbutton, Entry
+from lib.gui.tk_lib import SUNKEN, X, Y, PhotoImage, IntVar, Font, Tk
+from lib.gui.tk_lib import create_entry, bottom_hline_deco, get_entriesvalue
+from lib.gui.tk_lib import link_row, polito_callback, email_me
+
+from lib.misc.version import __version__, __copyright__
+from lib.misc.display import show
 
 class Message_box(Frame):
     ''' It is a frame because at the end it is a message box launchpad'''
@@ -71,7 +72,7 @@ class FilePopUp(Frame):
         return self._options_
     @filetypes.setter
     def filetypes(self, **value):
-        print '-----------', value, type (value)
+        show( '-----------', value, type (value) )
         value += (("All","*"),)
         self._options_ = {'filetypes': ("All","*")}
         
@@ -97,7 +98,7 @@ class SaveAsPopUp():
     def __init__(self, master=None):
         self.master  = master
         self._options = {}
-        print 'Soon ...  but save what?'
+        show( 'Soon ...  but save what?')
         
     @property
     def options(self):
@@ -161,7 +162,7 @@ class PromptPopUp_old():
         
         x_pop = x_main + w_main - 30
         y_pop = y_main + h_main - h_pop
-        #print w_pop, h_pop, x_pop, y_pop
+        #show( w_pop, h_pop, x_pop, y_pop
         self._vertex_= [w_pop, h_pop, x_pop, y_pop]
 
     def create_content(self):
@@ -256,7 +257,7 @@ class PromptPopUp(Toplevel):
         self.set_self_vertex()
         
         self.wm_title(' '*5+title)
-        #print self._vertex_
+        #show( self._vertex_
         self.geometry('{:d}x{:d}+{:d}+{:d}'.format(*self._vertex_))
         
         self.ent_c = []
@@ -271,7 +272,7 @@ class PromptPopUp(Toplevel):
     def set_self_vertex(self ):
         
         ws, hs, w_main, h_main, x_main, y_main = self.master.MAINVERTEX
-        #print ws, hs, w_main, h_main, x_main, y_main
+        #show( ws, hs, w_main, h_main, x_main, y_main
         # calculate the greatness
         
         
@@ -282,7 +283,7 @@ class PromptPopUp(Toplevel):
         
         x_pop = x_main + w_main - 30
         y_pop = y_main + h_main - self._height_
-        #print w_pop, h_pop, x_pop, y_pop
+        #show( w_pop, h_pop, x_pop, y_pop
         self._vertex_= [self._width_, self._height_, x_pop, y_pop]
 
     def create_content(self):
@@ -295,7 +296,7 @@ class PromptPopUp(Toplevel):
         # lets create space to do some stuff ...
         self.entr_maxlen = int(len(max(self._entries_, key=len))*2.5/3.0)
         row2fill = Frame(self)
-        #print self._entries_,'\n', self._defvals_,
+        #show( self._entries_,'\n', self._defvals_,
         #'\n',len(self._entries_),'\n', len(self._defvals_)
         
         aline=0
@@ -303,7 +304,7 @@ class PromptPopUp(Toplevel):
             if self._entries_[e] == '---':
                 aline+=1
                 bottom_hline_deco(row2fill)
-                #print self._entries_[e]
+                #show( self._entries_[e]
             else:
                 self.ent_c.append(create_entry(row2fill,
                                                self._entries_[e],
@@ -393,7 +394,7 @@ class PromptPopUp_wck(Toplevel):
         self.set_self_vertex()
         
         self.wm_title(' '*5+title)
-        #print self._vertex_
+        #show( self._vertex_
         self.geometry('{:d}x{:d}+{:d}+{:d}'.format(*self._vertex_))
         
         self.ent_c = []
@@ -413,11 +414,11 @@ class PromptPopUp_wck(Toplevel):
         if  self._width_ == None:
             self._width_ = w_main - 40
         if self._height_ == None:
-            self._height_ = h_main*12/21
+            self._height_ = int( h_main*12/21.0)
         
-        x_pop = x_main + w_main - 60
-        y_pop = y_main + h_main - self._height_
-        #print w_pop, h_pop, x_pop, y_pop
+        x_pop = int( x_main + w_main - 60)
+        y_pop = int( y_main + h_main - self._height_)
+        #show( w_pop, h_pop, x_pop, y_pop
         self._vertex_= [self._width_, self._height_, x_pop, y_pop]
 
     def create_content(self):
@@ -450,7 +451,7 @@ class PromptPopUp_wck(Toplevel):
                 self.add_new_line()
                 self.ch_init+=[0]
             else:
-                #print self.extra_checkb
+                #show( self.extra_checkb
                 gr, ids, k_xyz, rns, cks =self.extra_checkb
                 
                 for _e_ in range( len( gr)):
@@ -574,7 +575,7 @@ class PromptPopUp_wck(Toplevel):
         # First detect wich one change, comparing the fresh value
         for v in range(ckbc_len):
             _ckvar_g_.append(self.ckb_c[v][0].get())
-            if self.ch_init[v]<>_ckvar_g_[v]:
+            if self.ch_init[v] != _ckvar_g_[v]:
                 auxi=v
         
         if auxi>=loc and auxi == ckbc_len-1:
@@ -607,7 +608,7 @@ class PromptPopUp_wck(Toplevel):
         for g_e in range(len(self.ent_c))[:lo]:
             gr, ids, k_xyz, rns = get_entriesvalue( self.ent_c[g_e])
             
-            #print gr, ids, k_xyz, self.ch_init[g_e]
+            #show( gr, ids, k_xyz, self.ch_init[g_e]
             
             g_names.append(gr)
             g_aids.append(ids)
@@ -672,12 +673,12 @@ class AboutPopUp():
         
         ws, hs, w_main, h_main, x_main, y_main = self.master.MAINVERTEX
         # calculate the greatness
-        w_pop = w_main
-        h_pop = h_main*14/21
+        w_pop = int( w_main*6/7.0)
+        h_pop = int( h_main*2/3.0)
         
         x_pop = x_main + w_main + 30
         y_pop = y_main + h_main - h_pop - 140
-        #print w_pop, h_pop, x_pop, y_pop
+        #show( w_pop, h_pop, x_pop, y_pop
         self._vertex_= [w_pop, h_pop, x_pop, y_pop]
 
     def create_content(self):
@@ -685,92 +686,63 @@ class AboutPopUp():
         self.pop = Toplevel(self.master, bg = "white")
         self.pop.grab_set()# when you show the popup
         
-        self.pop.wm_title(' '*5+self._title_)
-        self.pop.geometry('{:d}x{:d}+{:d}+{:d}'.format(*self._vertex_))
+        self.pop.wm_title(' '*5 + self._title_)
+        self.pop.geometry('{:d}x{:d}+{:d}+{:d}'.format( *self._vertex_))
         
+        ###########################      Left   column      ###################
         leftcolumn = Frame(self.pop ,bg = "white")
         Label(leftcolumn, bg = "white").pack(side="top", fill="both", pady=30)
         Label(leftcolumn, bg = "white",
               image= self.im_logo2).pack(side="top", fill="both", padx=10) #side= LEFT,
-        leftcolumn.pack(side="left", fill='both', padx=1)
+        leftcolumn.pack( side="left", fill='both', padx=1)
         
+        ############################     Right  column       ##################
+        rightcolumn = Frame( self.pop, bg = "white")
+        # space above GRO2LAM letters -> pady 
+        Frame( rightcolumn, bg = "white").pack( side="top", pady = 5)
+        # GRO2LAM letters 
+        Label( rightcolumn, text = "GRO2LAM", fg = "Gray13", bg = "white" ,
+                 font = "Verdana 13 bold").pack( side = "top", anchor = 'w')
         
-        rightcolumn = Frame(self.pop,bg = "white")
-        firstrow = Frame(rightcolumn,bg = "white")
-        Frame(rightcolumn,bg = "white").pack(side="top", pady=10 , padx=0)
+        # space after GRO2LAM letters -> pady 
+        Label( rightcolumn, bg = "white").pack( side = "top", pady=15)
         
-        Label(firstrow, text="GROTOLAM",
-                 fg = "Gray13", bg = "white" ,
-                 font = "Verdana 13 bold").pack(side="left", pady=20)
-        Label(firstrow, text='',bg = "white").pack(side="left", padx=40)
-        firstrow.pack(side="top", padx=0)
-        
-        secrow = Frame(rightcolumn, bg = "white")
-        Label(secrow, text="v "+__version__.split()[2],
-                 fg = "Gray13",bg = "white" ,
-                 font = "Verdana 10").pack(side="left")
-        Label(secrow, text='',bg = "white").pack(side="left", padx=75)
-        secrow.pack(side="top", padx=0)
+        # version_row
+        Label( rightcolumn, text = "v " + __version__.split()[2],
+                 fg = "Gray13", bg = "white", font = "Verdana 10"
+             ).pack( side = "top" , anchor = 'w', padx = 10)
         
         # lets create space to do some stuff ...
-        Frame(rightcolumn,bg = "white").pack(side="top", pady=20 , padx=0)
+        Frame( rightcolumn,bg = "white").pack(side="top", pady=18)
         
-        thirdrow = Frame(rightcolumn,bg = "white")
+        ####   copyright
+        Label( rightcolumn, text = __copyright__ , fg = "Gray13", bg = "white",
+               font = "Verdana 10").pack( side = "top" , anchor = 'w')
         
-        Label(thirdrow, text="2018 Python version by",
-                 fg = "Gray13", bg = "white",
-                 font = "Verdana 10").pack(side="left")
-        Label(thirdrow, text='',bg = "white").pack(side="left", padx=16)
-        thirdrow.pack(side="top", padx=0)
+        mail_ = link_row( rightcolumn , "E-mail me!", email_me)
         
-        fourthrow = Frame(rightcolumn,bg = "white")
-        Label(fourthrow, text="Hernan Chavez Thielemann",
-                 fg = "Gray13", bg = "white",
-                 font = "Verdana 10").pack(side="left")
-        Label(fourthrow, text='',bg = "white").pack(side="left", padx=1)
-        fourthrow.pack(side="top", padx=0)
+        Label( rightcolumn, bg = "white", image= self.im_smlogo
+             ).pack( side = "top" , anchor = 'w')
         
-        fifthrow = Frame(rightcolumn,bg = "white")
-        Label(fifthrow, bg = "white",
-              image= self.im_smlogo).pack(side="left", fill="both", padx=10)
-        fifthrow.pack(side="top", padx=0)
+        href = link_row( rightcolumn , "Small-lab web page", polito_callback)
         
-        sixthrow = Frame(rightcolumn,bg = "white")
-        href = Label(sixthrow, bg = "white", font = "Verdana 10",
-                     text="Small web page", fg="blue",
-                     cursor="hand2")
-        f = Font(href, href.cget("font"))
-        f.configure(underline = True)
-        href.configure(font=f)
-        href.pack(side="left")
-        href.bind("<Button-1>", self.callback)
+        _row_ = Frame(rightcolumn,bg = "white")
+        b2 = Button(_row_, text='Close', bg = "white", command= self.exit_pop)
+        b2.pack( side = "right", padx=10, pady=4)
+        b1 = Button(_row_, text='Licence', bg="white", command= self._licence_)
+        b1.pack( side = "right", padx=10, pady=20)
+        _row_.pack( side = "bottom")
         
-        Label(sixthrow, text='',bg = "white").pack(side="left", padx=40)
-        sixthrow.pack(side="top", padx=0)
-        
-        lastrow = Frame(rightcolumn,bg = "white")
-        self.bottom_button_row(lastrow)
-        rightcolumn.pack(side="right", fill='both', padx=5)
+        rightcolumn.pack( side = "left", padx=10)
 
-    def callback(self, event):
-        open_new(r"http://www.polito.it/small")
-        
-        
-    def bottom_button_row(self, _row_):
-        
-        b2 = Button(_row_, text='Close',bg = "white", command= self.exit_pop)
-        b2.pack(side="right", padx=10, pady=4)
-        b1 = Button(_row_, text='Licence',bg="white",command= self._licence_)
-        b1.pack(side="right", padx=10, pady=20)
-        _row_.pack(side="bottom")
-        
-    def openlicence(self):
-        
-        print 'opening licence file'
-
-    def exit_pop(self):
+    def exit_pop( self):
         self.pop.grab_release() # to return to normal
         self.pop.destroy()
+        
+
+def openlicence_hook():
+        show( 'opening licence file')
+    
 
 class WarningPopUp2(PromptPopUp):
 
@@ -802,5 +774,36 @@ class WarningPopUp2(PromptPopUp):
         b2.pack(side="right", padx=10, pady=4)
         _br_.pack(side="bottom", expand = True)
         
+        
+def test_launch_about():
+    
+    MasterWin = Tk()
+    w = 460
+    h = 570
+    ws = MasterWin.winfo_screenwidth() # width of the screen
+    hs = MasterWin.winfo_screenheight() # height of the screen
+    x = int( (ws/6) - (w/2))
+    if x <100:
+        x = 100
+    y = int( (hs/3) - (h/2))
+    if y< 40:
+        y = 40
+        
+    MasterWin.MAINVERTEX = [ws, hs, w, h, x, y]
+    MasterWin.geometry('{:d}x{:d}+{:d}+{:d}'.format( *MasterWin.MAINVERTEX[2:]))
+    
+    show( 'Launching about')
+    title_txt = ' '*10+'ABOUT GROTOLAM'
+    pop = AboutPopUp(master = MasterWin,
+                     title = title_txt,
+                     licence = openlicence_hook
+                    )
+    
+    MasterWin.mainloop()
+    MasterWin.destroy()
+    
+if __name__ == "__main__":
+    test_launch_about()
+    
 # vim:tw=80
 
