@@ -5,9 +5,7 @@ on: [push]
 jobs:
   test-python2:
     runs-on: ubuntu-latest
-   # strategy:
-   #  matrix:
-   #     python-version: ["2.6", "2.7", "3.10",  "3.10"]
+
     steps:
       - uses: actions/checkout@v4
       
@@ -23,10 +21,16 @@ jobs:
       - name: Install GRO2LAM setup
         run: python2 setup -t
 
-      - name: Check xvfb
+      - name: Install xvfb
+        run: sudo apt install xvfb
+      - name: Check xvfb 
         run: ps -ef | grep xvfb
         
-        
+      - name: before_script
+        run: "export DISPLAY=:99.0 && sleep 3"  # give xvfb some time to start
+
+      - name: Run Gro2Lam
+        run: python2 run
  
 
         
