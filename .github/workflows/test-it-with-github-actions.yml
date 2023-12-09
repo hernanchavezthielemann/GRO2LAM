@@ -15,6 +15,8 @@ jobs:
         #with:
         #  python-version: 2.7- name: Install Python 2
         run: sudo apt-get install python2
+      - name: Install Tkinter
+        run: sudo apt-get install python-tk
         
       # You can test your matrix by printing the current Python version
       - name: Display Python version
