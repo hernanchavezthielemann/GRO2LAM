@@ -11,16 +11,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python 2.7
-        uses: actions/setup-python@v4
-        with:
-          python-version: 2.7
-          
+        #uses: actions/setup-python@v4
+        #with:
+        #  python-version: 2.7
+      - name: Install Python 2
+        run: sudo apt-get install python2
+        
       # You can test your matrix by printing the current Python version
       - name: Display Python version
-        run: python -c "import sys; print(sys.version)"
+        run: python2 -c "import sys; print(sys.version)"
 
       - name: Install GRO2LAM setup
-        run: python setup -t
+        run: python2 setup -t
         
   test-python3:
     runs-on: ubuntu-latest
