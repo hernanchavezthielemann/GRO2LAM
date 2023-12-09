@@ -1,4 +1,4 @@
-name: test-it-with-github-actions
+name: Build & Run with python2
 run-name: ${{ github.actor }} is Trying GitHub Actions
 on: [push]
 
