@@ -26,9 +26,11 @@ jobs:
       - name: Check xvfb 
         run: ps -ef | grep xvfb
         
-      - name: before_script
-        run: "export DISPLAY=:99.0 && sleep 3"  # give xvfb some time to start
-
+      - name: before_script 1
+        run: "export DISPLAY=:99.0" 
+      - name: before_script 2
+        run: sleep 3 # give xvfb some time to start
+        
       - name: Run Gro2Lam
         run: xvfb-run python2 run
  
