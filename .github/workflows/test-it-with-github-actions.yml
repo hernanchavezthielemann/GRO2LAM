@@ -30,7 +30,7 @@ jobs:
         run: "export DISPLAY=:99.0 && sleep 3"  # give xvfb some time to start
 
       - name: Run Gro2Lam
-        run: python2 run
+        run: xvfb-run python2 run
  
 
         
