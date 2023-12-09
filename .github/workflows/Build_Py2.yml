@@ -1,0 +1,35 @@
+name: Build_Py2
+run-name: ${{ github.actor }} is Trying GitHub Actions
+on: [push]
+
+jobs:
+  test-python2:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python 2.7
+        run: sudo apt-get install python2
+        
+      - name: Install Tkinter
+        run: sudo apt-get install python-tk
+        
+      - name: Display Python version
+        run: python2 -c "import sys; print(sys.version)"
+
+      - name: Install GRO2LAM setup
+        run: python2 setup -t
+
+      - name: Install xvfb
+        run: sudo apt install xvfb
+      - name: Check xvfb 
+        run: ps -ef | grep xvfb
+        
+      - name: before_script 1
+        run: "export DISPLAY=:99.0" 
+      - name: before_script 2
+        run: sleep 3 # give xvfb some time to start
+        
+      - name: Run Gro2Lam
+        run: xvfb-run python2 run
